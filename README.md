@@ -1,6 +1,6 @@
 # Engineering Playbook
 
-A living playbook for building engineering taste and judgment — from a designer and product builder who ships code, toward thinking like a senior engineer.
+A living playbook for building engineering taste and judgment — from a designer and product builder who ships code, toward thinking like a principal engineer.
 
 ## What this is
 
