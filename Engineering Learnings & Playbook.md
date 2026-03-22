@@ -1,6 +1,6 @@
 # Engineering Learnings & Playbook
 
-> A living document for building engineering taste and judgment — from a designer and product builder who ships code, toward thinking like a senior engineer.
+> A living document for building engineering taste and judgment — from a designer and product builder who ships code, toward thinking like a staff engineer.
 
 ---
 
@@ -193,18 +193,17 @@ Beyond CLAUDE.md, there are a few Claude Code habits that keep your workflow cle
 
 **The AI context mindset** — every time you structure a file or name a function, you're not just writing for yourself. You're writing for a future AI session that needs to understand this code fast. Clear naming, small files, and co-located features all make AI assistance dramatically better. The same things that make code maintainable for humans make it navigable for AI.
 
-**Resources to go deeper:**
+**Essential resources:**
 
-- **Bulletproof React** (github.com/alan2207/bulletproof-react) — the single best reference for React project structure. Study the folder layout and read the docs explaining each decision. This is your go-to template.
-- **"Screaming Architecture"** by Robert Martin (blog.cleancoder.com) — short blog post on why your folder structure should reflect the product domain, not the framework. Reads in 5 minutes.
-- **Next.js Project Structure docs** (nextjs.org/docs/getting-started/project-structure) — Next.js is opinionated about structure on purpose. Understanding their conventions teaches you how good defaults reduce decision fatigue.
-- **T3 Stack** (create.t3.gg) — run `create-t3-app` and study the scaffolded project. The docs explain *why* each folder and config exists. Great for understanding how auth, database, API, and frontend connect.
-- **"Delighthat Reactful Architecture"** by Josh W. Comeau (joshwcomeau.com) — a practical walkthrough of how he structures React apps. Written in a friendly, visual style that works well for a design background.
-- **"How to Structure Your React Project"** by Theo Browne (YouTube, ~15 min) — opinionated walkthrough of feature-based architecture. He explains the *why* behind every choice, not just the *what*.
-- **"The Feature-Sliced Design"** (feature-sliced.design) — a more formal methodology for organizing frontends by feature. Can feel over-engineered for small projects, but the mental model is worth understanding. Read the overview, skip the deep docs until you need them.
-- **Shadcn/ui source code** (github.com/shadcn-ui/ui) — look at how each component is self-contained with its own files. Great example of clean separation at the component level.
-- **Claude Code documentation** (docs.anthropic.com/en/docs/claude-code) — official docs on CLAUDE.md, skills, hooks, and best practices. Read the CLAUDE.md section first, then skills and hooks when you're ready to automate.
-- **"Claude Code Best Practices"** (anthropic.com) — how to structure projects for effective AI-assisted development. Covers context management, file organization, and working with CLAUDE.md.
+- [Bulletproof React](https://github.com/alan2207/bulletproof-react) — the single best reference for React project structure. Study the folder layout and read the docs explaining each decision.
+- [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) — official docs on CLAUDE.md, skills, hooks, and best practices.
+
+> [!tip]- Further reading
+> - [Screaming Architecture](https://blog.cleancoder.com/uncle-bob/2011/09/30/Screaming-Architecture.html) by Robert Martin — short blog post, 5 min read
+> - [Next.js Project Structure docs](https://nextjs.org/docs/getting-started/project-structure)
+> - [T3 Stack](https://create.t3.gg) — study the scaffolded project and its docs
+> - [Feature-Sliced Design](https://feature-sliced.design) — read the overview only
+> - [Shadcn/ui source code](https://github.com/shadcn-ui/ui)
 
 ---
 
@@ -226,13 +225,15 @@ Going from shipping code to engineering well is less about leveling up your code
 
 5. **Type 1 vs Type 2 decisions.** Type 1 decisions are hard to reverse — proceed carefully. Type 2 decisions are reversible — move fast. Most decisions are Type 2.
 
-**Resources to go deeper:**
+**Essential resources:**
 
-- "A Philosophy of Software Design" by John Ousterhout — the best book on simplicity and complexity in code. Short, practical, written for people who build things. Start here.
-- "The Grug Brained Developer" (grugbrain.dev) — a funny, brutally honest essay on fighting complexity. Reads in 20 minutes. Covers YAGNI, abstraction traps, and why simple beats clever.
-- "Simple Made Easy" by Rich Hickey (talk on YouTube, ~60 min) — the most famous talk on why simple and easy are not the same thing. Changes how you think about design choices.
-- "Goodbye, Clean Code" by Dan Abramov (overreacted.io) — a short blog post about the moment he realized premature abstraction was worse than duplication. Very relatable for someone coming from a "make it clean" mindset.
-- Jeff Bezos' 2015 shareholder letter on Type 1 vs Type 2 decisions — the original framing. Worth reading once.
+- "A Philosophy of Software Design" by John Ousterhout — the best book on simplicity and complexity in code. Short, practical. Start here.
+- [The Grug Brained Developer](https://grugbrain.dev) — funny, brutally honest essay on fighting complexity. 20 minutes.
+- [Goodbye, Clean Code](https://overreacted.io/goodbye-clean-code/) by Dan Abramov — the moment he realized premature abstraction was worse than duplication. 5 min read.
+
+> [!tip]- Further reading
+> - [Simple Made Easy](https://www.infoq.com/presentations/Simple-Made-Easy/) by Rich Hickey (~60 min) — deeper take on why simple and easy are not the same
+> - Jeff Bezos' 2015 shareholder letter on Type 1 vs Type 2 decisions — the original framing
 
 ---
 
@@ -296,12 +297,14 @@ PR Hygiene
 - What did I learn that changes how I build next time?
 ```
 
-**Resources to go deeper:**
+**Essential resource:**
 
-- "How to Make Your Code Reviewer Fall in Love with You" by Michael Lynch (mtlynch.io) — practical guide on writing PRs that are easy to review. Covers small PRs, clear descriptions, and commit hygiene.
-- Google's "Code Review Developer Guide" (google.github.io/eng-practices) — the actual internal guide Google uses for code reviews. The "What to look for in a code review" section is gold.
-- "The Checklist Manifesto" by Atul Gawande — not about code, but about why checklists work in high-stakes fields (surgery, aviation). Changes how you see pre-ship checklists.
-- "On Writing Software Well" by DHH (YouTube playlist) — short screencasts where he walks through real Rails code explaining design choices. Great for seeing how an experienced dev thinks out loud while building.
+- [Google's Code Review Developer Guide](https://google.github.io/eng-practices/review/reviewer/) — the actual guide Google uses for code reviews. The "What to look for in a code review" section is gold.
+
+> [!tip]- Further reading
+> - [How to Make Your Code Reviewer Fall in Love with You](https://mtlynch.io/code-review-love/) by Michael Lynch
+> - "The Checklist Manifesto" by Atul Gawande — why checklists work in high-stakes fields
+> - "On Writing Software Well" by DHH (YouTube playlist) — experienced dev thinking out loud
 
 ---
 
@@ -350,13 +353,14 @@ Reference this when building or reviewing code. If something looks like the righ
 | Zero-downtime deploys | "Deploy at 2am when no one's using it" |
 | Deploy, verify, rollback in under 5 minutes | Rollback means reverting and redeploying for 20 minutes |
 
-**Resources to go deeper:**
+**Essential resource:**
 
-- "Clean Code" by Robert C. Martin — the early chapters on naming and functions are useful. The later chapters get dogmatic and push over-abstraction, which contradicts the simplicity-first mindset of this playbook. Take what's practical, leave the rest.
-- "Naming Things in Code" by CodeAesthetic (YouTube, ~8 min) — short video that clicks immediately. You'll start seeing bad naming everywhere after this.
-- "The Wrong Abstraction" by Sandi Metz (sandimetz.com) — a short post that makes the case: duplication is far cheaper than the wrong abstraction. Read this before you refactor anything.
-- Cal.com GitHub repo (github.com/calcom/cal.com) — a well-structured open-source Next.js app. Good example of folder structure, separation of concerns, and how a real product codebase looks. Browse, don't study — let the patterns sink in.
-- Bulletproof React (github.com/alan2207/bulletproof-react) — an opinionated guide to React project architecture. Excellent for understanding how to organize files, separate features, and structure a frontend codebase. Very practical.
+- [Naming Things in Code](https://www.youtube.com/@CodeAesthetic) by CodeAesthetic (YouTube, ~8 min) — short video that clicks immediately. You'll start seeing bad naming everywhere after this.
+
+> [!tip]- Further reading
+> - "Clean Code" by Robert C. Martin — early chapters on naming and functions only. Later chapters get dogmatic.
+> - [The Wrong Abstraction](https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction) by Sandi Metz — duplication is cheaper than the wrong abstraction
+> - [Cal.com GitHub repo](https://github.com/calcom/cal.com) — well-structured Next.js app to browse
 
 ---
 
@@ -372,12 +376,14 @@ This is the core skill. Not "always choose quality" or "always ship fast" — it
 | Anything touching user data or money | Quality. Always. No exceptions. |
 | Choosing between two good options | Pick either one fast. Indecision is more expensive than a wrong call. |
 
-**Resources to go deeper:**
+**Essential resource:**
 
-- "Thinking in Bets" by Annie Duke — you already have this in your vault. Re-read with engineering trade-offs in mind. Every architecture choice is a bet under uncertainty.
-- "Choose Boring Technology" by Dan McKinley (boringtechnology.club) — a famous talk/essay about why you should default to proven, boring tools. Every new technology has a cost. You get a limited number of "innovation tokens."
-- "The Thirty Percent Rule" by Kris Brandow — the idea that if you're spending more than 30% of your time on tech debt, something is wrong. If you're spending 0%, something is also wrong.
-- "Accelerate" by Nicole Forsgren — research-backed book on what actually makes engineering teams fast. Useful for understanding why deployment speed and code quality aren't opposites.
+- [Choose Boring Technology](https://boringtechnology.club) by Dan McKinley — why you should default to proven, boring tools. Every new technology has a cost. You get a limited number of "innovation tokens."
+
+> [!tip]- Further reading
+> - "Thinking in Bets" by Annie Duke — every architecture choice is a bet under uncertainty
+> - "The Thirty Percent Rule" by Kris Brandow — balancing tech debt vs feature work
+> - "Accelerate" by Nicole Forsgren — research on what makes engineering teams fast
 
 ---
 
@@ -394,21 +400,23 @@ Taste isn't learned from reading — it's forged through build, judge, break, le
 | Do post-mortems on your own failures | Not just what broke, but *why* it broke |
 | Teach or explain what you built | The biggest brain move isn't building the hardest thing — it's explaining the simple thing well |
 
-**Codebases worth reading (start with one, browse don't study):**
+**Start with one codebase (browse, don't study):**
 
-- **Cal.com** (github.com/calcom/cal.com) — Next.js, well-structured, real product. Great for seeing how features are organized.
-- **Bulletproof React** (github.com/alan2207/bulletproof-react) — not a product, but an architecture reference. Shows how to structure a React app the "right" way.
-- **Shadcn/ui** (github.com/shadcn-ui/ui) — beautifully written component library. Great for seeing how small, focused, reusable code looks.
-- **T3 Stack** (create.t3.gg) — full-stack TypeScript template. Good for understanding how auth, database, API, and frontend connect in a modern stack.
+- [Bulletproof React](https://github.com/alan2207/bulletproof-react) — the architecture reference. Study how it's structured, then look at code.
 
-**People worth following (blogs/YouTube):**
-
-- **Dan Abramov** (overreacted.io) — React core team, writes about fundamentals in a way that clicks
-- **Kent C. Dodds** (kentcdodds.com) — testing, React patterns, practical engineering advice
-- **Theo Browne** (t3.gg / YouTube) — opinionated full-stack takes, explains trade-offs well
-- **CodeAesthetic** (YouTube) — short, visual videos on code quality concepts. Perfect for your learning style as a designer.
-- **Fireship** (YouTube) — fast, visual explainers of concepts and tools. Good for getting the big picture before going deep.
-- **The Primeagen** (YouTube) — senior engineer who thinks out loud. Entertaining and educational.
+> [!tip]- More codebases and people to follow
+> **Codebases:**
+> - [Cal.com](https://github.com/calcom/cal.com) — real product, well-structured Next.js app
+> - [Shadcn/ui](https://github.com/shadcn-ui/ui) — clean component library
+> - [T3 Stack](https://create.t3.gg) — full-stack TypeScript template
+>
+> **People:**
+> - [Dan Abramov](https://overreacted.io) — React fundamentals
+> - [Kent C. Dodds](https://kentcdodds.com) — testing and React patterns
+> - [Theo Browne](https://www.youtube.com/@t3dotgg) — full-stack trade-offs
+> - [CodeAesthetic](https://www.youtube.com/@CodeAesthetic) — short visual videos on code quality
+> - [Fireship](https://www.youtube.com/@Fireship) — fast visual explainers
+> - [The Primeagen](https://www.youtube.com/@ThePrimeagen) — senior engineer thinking out loud
 
 ---
 
@@ -416,40 +424,29 @@ Taste isn't learned from reading — it's forged through build, judge, break, le
 
 A suggested progression — start wherever feels right, skip what you've already absorbed, revisit as you grow:
 
-### Phase 1: Build the Eye (now)
-You're already shipping code — so this isn't about stopping to read. It's about adding a judgment layer on top of what you're already doing.
+### Phase 1: Build the Eye
+You're already shipping code — this is about adding a judgment layer on top.
 
-- [ ] Read "A Philosophy of Software Design" (the whole book, it's short)
+- [ ] Read "A Philosophy of Software Design" by John Ousterhout
+- [ ] Read "The Grug Brained Developer" (grugbrain.dev)
 - [ ] Read "Goodbye, Clean Code" by Dan Abramov
-- [ ] Read "The Grug Brained Developer"
-- [ ] Watch "Naming Things in Code" by CodeAesthetic
-- [ ] Browse Bulletproof React repo for 30 minutes — focus on the folder structure first, code second
-- [ ] Read "Screaming Architecture" blog post (5 min read)
-- [ ] Watch Theo Browne's "How to Structure Your React Project" (15 min)
-- [ ] On your next feature, use the "While Building" checklist and write down what you notice
-- [ ] On your next new project, use the Part 0 scaffolding checklist before writing any code
-- [ ] Write a CLAUDE.md for your current project (use the template in Part 0)
-- [ ] Read the Claude Code docs on CLAUDE.md
+- [ ] Watch "Naming Things in Code" by CodeAesthetic (8 min)
+- [ ] Browse Bulletproof React repo — folder structure first, code second
+- [ ] Write a CLAUDE.md for your current project (template in Part 0)
 
-### Phase 2: Understand the System (next)
-Once you can spot good code, zoom out to understand how pieces connect.
+### Phase 2: Understand the System
+Zoom out to see how pieces connect.
 
-- [ ] Watch "Simple Made Easy" by Rich Hickey
-- [ ] Read "Choose Boring Technology"
-- [ ] Browse Cal.com repo — trace one feature from UI to API to database
+- [ ] Read "Choose Boring Technology" by Dan McKinley
 - [ ] Read Google's Code Review guide
-- [ ] Start writing one-line "why" comments in your own PRs
-- [ ] Set up a Claude Code hook that runs your linter on file edits
+- [ ] On your next feature, use the "While Building" checklist and write down what you notice
 
 ### Phase 3: Build the Muscle (ongoing)
-This is where judgment becomes instinct.
+Judgment becomes instinct through repetition.
 
-- [ ] After every feature you ship, fill in the Learnings Log below
-- [ ] Review your own PRs before requesting review — run through the "Before Shipping" checklist
-- [ ] Pick one open-source repo and follow their PRs for a week
-- [ ] Read "The Wrong Abstraction" by Sandi Metz before your next refactor
-- [ ] Start keeping a DECISIONS.md in your project repos
-- [ ] Create custom Claude Code skills for tasks you repeat often (deploy, test, etc.)
+- [ ] After every feature, log what you learned in the Learnings Log below
+- [ ] Review your own PRs using the "Before Shipping" checklist before requesting review
+- [ ] On your next new project, use the Part 0 scaffolding checklist before writing code
 
 ---
 
