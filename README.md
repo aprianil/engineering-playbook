@@ -8,13 +8,13 @@ A collection of principles, checklists, and field guides for developing the engi
 
 ## Files
 
-- **Engineering Learnings & Playbook.md** — the hub. Start here.
-- **How to Read and Navigate an Unfamiliar Codebase.md** — finding your way through code you didn't write
-- **How to Learn From Your Engineer's Code.md** — using PRs and code review as a learning tool
-- **Debugging Mindset.md** — a systematic approach to fixing bugs
-- **Git Workflow Fundamentals.md** — commits, branches, PRs, and shipping mechanics
-- **Testing - When and What to Test.md** — what's worth testing and how to think about it
-- **Communicating Technically With Engineers.md** — asking the right questions, translating between product and engineering
+- **[Engineering Learnings & Playbook.md](<Engineering Learnings & Playbook.md>)** — the hub. Start here.
+- **[How to Read and Navigate an Unfamiliar Codebase.md](<How to Read and Navigate an Unfamiliar Codebase.md>)** — finding your way through code you didn't write
+- **[How to Learn From Your Engineer's Code.md](<How to Learn From Your Engineer's Code.md>)** — using PRs and code review as a learning tool
+- **[Debugging Mindset.md](<Debugging Mindset.md>)** — a systematic approach to fixing bugs
+- **[Git Workflow Fundamentals.md](<Git Workflow Fundamentals.md>)** — commits, branches, PRs, and shipping mechanics
+- **[Testing - When and What to Test.md](<Testing - When and What to Test.md>)** — what's worth testing and how to think about it
+- **[Communicating Technically With Engineers.md](<Communicating Technically With Engineers.md>)** — asking the right questions, translating between product and engineering
 
 ## How it's built
 
