@@ -33,12 +33,17 @@
 **The goal isn't to become a computer science expert. It's to develop the engineering eye — so I can shape better products, maintain code confidently, and avoid breaking things or creating unnecessary complexity.**
 
 **Deep dives (linked notes):**
-- [[How to Read and Navigate an Unfamiliar Codebase]] — finding your way through a project you didn't build
-- [[How to Learn From Your Engineer's Code]] — turning PRs and code review into a learning tool
-- [[Debugging Mindset]] — a systematic approach to fixing bugs instead of guessing
-- [[Git Workflow Fundamentals]] — commits, branches, PRs, and the mechanics of shipping code
-- [[Testing - When and What to Test]] — what's worth testing, what's not, and how to think about it
-- [[Communicating Technically With Engineers]] — asking the right questions and translating between product and engineering
+
+| Note | What it covers |
+|------|---------------|
+| [[How to Read and Navigate an Unfamiliar Codebase]] | Finding your way through a project you didn't build |
+| [[How to Learn From Your Engineer's Code]] | Turning PRs and code review into a learning tool |
+| [[Debugging Mindset]] | A systematic approach to fixing bugs instead of guessing |
+| [[Git Workflow Fundamentals]] | Commits, branches, PRs, and the mechanics of shipping code |
+| [[Testing - When and What to Test]] | What's worth testing, what's not, and how to think about it |
+| [[Communicating Technically With Engineers]] | Asking the right questions, translating between product and engineering |
+| [[Logging in Production]] | Production logging is permanent code, not debugging leftovers |
+| [[Race Conditions]] | Timing bugs when things happen at the same time — common when vibe coding |
 
 ---
 
@@ -326,13 +331,18 @@ Reference this when building or reviewing code. If something looks like the righ
 | Related code lives together, unrelated code is separated | Utility functions scattered across random files |
 | Small, focused functions that do one thing | 200-line functions with nested if/else chains |
 
-### Error Handling
+### Error Handling & Logging
 
 | Good | Bad |
 |------|-----|
 | Errors are caught and handled with useful feedback | `try/catch` that swallows errors silently |
 | User sees a helpful message when something fails | Raw stack trace or silent failure |
-| Logging that helps you trace what happened | `console.log("here")` scattered everywhere |
+| Production logs with context: who, what, where, why it failed | `console.log("here")` scattered everywhere |
+| Structured logs with labels: `[POST /api/billing] Failed { userId, error }` | Unlabeled `console.log(data)` — no idea which flow it belongs to |
+| Request IDs to trace one user's journey across the system | Logs from all users mixed together with no way to filter |
+| Sensitive data (passwords, tokens, card numbers) never logged | Full credentials dumped into logs |
+
+See [[Logging in Production]] for deeper guidance.
 
 ### Auth & Security
 
@@ -457,14 +467,75 @@ Judgment becomes instinct through repetition.
 
 ## My Learnings Log
 
+> [!info]- Logging guide (for AI and human)
 > When something clicks or breaks while building, log it here. Tell Claude Code "log this learning" and it adds an entry.
-> Format: `### YYYY-MM-DD — [tag] Short context` followed by the insight in 1-3 sentences. Newest first.
-> Tags: `[structure]` `[debugging]` `[tradeoff]` `[naming]` `[patterns]` `[git]` `[testing]` `[communication]` `[simplicity]` `[review]` or whatever fits.
-> When this section gets long, split it into its own `[[Engineering Learnings Log]]` file.
+>
+> **Format:**
+> ```
+> ### YYYY-MM-DD — [tag] Sticky headline
+> - Bullet points with enough context to stand on their own months later
+> - Include the "why" or an example when the concept isn't self-explanatory
+> - Not paragraphs, not over-simplified — enough depth to recall, concise enough to scan
+> ```
+>
+> **Tags:** `[structure]` `[debugging]` `[tradeoff]` `[naming]` `[patterns]` `[git]` `[testing]` `[communication]` `[simplicity]` `[review]` or whatever fits.
+>
+> **Rules:**
+> - Newest entries go at the top
+> - Each entry should make sense without needing the original conversation
+> - Headlines should be memorable phrases that capture the core lesson
+> - When this section gets long, split it into its own `[[Engineering Learnings Log]]` file
 
----
+### 2026-03-23 — [structure] When to split a component — the "and" test
+- If you describe a component and use the word "and," each "and" is a split point. "This shows the billing form AND payment history AND plan comparison" → three components.
+- Other signals: scrolling a lot in one file, big conditional renders (admin vs user), passing props through components that don't use them, copy-pasting JSX chunks, useEffects doing unrelated work.
+- You mostly detect it by the pain it causes — but the "and" test catches it before the pain.
+- When vibe coding, you won't notice. That's why CLAUDE.md should tell AI to flag growing components proactively.
 
-*No entries yet. First one gets added the next time something clicks or breaks.*
+### 2026-03-23 — [patterns] Concurrency in practice — simpler than it sounds
+- Concurrency is when multiple things happen at the same time. In JavaScript, it's mostly about managing async operations — not threads or mutexes.
+- `Promise.all` for parallel fetches — load multiple independent data sources at once instead of one by one.
+- Disable buttons after click to prevent double submits — especially for payments and form submissions.
+- Version numbers on data to prevent one user silently overwriting another's changes (optimistic concurrency).
+- Ignore stale responses in search/autocomplete — track a request ID, only use the latest result.
+- Background job queues for anything slow (emails, PDFs, image processing) — respond to the user immediately, do the work later.
+- You don't need to learn thread safety or semaphores. These 5 patterns cover 95% of product concurrency.
+
+### 2026-03-23 — [patterns] Production logging is part of the feature, not debugging leftovers
+- Two kinds of logs: debugging logs (temporary, delete before shipping) and production logs (permanent, shipped intentionally).
+- Production logs tell you what happened when you weren't there. The API response serves the user — the logs serve you at 3am.
+- Good logs have: a label (`[POST /api/billing]`), context (userId, plan), and the outcome (success or error with reason).
+- Request IDs tie all logs from one user's action together — essential when multiple users are hitting the app.
+- Never log secrets, passwords, tokens, or credit card numbers.
+- Start simple: `log(level, context, message, data)`. Move to a proper logging library when you outgrow it.
+
+### 2026-03-23 — [structure] Locality of Behavior > Separation of Concerns (most of the time)
+- Locality of Behavior (LoB): everything needed to understand one behavior lives in one place. Separation of Concerns (SoC): code grouped by what it *is* (styles, logic, validation) across multiple files.
+- LoB wins most of the time. If you need to open 5 files to understand what happens when a user clicks a button, you've over-separated.
+- The test: "If I change this behavior, how many files do I need to touch?" If 1 → good locality. If 5 → over-separated.
+- Separate only when code is genuinely reusable across features (auth middleware, formatCurrency) or when a file gets unreadably long doing very different things.
+- This is context engineering for AI too — when Claude Code reads a file with good locality, it gets the full picture in one read. Scattered code means more files loaded into context, more noise, worse AI output.
+- Tailwind CSS is LoB applied to styling — styles on the element, not in a separate file. Same principle.
+- Feature-based folder structure (Part 0) is LoB applied to project organization. This principle runs through everything.
+
+### 2026-03-23 — [simplicity] Duplication is cheaper than the wrong abstraction
+- Before extracting shared code, ask: "Will these two things change for the same reason?" If yes → extract. If no or unsure → keep them separate.
+- You can always extract later once the real pattern reveals itself. But un-doing a bad abstraction is painful — by then everything depends on it.
+- Example: two features both fetch user data. Looks like duplication, but billing needs invoices and dashboard needs projects. A shared `getUser(options)` couples them through a function neither truly owns.
+- Principle #3: discover abstractions, don't design them.
+
+### 2026-03-23 — [patterns] Refactor small, respect working code
+- Refactor when the mess is actively slowing you down, not just because it looks ugly.
+- Before removing "unnecessary" code, check `git blame` to understand why it was added. Someone may have already learned the hard way why it's there (Chesterton's Fence — don't tear down a fence until you understand why it was built).
+- One refactor per PR. Keep the system working at every step. Never refactor and add features at the same time — if something breaks, you won't know which change caused it.
+- Working imperfect code that's survived production has more value than a "perfect" rewrite that hasn't.
+
+### 2026-03-23 — [testing] Integration tests > unit tests
+- Most unit tests break on every refactor and don't tell you if the system actually works. They test pieces in isolation, but bugs happen at the seams between pieces.
+- Integration tests are the sweet spot — they test real user flows (submit form → API processes → response returns) and survive internal restructuring because they test behavior, not implementation details.
+- When deciding what to test, ask: "If I could only write one test for this feature, what would it be?" That's your integration test. Write it first.
+- Unit tests are still worth it for pure logic with edge cases (calculations, formatting, business rules).
+- "Write tests. Not too many. Mostly integration."
 
 ---
 
