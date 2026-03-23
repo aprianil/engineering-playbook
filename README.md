@@ -15,6 +15,8 @@ A collection of principles, checklists, and field guides for developing the engi
 - **[Git Workflow Fundamentals.md](<Git Workflow Fundamentals.md>)** — commits, branches, PRs, and shipping mechanics
 - **[Testing - When and What to Test.md](<Testing - When and What to Test.md>)** — what's worth testing and how to think about it
 - **[Communicating Technically With Engineers.md](<Communicating Technically With Engineers.md>)** — asking the right questions, translating between product and engineering
+- **[Logging in Production.md](<Logging in Production.md>)** — production logging, structured logs, request IDs, and logging AI calls
+- **[Race Conditions.md](<Race Conditions.md>)** — timing bugs that show up when things happen at the same time
 
 ## How it's built
 
