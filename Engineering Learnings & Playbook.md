@@ -444,7 +444,7 @@ A suggested progression — start wherever feels right, skip what you've already
 You're already shipping code — this is about adding a judgment layer on top.
 
 - [ ] Read "A Philosophy of Software Design" by John Ousterhout
-- [ ] Read "The Grug Brained Developer" (grugbrain.dev)
+- [x] Read "The Grug Brained Developer" (grugbrain.dev)
 - [ ] Read "Goodbye, Clean Code" by Dan Abramov
 - [ ] Watch "Naming Things in Code" by CodeAesthetic (8 min)
 - [ ] Browse Bulletproof React repo — folder structure first, code second
