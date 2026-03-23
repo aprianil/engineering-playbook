@@ -197,6 +197,7 @@ Beyond CLAUDE.md, there are a few Claude Code habits that keep your workflow cle
 Custom skills built for this playbook:
 - `/eng-init` — scaffolds a CLAUDE.md in any project with the engineering principles from this playbook baked in. Run once per project. Team-friendly — any contributor benefits from it.
 - `/eng-check` — reviews code against the engineering principles in the project's CLAUDE.md. Use before opening a PR or when you want a staff-engineer-level check on your work.
+- `/eng-spec` — describe what you want loosely, define acceptance criteria (evals), and let AI write the spec before any code. The spec becomes the blueprint. Evals first, then build.
 - `/sync-playbook` — syncs the playbook and deep dive files from Obsidian to GitHub.
 
 **Hooks** — automated actions that run before or after tool calls. For example, a hook that runs your linter every time Claude Code edits a file. This catches quality issues automatically without you having to remember.
