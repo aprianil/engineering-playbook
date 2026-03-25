@@ -23,9 +23,10 @@ A collection of principles, checklists, and field guides for developing the engi
 - **[Working Effectively With AI.md](<Working Effectively With AI.md>)** — prompting patterns, context engineering, and verification for AI coding tools
 
 **Skills (Claude Code slash commands):**
-- **[skills/eng-spec.md](skills/eng-spec.md)** — `/eng-spec` — write a feature spec before building. Captures context, user flow, acceptance criteria, and success metrics in one document.
-- **[skills/eng-check.md](skills/eng-check.md)** — `/eng-check` — review code against engineering principles in the project's CLAUDE.md.
 - **[skills/eng-init.md](skills/eng-init.md)** — `/eng-init` — scaffold a CLAUDE.md with playbook principles baked in. Run once per project.
+- **[skills/eng-spec.md](skills/eng-spec.md)** — `/eng-spec` — planning session. Captures context, user flow, acceptance criteria, and saves a spec file. No code.
+- **[skills/eng-build.md](skills/eng-build.md)** — `/eng-build` — execution session. Reads a spec file and builds from it.
+- **[skills/eng-check.md](skills/eng-check.md)** — `/eng-check` — review code against engineering principles in the project's CLAUDE.md.
 
 ## How it's built
 
