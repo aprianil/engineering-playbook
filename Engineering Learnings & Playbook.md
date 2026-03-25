@@ -245,11 +245,11 @@ See [[Working Effectively With AI]] for the full deep dive on prompting patterns
 
 **Skills** — repeatable commands you can trigger with a slash. `/commit` writes a proper commit message. You can create custom skills for things you do often. Think of them as shortcuts that keep you in flow.
 
-Custom skills built for this playbook:
+Custom skills built for this playbook (lives in `.claude/skills/` — the standard Claude Code location):
 - `/eng-init` — scaffolds a CLAUDE.md in any project with the engineering principles from this playbook baked in. Run once per project. Team-friendly — any contributor benefits from it.
 - `/eng-spec` — planning session. Captures context (who, why, what triggered this), defines user flow and acceptance criteria, and saves a spec file. No code gets written — just thinking.
 - `/eng-build` — execution session. Reads a spec file and builds from it. Clean context, clear instructions. The spec is the contract.
-- `/eng-check` — reviews code against the engineering principles in the project's CLAUDE.md. Use before opening a PR or when you want a staff-engineer-level check on your work.
+- `/eng-check` — reviews code against the engineering principles in the project's CLAUDE.md. Auto-triggers when you ask Claude to review code.
 - `/sync-playbook` — syncs the playbook and deep dive files from Obsidian to GitHub.
 
 **Hooks** — automated actions that run before or after tool calls. For example, a hook that runs your linter every time Claude Code edits a file. This catches quality issues automatically without you having to remember.

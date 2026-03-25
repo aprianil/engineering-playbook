@@ -1,3 +1,11 @@
+---
+name: eng-build
+description: Build a feature from an approved spec file. Execution session — the planning is already done.
+disable-model-invocation: true
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
+argument-hint: [spec-file]
+---
+
 Build a feature from an approved spec file. This is an execution session — the planning is already done.
 
 **Step 1: Load context**

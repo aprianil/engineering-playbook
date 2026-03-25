@@ -1,3 +1,11 @@
+---
+name: eng-spec
+description: Write a feature spec before building anything. Planning session — no code gets written.
+disable-model-invocation: true
+allowed-tools: Read, Glob, Grep, Write, Bash
+argument-hint: [feature-name]
+---
+
 Write a feature spec before building anything. This is a planning session — no code gets written here.
 
 The user will describe what they want loosely. Your job is to turn it into a clear spec that captures enough context for anyone — human or AI — to build from it in a separate session without needing to ask 20 follow-up questions. The spec is the single source of truth: context, decisions, and criteria in one place. No handoffs.

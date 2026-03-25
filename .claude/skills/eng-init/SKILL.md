@@ -1,3 +1,10 @@
+---
+name: eng-init
+description: Scaffold a CLAUDE.md with engineering principles. Use when setting up a new project or initializing engineering conventions.
+disable-model-invocation: true
+allowed-tools: Read, Write, Bash, Glob, Grep
+---
+
 Initialize a CLAUDE.md file in the current project with shared engineering principles.
 
 First, check if a CLAUDE.md already exists in the current project root. If it does, ask before overwriting.

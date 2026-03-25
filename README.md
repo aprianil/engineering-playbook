@@ -26,12 +26,18 @@ A collection of principles, checklists, and field guides for developing the engi
 
 **Skills (Claude Code slash commands):**
 
-Drop the `.claude/commands/` folder into your project and these skills are available immediately via `/eng-init`, `/eng-spec`, etc.
+Install the skills into your project with one command:
 
-- **[.claude/commands/eng-init.md](.claude/commands/eng-init.md)** — `/eng-init` — scaffold a CLAUDE.md with playbook principles baked in. Run once per project.
-- **[.claude/commands/eng-spec.md](.claude/commands/eng-spec.md)** — `/eng-spec` — planning session. Captures context, user flow, acceptance criteria, and saves a spec file. No code.
-- **[.claude/commands/eng-build.md](.claude/commands/eng-build.md)** — `/eng-build` — execution session. Reads a spec file and builds from it.
-- **[.claude/commands/eng-check.md](.claude/commands/eng-check.md)** — `/eng-check` — review code against engineering principles in the project's CLAUDE.md.
+```bash
+npx degit aprianil/engineering-playbook/.claude/skills .claude/skills
+```
+
+Or copy the `.claude/skills/` folder manually. Once in your project, the skills are available immediately.
+
+- **[eng-init](.claude/skills/eng-init/SKILL.md)** — `/eng-init` — scaffold a CLAUDE.md with playbook principles baked in. Run once per project.
+- **[eng-spec](.claude/skills/eng-spec/SKILL.md)** — `/eng-spec` — planning session. Captures context, user flow, acceptance criteria, and saves a spec file. No code.
+- **[eng-build](.claude/skills/eng-build/SKILL.md)** — `/eng-build` — execution session. Reads a spec file and builds from it.
+- **[eng-check](.claude/skills/eng-check/SKILL.md)** — `/eng-check` — review code against engineering principles. Auto-triggers when you ask Claude to review code.
 
 ## How it's built
 

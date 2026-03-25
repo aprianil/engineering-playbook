@@ -1,3 +1,10 @@
+---
+name: eng-check
+description: Review code against engineering principles. Use when the user asks to review code, check quality, or wants a code review before shipping.
+disable-model-invocation: false
+allowed-tools: Read, Glob, Grep
+---
+
 Review the current code against the team's engineering principles.
 
 If a CLAUDE.md exists in the project root, read it first to load the project's engineering principles. If not, use the principles below as the baseline.
