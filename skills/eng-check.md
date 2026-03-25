@@ -20,6 +20,11 @@ Then review the code the user is pointing to (or the most recently edited files 
 - Are feature-specific components living inside their feature folder, or incorrectly sitting in shared?
 - If a component can be described with "and" (does X AND Y AND Z), it should be split.
 
+**Spec alignment (if a spec exists in `specs/`):**
+- Does the implementation match what the spec described?
+- Were any acceptance criteria missed or changed without reason?
+- Were any out-of-scope items accidentally included?
+
 **Quality:**
 - Are edge cases handled (empty, null, unexpected input)?
 - Is error handling useful, not silent?

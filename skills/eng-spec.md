@@ -4,9 +4,13 @@ The user will describe what they want loosely. Your job is to turn it into a cle
 
 Scale the spec to the task. Small feature? Skip sections that don't apply. New initiative? Fill in the full context. The structure flexes — the thinking doesn't.
 
-**Step 1: Read the guardrails**
+**Step 1: Read the guardrails and understand the codebase**
 - Read the project's CLAUDE.md for engineering principles and conventions.
 - If no CLAUDE.md exists, ask if the user wants to run `/eng-init` first.
+- Scan the current project structure — folder layout, existing features, naming patterns, how similar features are built. Understand what exists before proposing what to add.
+- Identify the files and patterns most relevant to the feature being planned. Read them if needed — this is the time to understand the codebase, not during execution.
+
+The goal: by the end of this step, you should know enough about the project to write a spec with concrete file paths and decisions, not placeholder guesses.
 
 **Step 2: Gather context**
 If the user hasn't already covered these, ask — but only what's missing. Don't interrogate.
@@ -54,7 +58,8 @@ The steps a user takes, in order. What they see, what they do, what happens. Cov
 How you'll know this feature actually worked after shipping. What changes in user behavior, error rates, support tickets, or business outcomes? Skip for small features — include for anything you'd want to evaluate later.
 
 ### Proposed approach
-- File structure: which files will be created or modified
+- Existing code: which files/patterns in the codebase are relevant — reference actual paths and conventions already in use
+- File structure: exact files to create or modify, with paths. Follow the project's existing patterns.
 - Key decisions: any trade-offs or choices, with reasoning
 - Edge cases: what happens when things go wrong
 

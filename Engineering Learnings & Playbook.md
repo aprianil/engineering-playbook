@@ -290,6 +290,7 @@ These are the checklists that build judgment over time. Come back to these every
 ```
 - What problem am I actually solving? For whom?
 - What triggered this work? (customer feedback, bug, internal idea, strategic decision)
+- Do I understand the existing codebase enough to plan? (folder structure, relevant files, patterns already in use)
 - What does "done" look like?
 - What's the simplest thing that could work?
 - Is this reversible? (Type 1 vs Type 2 decision)

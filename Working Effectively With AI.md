@@ -74,9 +74,10 @@ The difference between "AI is useless" and "AI is incredible" is often not the A
 AI is good at small, scoped tasks. It struggles with big, complex ones. So break it down:
 
 1. Understand the problem
-2. Plan the solution (you do this, not AI)
-3. Break it into small, independent tasks
-4. Give each task to AI with full context
+2. Understand the existing codebase — folder structure, relevant files, patterns already in use. Do this during planning, not during execution.
+3. Plan the solution (you do this, not AI)
+4. Break it into small, independent tasks
+5. Give each task to AI with full context — including concrete file paths and decisions, not vague descriptions
 
 If you can't break it down, you don't understand the problem well enough yet. This isn't an AI trick — it's fundamental engineering. The only difference is whether you type the solution or AI does.
 
