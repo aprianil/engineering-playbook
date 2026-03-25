@@ -25,10 +25,13 @@ A collection of principles, checklists, and field guides for developing the engi
 - **[Choosing a Tech Stack.md](<Choosing a Tech Stack.md>)** — reference stack for web apps (2026) — boring, AI-fluent, zero-ops
 
 **Skills (Claude Code slash commands):**
-- **[skills/eng-init.md](skills/eng-init.md)** — `/eng-init` — scaffold a CLAUDE.md with playbook principles baked in. Run once per project.
-- **[skills/eng-spec.md](skills/eng-spec.md)** — `/eng-spec` — planning session. Captures context, user flow, acceptance criteria, and saves a spec file. No code.
-- **[skills/eng-build.md](skills/eng-build.md)** — `/eng-build` — execution session. Reads a spec file and builds from it.
-- **[skills/eng-check.md](skills/eng-check.md)** — `/eng-check` — review code against engineering principles in the project's CLAUDE.md.
+
+Drop the `.claude/commands/` folder into your project and these skills are available immediately via `/eng-init`, `/eng-spec`, etc.
+
+- **[.claude/commands/eng-init.md](.claude/commands/eng-init.md)** — `/eng-init` — scaffold a CLAUDE.md with playbook principles baked in. Run once per project.
+- **[.claude/commands/eng-spec.md](.claude/commands/eng-spec.md)** — `/eng-spec` — planning session. Captures context, user flow, acceptance criteria, and saves a spec file. No code.
+- **[.claude/commands/eng-build.md](.claude/commands/eng-build.md)** — `/eng-build` — execution session. Reads a spec file and builds from it.
+- **[.claude/commands/eng-check.md](.claude/commands/eng-check.md)** — `/eng-check` — review code against engineering principles in the project's CLAUDE.md.
 
 ## How it's built
 

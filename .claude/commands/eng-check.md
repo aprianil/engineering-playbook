@@ -25,11 +25,27 @@ Then review the code the user is pointing to (or the most recently edited files 
 - Were any acceptance criteria missed or changed without reason?
 - Were any out-of-scope items accidentally included?
 
+**Design:**
+- Does the change make sense as a whole? Does this functionality belong here — or in a different feature, layer, or library?
+- For UI changes: does it handle loading, error, and empty states?
+- Are there concurrency issues — race conditions, double submits?
+
 **Quality:**
 - Are edge cases handled (empty, null, unexpected input)?
 - Is error handling useful, not silent?
 - Is the sad path covered, not just the happy path?
 - Are there side effects that could break other things?
+
+**Tests:**
+- Do tests exist for the changed behavior?
+- Are they testing behavior, not implementation details?
+- Would they actually fail if the code broke?
+- Are the tests themselves simple and readable?
+
+**Comments:**
+- Do comments explain why, not what? If code needs a comment explaining what it does, it should be rewritten.
+- Are there outdated comments that no longer match the code?
+- Do TODOs reference a ticket or have a name attached?
 
 **Output format:**
 - Start with a one-line verdict: looks good / has concerns / needs rework
