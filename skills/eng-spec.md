@@ -1,6 +1,6 @@
-Write a feature spec before building anything.
+Write a feature spec before building anything. This is a planning session — no code gets written here.
 
-The user will describe what they want loosely. Your job is to turn it into a clear spec that captures enough context for anyone — human or AI — to build from it without needing to ask 20 follow-up questions. The spec is the single source of truth: context, decisions, and criteria in one place. No handoffs.
+The user will describe what they want loosely. Your job is to turn it into a clear spec that captures enough context for anyone — human or AI — to build from it in a separate session without needing to ask 20 follow-up questions. The spec is the single source of truth: context, decisions, and criteria in one place. No handoffs.
 
 Scale the spec to the task. Small feature? Skip sections that don't apply. New initiative? Fill in the full context. The structure flexes — the thinking doesn't.
 
@@ -68,8 +68,10 @@ What this feature explicitly does NOT include. Prevents scope creep and sets cle
 **Step 5: Get approval**
 Present the spec to the user. Do NOT write any code yet. Wait for approval or adjustments.
 
-**Step 6: Build**
-Only after the user approves the spec, start implementing. Reference the acceptance criteria as you build — they are your eval.
+**Step 6: Save the spec**
+Once approved, save the spec as a markdown file in the project:
+- Save to `specs/[feature-name].md` (create the `specs/` directory if it doesn't exist)
+- Use a kebab-case filename based on the feature name (e.g., `specs/commenting-system.md`)
+- Confirm the file path with the user
 
-**After building:**
-Run through the acceptance criteria as a self-check. Flag anything that doesn't fully meet the criteria before presenting to the user.
+This file is the contract between planning and execution.
