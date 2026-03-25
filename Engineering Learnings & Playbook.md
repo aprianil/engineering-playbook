@@ -44,6 +44,7 @@
 | [[Communicating Technically With Engineers]] | Asking the right questions, translating between product and engineering |
 | [[Logging in Production]] | Production logging is permanent code, not debugging leftovers |
 | [[Race Conditions]] | Timing bugs when things happen at the same time — common when vibe coding |
+| [[Working Effectively With AI]] | How to communicate with AI coding tools — prompting, context engineering, and verification |
 
 ---
 
@@ -73,23 +74,39 @@ Avoid this (organized by type):
   formatDate.ts
 
 Do this instead (organized by feature):
-/features
+/components          ← shared, generic (Button, Form, Table — no business logic)
+  /ui
+    Button.tsx
+    Form.tsx
+    Table.tsx
+  /layouts
+    DashboardLayout.tsx
+/features            ← self-contained business slices
   /billing
-    BillingCard.tsx
+    /components      ← billing-specific UI (composes shared components)
+      BillingCard.tsx
+      CreateInvoice.tsx
     useBilling.tsx
-    formatCurrency.ts
+    billingApi.ts
     billing.test.ts
   /user
-    UserProfile.tsx
+    /components
+      UserProfile.tsx
     useUser.tsx
-/shared
-  Button.tsx
-  formatDate.ts
+/lib                 ← third-party configs and integrations
 ```
+
+**Two tiers of components:**
+- `src/components/` — shared, generic building blocks. Used across multiple features. Knows nothing about any business domain.
+- `features/billing/components/` — specific to that feature. Composes shared components with feature-specific logic. Lives inside the feature folder.
+
+A component starts in its feature folder. It only "graduates" to shared when you discover it's genuinely needed by multiple features — not before (Principle #3).
+
+**Dependencies flow one direction:** shared → features → app (routes/pages). Features never import from each other. Shared never imports from features. This keeps the blast radius small — changes to billing can't break user.
 
 When you're working on billing, you only touch the billing folder. Context stays clean. No jumping across 6 folders to understand one feature.
 
-This also means when Claude Code helps you with billing, it reads the billing folder and gets the full picture — no noise from unrelated features polluting the context.
+This also means when AI helps you with billing, it reads the billing folder and gets the full picture — no noise from unrelated features polluting the context.
 
 ### The Scaffolding Checklist
 
@@ -109,8 +126,11 @@ File discipline
 - Would someone — or AI — understand this file without reading 3 other files first?
 
 AI-readiness
-- Do I have a CLAUDE.md at the project root?
-- Are my conventions written down (in CLAUDE.md) so I don't repeat myself every session?
+- Do I have a rules file (CLAUDE.md or equivalent) at the project root?
+- Are my conventions written down so I don't repeat myself every session?
+- When I give AI a task, am I being specific enough that it doesn't have to guess the implementation?
+- Does AI have a way to verify its own work (tests, build, lint, browser)?
+- Am I breaking work into small, scoped tasks — or asking AI to do too much at once?
 ```
 
 ### The "Screaming Architecture" Test
@@ -188,9 +208,23 @@ One-line description of the product and who it's for.
 
 This takes 5 minutes to write and pays off in every AI session. Claude Code will follow these conventions automatically instead of guessing.
 
-### Claude Code Practices Worth Adopting
+### Working With AI Coding Tools
 
-Beyond CLAUDE.md, there are a few Claude Code habits that keep your workflow clean:
+Beyond rules files, there are habits that make AI consistently useful. These apply regardless of which tool you use — the principles are the same.
+
+**The AI context mindset** — every time you structure a file or name a function, you're not just writing for yourself. You're writing for a future AI session that needs to understand this code fast. Clear naming, small files, and co-located features all make AI assistance dramatically better. The same things that make code maintainable for humans make it navigable for AI.
+
+**Be specific when giving tasks** — the difference between "AI is useless" and "AI is incredible" is often how well you communicate. Give it the technical details, the constraints, the docs, and what it should *not* touch. When AI has to guess, you get code that looks right but isn't.
+
+**Break tasks down** — AI is good at small, focused tasks. It struggles with big, ambiguous ones. If you can't break a task down into smaller pieces, you don't understand the problem well enough yet. This isn't an AI trick — it's fundamental engineering.
+
+**Verify, don't trust** — AI should never just write code. Give it a way to prove the code works: tests, build commands, browser checks. If you let AI generate the tests, verify the tests too.
+
+**Extend with tools** — most AI coding tools support plugins or extensions (MCPs, etc.) that give AI access to documentation, dev tools, databases. Find the ones that match your stack — the right combination makes a real difference.
+
+See [[Working Effectively With AI]] for the full deep dive on prompting patterns, context engineering, and verification.
+
+**Claude Code-specific practices:**
 
 **Skills** — repeatable commands you can trigger with a slash. `/commit` writes a proper commit message. You can create custom skills for things you do often. Think of them as shortcuts that keep you in flow.
 
@@ -201,8 +235,6 @@ Custom skills built for this playbook:
 - `/sync-playbook` — syncs the playbook and deep dive files from Obsidian to GitHub.
 
 **Hooks** — automated actions that run before or after tool calls. For example, a hook that runs your linter every time Claude Code edits a file. This catches quality issues automatically without you having to remember.
-
-**The AI context mindset** — every time you structure a file or name a function, you're not just writing for yourself. You're writing for a future AI session that needs to understand this code fast. Clear naming, small files, and co-located features all make AI assistance dramatically better. The same things that make code maintainable for humans make it navigable for AI.
 
 **Essential resources:**
 
@@ -486,6 +518,15 @@ Judgment becomes instinct through repetition.
 > - Each entry should make sense without needing the original conversation
 > - Headlines should be memorable phrases that capture the core lesson
 > - When this section gets long, split it into its own `[[Engineering Learnings Log]]` file
+
+### 2026-03-25 — [patterns] AI is a multiplier — good habits in, good code out
+- AI multiplies what you already know. If you don't understand the problem, AI won't solve it for you.
+- The 3-section prompt pattern: (1) Task — detailed technical description, (2) Background — docs, files, screenshots, links, (3) Do not — what AI shouldn't touch or change. This dramatically improves output quality.
+- Break big tasks into small ones for AI. AI is good at small, scoped tasks. If you can't break it down, you don't understand the problem yet — and that's not an AI trick, that's fundamental engineering.
+- Use rules files (CLAUDE.md, guidelines.md) so AI remembers project context across sessions. Write it once, benefit every session.
+- Always give AI a way to verify its work — tests, browser, CLI, CI/CD. Don't let it just write code blindly.
+- Don't let AI think for you. Let it type for you. The moment you outsource your thinking, you're not applying any skill — you're just a middleman.
+- See [[Working Effectively With AI]] for the full deep dive.
 
 ### 2026-03-25 — [structure] Feature-based architecture is context engineering for AI
 - Bulletproof React's structure isn't just clean for humans — it controls what AI sees, which controls the quality of what it produces.
