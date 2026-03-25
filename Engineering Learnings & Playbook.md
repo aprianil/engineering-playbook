@@ -11,9 +11,9 @@
 >
 > **How to edit this file:**
 >
+> - Timeless over trendy. This is the #1 rule. Principles should last. Resources, tools, and specific technology choices are perishable — they belong in deep dive notes, not the playbook. The playbook holds the thinking, not the tools.
 > - Follow the playbook's own principles. Simplicity first. Don't bloat it.
 > - Don't add sections preemptively. Add them when there's a real learning to capture.
-> - Timeless over trendy. Principles should last. Resources and tools are perishable — flag them as such.
 > - No rigid rules. Guidelines that flex beat hard rules that fight you.
 > - Walk me through your thinking before making edits. I want to approve the reasoning first.
 > - Check for internal conflicts before adding anything new. Don't let new advice contradict existing principles.
@@ -46,6 +46,7 @@
 | [[Race Conditions]] | Timing bugs when things happen at the same time — common when vibe coding |
 | [[Working Effectively With AI]] | How to communicate with AI coding tools — prompting, context engineering, and verification |
 | [[Code Review - What to Look For and How to Do It]] | Google's code review guide distilled — what to look for, how to comment, speed, handling pushback |
+| [[Choosing a Tech Stack]] | Reference stack for web apps (2026) — boring, AI-fluent, zero-ops. Perishable — revisit when tools change |
 
 ---
 
@@ -122,17 +123,7 @@ Technology selection
 - Ship first, switch later — portability concerns before users are a procrastination vector.
 ```
 
-**Reference stack for web apps (2026)** — applying the checklist above, this is the boring, AI-fluent, zero-ops starting point:
-
-| Layer | Choice | Why |
-|-------|--------|-----|
-| Framework | Next.js (App Router) | Most adopted React framework. Server Components handle data fetching natively. Massive AI training data |
-| Language | TypeScript | One language front-to-back. Type safety catches bugs before runtime |
-| Database + Auth | Supabase | Postgres underneath (portable). Auth, storage, realtime included. One platform, not five |
-| Styling | Tailwind + shadcn/ui | AI generates Tailwind fluently. shadcn is copy-paste components you own — no dependency lock-in |
-| Hosting | Vercel | Zero ops. Preview deploys on every PR. Push to git, it's live |
-
-Five pieces. Nothing redundant. Every innovation token saved for product. When something outgrows this stack, swap that one piece — don't over-engineer upfront.
+See [[Choosing a Tech Stack]] for a reference stack applying these principles.
 
 ### The Scaffolding Checklist
 
