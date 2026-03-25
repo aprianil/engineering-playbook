@@ -121,6 +121,18 @@ Technology selection
 - Ship first, switch later — portability concerns before users are a procrastination vector.
 ```
 
+**Reference stack for web apps (2026)** — applying the checklist above, this is the boring, AI-fluent, zero-ops starting point:
+
+| Layer | Choice | Why |
+|-------|--------|-----|
+| Framework | Next.js (App Router) | Most adopted React framework. Server Components handle data fetching natively. Massive AI training data |
+| Language | TypeScript | One language front-to-back. Type safety catches bugs before runtime |
+| Database + Auth | Supabase | Postgres underneath (portable). Auth, storage, realtime included. One platform, not five |
+| Styling | Tailwind + shadcn/ui | AI generates Tailwind fluently. shadcn is copy-paste components you own — no dependency lock-in |
+| Hosting | Vercel | Zero ops. Preview deploys on every PR. Push to git, it's live |
+
+Five pieces. Nothing redundant. Every innovation token saved for product. When something outgrows this stack, swap that one piece — don't over-engineer upfront.
+
 ### The Scaffolding Checklist
 
 Before starting any new project, answer these:
