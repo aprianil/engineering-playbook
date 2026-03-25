@@ -21,6 +21,8 @@ A collection of principles, checklists, and field guides for developing the engi
 - **[Logging in Production.md](<Logging in Production.md>)** — production logging, structured logs, request IDs, and logging AI calls
 - **[Race Conditions.md](<Race Conditions.md>)** — timing bugs that show up when things happen at the same time
 - **[Working Effectively With AI.md](<Working Effectively With AI.md>)** — prompting patterns, context engineering, and verification for AI coding tools
+- **[Code Review - What to Look For and How to Do It.md](<Code Review - What to Look For and How to Do It.md>)** — Google's code review guide distilled — what to look for, how to comment, speed, handling pushback
+- **[Choosing a Tech Stack.md](<Choosing a Tech Stack.md>)** — reference stack for web apps (2026) — boring, AI-fluent, zero-ops
 
 **Skills (Claude Code slash commands):**
 - **[skills/eng-init.md](skills/eng-init.md)** — `/eng-init` — scaffold a CLAUDE.md with playbook principles baked in. Run once per project.
