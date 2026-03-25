@@ -54,3 +54,5 @@ Where it goes depends on scope:
 - **docs/learnings.md** — codebase quirks, API gotchas, edge cases discovered. Accumulated knowledge that's useful but doesn't need to load every session.
 
 Before adding, check `docs/learnings.md` for duplicates. Update an existing entry rather than adding a new one if the topic is already covered. Not every build session produces a learning — most won't. Only capture what would save someone real time or pain.
+
+When `docs/learnings.md` gets long enough that most of it is irrelevant noise for a given task, split by domain (api, db, auth, etc.).
