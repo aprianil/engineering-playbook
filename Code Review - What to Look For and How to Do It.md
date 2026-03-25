@@ -6,7 +6,7 @@
 
 ## The Core Standard
 
-**"Approve a CL once it definitely improves overall code health — even if it isn't perfect."**
+**"Approve a PR once it definitely improves overall code health — even if it isn't perfect."**
 
 No perfect code exists. The goal is continuous improvement, not perfection. But never approve something that makes the codebase worse. The bar is: is this better than what we had before?
 
@@ -25,6 +25,7 @@ The most important thing. Does the change make sense as a whole?
 - Do the pieces interact in a way that's logical?
 - Does this functionality belong here — or in a library, a different feature, a different layer?
 - Does it integrate well with the rest of the system?
+- Do dependencies flow in the right direction? Features shouldn't import from each other. Shared code shouldn't import from features. (See Part 0 — dependency direction)
 
 If the design is wrong, say so immediately. Don't review the details of code that needs a rethink.
 
@@ -42,10 +43,12 @@ Does it actually do what the author intended? Think about edge cases the author 
 
 Three levels to check:
 - **Lines** — is this line too hard to parse? Could it be simpler?
-- **Functions** — is this function doing too much? Would a reader understand it quickly?
-- **Classes/files** — is this abstraction earning its keep, or is it over-engineering?
+- **Functions** — is this function doing too much? Would a reader understand it quickly? Use the "and" test: if you describe a function and use the word "and," each "and" is a split point.
+- **Classes/files** — is this abstraction earning its keep, or is it over-engineering? Was it discovered from real patterns, or designed upfront? (Principle #3 — discover abstractions, don't design them)
 
 Watch for solving problems that don't exist yet. "What if we need to support X in the future?" — you probably won't. YAGNI.
+
+Check for locality of behavior: can you understand this behavior without opening multiple files? If a change requires jumping across 5 files to follow one flow, that's a complexity signal — not just an inconvenience.
 
 ### 4. Tests
 
@@ -74,7 +77,7 @@ Good comments explain **why**, not what. If code needs a comment explaining *wha
 
 ### 7. Style & Consistency
 
-Follow the style guide. Don't mix style changes with functional changes in the same CL.
+Follow the style guide. Don't mix style changes with functional changes in the same PR.
 
 - If it's not in the style guide, it's preference — defer to the author
 - Prefix style suggestions with "Nit:" so the author knows it's optional
@@ -85,7 +88,7 @@ Follow the style guide. Don't mix style changes with functional changes in the s
 
 Don't just read top to bottom. Be strategic:
 
-**Step 1 — Zoom out.** Read the CL description. Does the change make sense? Is it the right approach? If not, stop here and say so — with a suggestion for what to do instead.
+**Step 1 — Zoom out.** Read the PR description. Does the change make sense? Is it the right approach? If not, stop here and say so — with a suggestion for what to do instead.
 
 **Step 2 — Review the main files first.** Find the biggest, most important files in the change. This is where design problems live. If you find fundamental issues, flag them before reviewing the rest.
 
@@ -139,7 +142,7 @@ Sometimes authors disagree with your feedback. That's healthy.
 3. If you still believe the change matters, explain why — show that you understood their point, then clarify yours
 
 **The "I'll fix it later" trap:**
-This almost never happens. The further in time from the original CL, the less likely the cleanup is. If something needs fixing, it needs fixing now — unless it's a genuine emergency.
+This almost never happens. The further in time from the original PR, the less likely the cleanup is. If something needs fixing, it needs fixing now — unless it's a genuine emergency.
 
 **Stay kind, stay firm.** Most developer frustration comes from *how* feedback is delivered, not whether standards are enforced. Respectful tone + clear reasoning = reviewers and authors both leave better.
 
@@ -149,13 +152,13 @@ This almost never happens. The further in time from the original CL, the less li
 
 ```
 Before reviewing
-- Read the CL description. Does the approach make sense?
+- Read the PR description. Does the approach make sense?
 - Check the main files first. Flag design issues before reviewing details.
 
 What to look for (in priority order)
-1. Design — does it make sense as a whole?
+1. Design — does it make sense as a whole? Dependency direction correct?
 2. Functionality — does it work? Edge cases?
-3. Complexity — simpler than necessary? Over-engineered?
+3. Complexity — simpler than necessary? Over-engineered? Good locality? The "and" test?
 4. Tests — do they test behavior? Would they catch a break?
 5. Naming — clear without reading the body?
 6. Comments — explain why, not what
