@@ -73,7 +73,7 @@ Avoid this (organized by type):
   formatCurrency.ts
   formatDate.ts
 
-Do this instead (organized by feature):
+Do this instead (organized by feature — this is what a mature project looks like, not what you start with. See "How Features Grow" below for the progression):
 /components          ← shared, generic (Button, Form, Table — no business logic)
   /ui
     Button.tsx
@@ -231,7 +231,7 @@ See [[Working Effectively With AI]] for the full deep dive on prompting patterns
 Custom skills built for this playbook:
 - `/eng-init` — scaffolds a CLAUDE.md in any project with the engineering principles from this playbook baked in. Run once per project. Team-friendly — any contributor benefits from it.
 - `/eng-check` — reviews code against the engineering principles in the project's CLAUDE.md. Use before opening a PR or when you want a staff-engineer-level check on your work.
-- `/eng-spec` — describe what you want loosely, define acceptance criteria (evals), and let AI write the spec before any code. The spec becomes the blueprint. Evals first, then build.
+- `/eng-spec` — capture context (who, why, what triggered this), define user flow and acceptance criteria, and write a spec before any code. One document, no handoffs. Scales from quick features to full initiatives.
 - `/sync-playbook` — syncs the playbook and deep dive files from Obsidian to GitHub.
 
 **Hooks** — automated actions that run before or after tool calls. For example, a hook that runs your linter every time Claude Code edits a file. This catches quality issues automatically without you having to remember.
@@ -288,9 +288,11 @@ These are the checklists that build judgment over time. Come back to these every
 
 ```
 - What problem am I actually solving? For whom?
+- What triggered this work? (customer feedback, bug, internal idea, strategic decision)
 - What does "done" look like?
 - What's the simplest thing that could work?
 - Is this reversible? (Type 1 vs Type 2 decision)
+- Have I captured enough context that someone else — or AI — could build this without asking me 20 questions?
 - Can I sketch the structure before writing code?
 - What's my folder structure philosophy — and why?
 ```
@@ -301,6 +303,8 @@ These are the checklists that build judgment over time. Come back to these every
 - Can someone with no context understand this in 6 months?
 - Am I discovering this abstraction or forcing it?
 - Am I building for a real requirement or an imaginary one?
+- Does the naming reveal intent without reading the body? If I can't name it simply, is it doing too much?
+- Can I understand this behavior without opening multiple files? (locality of behavior)
 - What happens when this input is empty/null/unexpected?
 - What else does this change touch? What breaks if it fails?
 - Am I handling the sad path, not just the happy path?
@@ -362,6 +366,7 @@ Reference this when building or reviewing code. If something looks like the righ
 | Each file has a clear, single responsibility | One file doing five different things |
 | Naming tells you what something does without reading the body | `handleClick2`, `tempFunc`, `data2` |
 | Related code lives together, unrelated code is separated | Utility functions scattered across random files |
+| Dependencies flow one direction — features don't import from each other | Feature A imports from Feature B which imports from Feature C — tangled web |
 | Small, focused functions that do one thing | 200-line functions with nested if/else chains |
 
 ### Error Handling & Logging

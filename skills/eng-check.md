@@ -14,8 +14,11 @@ Then review the code the user is pointing to (or the most recently edited files 
 **Structure:**
 - Is each file focused on one thing?
 - Is code organized by feature, not by type?
-- Does naming reveal intent without reading the body?
-- Would a new team member — or AI — understand this without reading 5 other files?
+- Does naming reveal intent without reading the body? (No abbreviations, no type-in-name like `userList`, no repeated context like `user.getUserName()`, name length matches scope)
+- Would a new team member — or AI — understand this without reading 5 other files? (locality of behavior)
+- Are dependencies flowing one direction? Features should not import from other features. Shared code should not import from features.
+- Are feature-specific components living inside their feature folder, or incorrectly sitting in shared?
+- If a component can be described with "and" (does X AND Y AND Z), it should be split.
 
 **Quality:**
 - Are edge cases handled (empty, null, unexpected input)?
