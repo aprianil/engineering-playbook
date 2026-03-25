@@ -8,7 +8,10 @@ A collection of principles, checklists, and field guides for developing the engi
 
 ## Files
 
-- **[Engineering Learnings & Playbook.md](<Engineering Learnings & Playbook.md>)** — the hub. Start here.
+**Start here:**
+- **[Engineering Learnings & Playbook.md](<Engineering Learnings & Playbook.md>)** — the hub. Principles, checklists, learning path, and a running log of lessons learned.
+
+**Deep dives:**
 - **[How to Read and Navigate an Unfamiliar Codebase.md](<How to Read and Navigate an Unfamiliar Codebase.md>)** — finding your way through code you didn't write
 - **[How to Learn From Your Engineer's Code.md](<How to Learn From Your Engineer's Code.md>)** — using PRs and code review as a learning tool
 - **[Debugging Mindset.md](<Debugging Mindset.md>)** — a systematic approach to fixing bugs
@@ -17,6 +20,12 @@ A collection of principles, checklists, and field guides for developing the engi
 - **[Communicating Technically With Engineers.md](<Communicating Technically With Engineers.md>)** — asking the right questions, translating between product and engineering
 - **[Logging in Production.md](<Logging in Production.md>)** — production logging, structured logs, request IDs, and logging AI calls
 - **[Race Conditions.md](<Race Conditions.md>)** — timing bugs that show up when things happen at the same time
+- **[Working Effectively With AI.md](<Working Effectively With AI.md>)** — prompting patterns, context engineering, and verification for AI coding tools
+
+**Skills (Claude Code slash commands):**
+- **[skills/eng-spec.md](skills/eng-spec.md)** — `/eng-spec` — write a feature spec before building. Captures context, user flow, acceptance criteria, and success metrics in one document.
+- **[skills/eng-check.md](skills/eng-check.md)** — `/eng-check` — review code against engineering principles in the project's CLAUDE.md.
+- **[skills/eng-init.md](skills/eng-init.md)** — `/eng-init` — scaffold a CLAUDE.md with playbook principles baked in. Run once per project.
 
 ## How it's built
 
