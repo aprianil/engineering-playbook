@@ -526,6 +526,16 @@ Judgment becomes instinct through repetition.
 > - Headlines should be memorable phrases that capture the core lesson
 > - When this section gets long, split it into its own `[[Engineering Learnings Log]]` file
 
+### 2026-03-25 — [tradeoff] Choose boring technology — spend innovation tokens on product, not infrastructure
+- Dan McKinley's "Innovation Token" model: you have ~3 tokens for novel, unproven technology choices. Spend them on what makes your product different, not on your stack.
+- Boring tech = known failure modes. The advantage isn't that it's good — it's that you know why it's bad. New tech means months discovering problems that boring tech already has on record.
+- The real cost is operation, not development. The ongoing cost to run a technology in production almost always outweighs the initial development convenience. You're choosing a tool for years, not a sprint.
+- The mastery paradox: "You should use the tool you hate the most — because you hate it because you know the most about it." Engineers bail during the hard middle, creating a graveyard of half-mastered tools.
+- Boring tech + AI = unfair advantage. AI is most fluent in widely-adopted, heavily-documented technologies. The most popular stack is the stack where AI helps you most.
+- The heuristic for new tools: (1) How would we solve this with what we already have? (2) What "unnatural acts" does that require? (3) Only if truly unbearable, add something new — and commit to replacing the old thing, not running both.
+- Applied to stack selection: Next.js, TypeScript, Supabase (Postgres), Tailwind + shadcn/ui, Vercel. Five pieces, nothing redundant. Every innovation token saved for product.
+- Ship first, switch later. The cost of worrying about portability before you have users is higher than the cost of migrating when you actually need to.
+
 ### 2026-03-25 — [patterns] AI is a multiplier — good habits in, good code out
 - AI multiplies what you already know. If you don't understand the problem, AI won't solve it for you.
 - The 3-section prompt pattern: (1) Task — detailed technical description, (2) Background — docs, files, screenshots, links, (3) Do not — what AI shouldn't touch or change. This dramatically improves output quality.
