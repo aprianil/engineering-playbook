@@ -445,9 +445,9 @@ You're already shipping code — this is about adding a judgment layer on top.
 
 - [ ] Read "A Philosophy of Software Design" by John Ousterhout
 - [x] Read "The Grug Brained Developer" (grugbrain.dev)
-- [ ] Read "Goodbye, Clean Code" by Dan Abramov
-- [ ] Watch "Naming Things in Code" by CodeAesthetic (8 min)
-- [ ] Browse Bulletproof React repo — folder structure first, code second
+- [x] Read "Goodbye, Clean Code" by Dan Abramov
+- [x] Watch "Naming Things in Code" by CodeAesthetic (8 min)
+- [x] Browse Bulletproof React repo — folder structure first, code second
 - [ ] Write a CLAUDE.md for your current project (template in Part 0)
 
 ### Phase 2: Understand the System
@@ -486,6 +486,29 @@ Judgment becomes instinct through repetition.
 > - Each entry should make sense without needing the original conversation
 > - Headlines should be memorable phrases that capture the core lesson
 > - When this section gets long, split it into its own `[[Engineering Learnings Log]]` file
+
+### 2026-03-25 — [structure] Feature-based architecture is context engineering for AI
+- Bulletproof React's structure isn't just clean for humans — it controls what AI sees, which controls the quality of what it produces.
+- Three-ring dependency model: Shared (generic components) → Features (self-contained business slices) → App (routes that compose features). Dependencies only flow inward, never the reverse.
+- A component lives in `src/components/` only if it's used by multiple features with no domain-specific behavior. The moment it needs a feature's API hook or business type, it belongs in that feature's `components/` folder.
+- Feature isolation = safer AI edits. Because features can't import from each other, AI edits to one feature can't accidentally break another.
+- When scoping AI tasks: feature work → middle ring, shared UI changes → inner ring, new pages → outer ring. Each task has a clear, bounded scope.
+- Components "graduate" to shared only when you discover they're needed in multiple places. Principle #3 in action.
+
+### 2026-03-25 — [naming] Name things for the reader, not the writer
+- Don't abbreviate — `buildingPermit` over `bldPrmt`. You read code far more than you write it.
+- Don't put the type in the name — `users` not `userList`. The type system handles that.
+- Don't repeat context — `user.getName()` not `user.getUserName()`.
+- Match name length to scope — short names for tiny scopes (`i` in a loop), descriptive names for wide scopes (functions used across the codebase).
+- If you can't name it simply, it's doing too much — struggling to name a function is a design smell. Same principle as the "and" test for components.
+- One-liner: good naming means the next person (or AI) doesn't have to read the body to understand what something does.
+
+### 2026-03-25 — [simplicity] "Clean" code that's hard to change isn't clean — it's just tidy
+- Dan Abramov's "Goodbye, Clean Code" — he refactored a colleague's duplicated animation code into a shared abstraction. It looked cleaner. His boss reverted it.
+- The duplication wasn't accidental — each block needed to evolve independently for different product requirements. The "clean" version coupled unrelated things together, making every future change risky.
+- The trap: code that *looks* the same isn't always *the same*. The real question is "will these things change for the same reason?" — not "do they look similar right now?"
+- This reinforces Grug Brain and Sandi Metz's "Wrong Abstraction" — duplication is cheap to fix later, but a bad abstraction is expensive to undo because everything depends on it.
+- One-liner: clean code that's hard to change isn't clean — it's just tidy.
 
 ### 2026-03-23 — [structure] When to split a component — the "and" test
 - If you describe a component and use the word "and," each "and" is a split point. "This shows the billing form AND payment history AND plan comparison" → three components.
