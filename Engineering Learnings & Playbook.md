@@ -45,6 +45,7 @@
 | [[Logging in Production]] | Production logging is permanent code, not debugging leftovers |
 | [[Race Conditions]] | Timing bugs when things happen at the same time — common when vibe coding |
 | [[Working Effectively With AI]] | How to communicate with AI coding tools — prompting, context engineering, and verification |
+| [[Code Review - What to Look For and How to Do It]] | Google's code review guide distilled — what to look for, how to comment, speed, handling pushback |
 
 ---
 
