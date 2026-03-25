@@ -108,6 +108,19 @@ When you're working on billing, you only touch the billing folder. Context stays
 
 This also means when AI helps you with billing, it reads the billing folder and gets the full picture — no noise from unrelated features polluting the context.
 
+### Choosing Your Stack
+
+Before you organize folders, you pick your tools. Apply the innovation token model:
+
+```
+Technology selection
+- Am I spending innovation tokens on product or infrastructure?
+- Is AI fluent in this technology? (adoption = training data = better AI help)
+- Do I know this tool's failure modes — or am I about to discover them?
+- Can I solve this with what I already have before adding something new?
+- Ship first, switch later — portability concerns before users are a procrastination vector.
+```
+
 ### The Scaffolding Checklist
 
 Before starting any new project, answer these:
@@ -430,6 +443,8 @@ This is the core skill. Not "always choose quality" or "always ship fast" — it
 | Deadline pressure on a non-critical feature | Speed, but document the tech debt explicitly. |
 | Anything touching user data or money | Quality. Always. No exceptions. |
 | Choosing between two good options | Pick either one fast. Indecision is more expensive than a wrong call. |
+| Choosing a tech stack for a new project | Boring. Pick the most adopted, most documented, most AI-fluent option. Save innovation tokens for the product. |
+| Tempted to add a new tool or service | First ask: "How would we solve this with what we already have?" Only add if the unnatural acts are truly unbearable. |
 
 **Essential resource:**
 
@@ -492,7 +507,7 @@ You're already shipping code — this is about adding a judgment layer on top.
 ### Phase 2: Understand the System
 Zoom out to see how pieces connect.
 
-- [ ] Read "Choose Boring Technology" by Dan McKinley
+- [x] Read "Choose Boring Technology" by Dan McKinley
 - [ ] Read Google's Code Review guide
 - [ ] On your next feature, use the "While Building" checklist and write down what you notice
 
