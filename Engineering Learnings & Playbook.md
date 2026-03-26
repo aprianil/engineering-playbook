@@ -471,7 +471,7 @@ You're already shipping code — this is about adding a judgment layer on top.
 ### Phase 2: Understand the System
 Zoom out to see how pieces connect.
 - [x] Read "Choose Boring Technology" by Dan McKinley
-- [ ] Read Google's Code Review guide
+- [x] Read Google's Code Review guide
 - [ ] On your next feature, use the "While Building" checklist and write down what you notice
 
 ### Phase 3: Build the Muscle (ongoing)
@@ -502,6 +502,11 @@ Judgment becomes instinct through repetition.
 > - Each entry should make sense without needing the original conversation
 > - Headlines should be memorable phrases that capture the core lesson
 > - When this section gets long, split it into its own `[[Engineering Learnings Log]]` file
+
+### 2026-03-26 — [review] "I'll fix it later" is a wish, not a decision
+- Work piles up every week — there's always something more urgent. If a shortcut isn't tracked with a ticket and a plan for when to address it, it's never getting fixed. Six months later, nobody remembers why it was done that way, and now it's "just how it works."
+- The difference: "I'll clean this up later" (wish) vs "TODO: refactor auth flow — ticket #142, targeting next sprint" (decision). Principle #4 says shortcuts are fine if deliberate and documented. The documentation is what makes it a decision.
+- This shows up most in code review. When someone says "I'll fix it in a follow-up PR," that follow-up almost never lands. If it matters enough to mention, it matters enough to fix now or track properly.
 
 ### 2026-03-26 — [patterns] Context engineering includes doc pointers — teach the AI where to look, not what to know
 - AI agents hallucinate less when they know where to find authoritative information. Adding framework doc URLs to CLAUDE.md is cheap context that prevents expensive mistakes.
