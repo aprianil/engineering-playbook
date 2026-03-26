@@ -8,6 +8,8 @@ You build products. You ship features. You work with engineers daily — maybe y
 
 This playbook is written from the other side: a designer who codes, learning to think like a staff engineer. A collection of principles, checklists, and field guides for developing the engineering eye — built from real projects, real mistakes, and real conversations with engineers and AI tools. Not a textbook — a practical reference for someone who builds products and wants to make better engineering decisions.
 
+This is a living document — I'm still early in this journey. It grows as I learn.
+
 ## What's inside
 
 **Start here:**
