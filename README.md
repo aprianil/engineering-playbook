@@ -39,6 +39,7 @@ Or copy the `.claude/skills/` folder manually. Once in your project, the skills 
 - **[eng-build](.claude/skills/eng-build/SKILL.md)** — `/eng-build` — execution session. Reads a spec file and builds from it.
 - **[eng-check](.claude/skills/eng-check/SKILL.md)** — `/eng-check` — review code against engineering principles. Auto-triggers when you ask Claude to review code.
 - **[deslop](.claude/skills/deslop/SKILL.md)** — `/deslop` — remove AI-generated slop: unnecessary comments, defensive checks, `any` casts, style inconsistencies. Run after AI writes code, before `/eng-check`.
+- **[sync-playbook](.claude/skills/sync-playbook/SKILL.md)** — `/sync-playbook` — sync playbook, deep dives, and skills from Obsidian to GitHub.
 
 ## How it's built
 
