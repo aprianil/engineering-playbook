@@ -47,6 +47,6 @@ Or copy the `.claude/skills/` folder manually. Once in your project, the skills 
 
 ## How it's built
 
-Written in Markdown, managed in Obsidian, synced to GitHub. Notes link to each other using `[[bidirectional links]]`. The playbook is the root — everything branches out from it.
+These are my actual Obsidian notes, synced to GitHub. If you use Obsidian, you can clone this repo into your vault and everything just works — `[[bidirectional links]]`, flat file structure, no subfolders. The playbook is the root note that links out to everything else.
 
 Built with the help of Claude Code.
