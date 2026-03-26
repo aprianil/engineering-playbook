@@ -1,12 +1,14 @@
 # Engineering Playbook
 
-A living playbook for building engineering taste and judgment — from a designer and product builder who ships code, toward thinking like a staff engineer.
+For designers, PMs, and product builders who ship code and want to build engineering judgment.
 
-## What this is
+## Who this is for
 
-A collection of principles, checklists, and field guides for developing the engineering eye. Not a textbook — a practical reference for someone who builds products and wants to make better engineering decisions.
+You build products. You ship features. You work with engineers daily — maybe you even write code yourself. But most engineering resources assume a traditional engineering background.
 
-## Files
+This playbook is written from the other side: a designer who codes, learning to think like a staff engineer. A collection of principles, checklists, and field guides for developing the engineering eye — built from real projects, real mistakes, and real conversations with engineers and AI tools. Not a textbook — a practical reference for someone who builds products and wants to make better engineering decisions.
+
+## What's inside
 
 **Start here:**
 - **[Engineering Learnings & Playbook.md](<Engineering Learnings & Playbook.md>)** — the hub. Principles, checklists, learning path, and a running log of lessons learned.
