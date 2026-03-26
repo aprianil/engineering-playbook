@@ -24,7 +24,6 @@
 ---
 
 ## Where I'm Starting From
-
 - Background in design and product
 - I code, ship features, and work alongside engineers
 - I understand the development lifecycle end-to-end through production
@@ -51,13 +50,11 @@
 ---
 
 ## Part 0: Before You Write a Line of Code
-
 The structure you set up before coding determines how clean or messy everything gets — for you, for your team, and for AI tools like Claude Code. This is the equivalent of an architect drawing the floor plan before laying bricks. Skip this, and you'll spend more time fighting your own codebase than building features.
 
 Clean structure has a double purpose now: **humans can navigate it, and AI can reason about it.** When Claude Code reads your project, it loads files into a context window. Scattered code = noisy context = worse AI suggestions. Focused, well-separated code = clean context = AI that actually helps.
 
 ### The Core Idea: Organize by What It Does, Not What It Is
-
 Most beginners organize code by file type — all components in one folder, all hooks in another, all utils in another. This feels tidy but falls apart fast because when you work on a feature, your files are scattered everywhere.
 
 Senior engineers organize by feature. Everything related to one feature lives together. You open one folder, you see the full picture.
@@ -111,9 +108,7 @@ When you're working on billing, you only touch the billing folder. Context stays
 This also means when AI helps you with billing, it reads the billing folder and gets the full picture — no noise from unrelated features polluting the context.
 
 ### Choosing Your Stack
-
 Before you organize folders, you pick your tools. Apply the innovation token model:
-
 ```
 Technology selection
 - Am I spending innovation tokens on product or infrastructure?
@@ -126,9 +121,7 @@ Technology selection
 See [[Choosing a Tech Stack]] for a reference stack applying these principles.
 
 ### The Scaffolding Checklist
-
 Before starting any new project, answer these:
-
 ```
 Structure
 - What are the 3-5 core features? Each one becomes a folder.
@@ -151,15 +144,12 @@ AI-readiness
 ```
 
 ### The "Screaming Architecture" Test
-
 Open your project folder. If a stranger looked at just the folder names, would they know what your app *does*? If they see `/features/billing`, `/features/onboarding`, `/features/dashboard` — they get it. If they see `/components`, `/utils`, `/hooks` — they know nothing about the product.
 
 Your folder structure should scream the product, not the framework.
 
 ### How Features Grow
-
 Start flat. A new feature might just be one file. That's fine. Don't create a folder for one file. As the feature grows:
-
 ```
 Step 1 (start simple):
 /features
@@ -184,13 +174,11 @@ Step 3 (more complexity, still contained):
 The rule: split when a file does too many things, not before. This is Principle #3 in action — discover the structure, don't over-design it upfront.
 
 ### Setting Up CLAUDE.md — Your AI Onboarding Doc
-
 A `CLAUDE.md` file at the project root is the first thing Claude Code reads when it enters your project. Think of it as a briefing doc — it tells AI who this project is, how it's built, and what rules to follow. Without it, you'll repeat the same context every conversation.
 
 **One `CLAUDE.md` at the root is all you need.** Don't create multiple until a project genuinely grows into a complex monorepo. Keep it simple.
 
 **What to put in your CLAUDE.md:**
-
 ```markdown
 # Project Name
 
@@ -226,7 +214,6 @@ One-line description of the product and who it's for.
 This takes 5 minutes to write and pays off in every AI session. Claude Code will follow these conventions automatically instead of guessing.
 
 ### Working With AI Coding Tools
-
 Beyond rules files, there are habits that make AI consistently useful. These apply regardless of which tool you use — the principles are the same.
 
 **The AI context mindset** — every time you structure a file or name a function, you're not just writing for yourself. You're writing for a future AI session that needs to understand this code fast. Clear naming, small files, and co-located features all make AI assistance dramatically better. The same things that make code maintainable for humans make it navigable for AI.
@@ -255,7 +242,6 @@ Custom skills built for this playbook (lives in `.claude/skills/` — the standa
 **Hooks** — automated actions that run before or after tool calls. For example, a hook that runs your linter every time Claude Code edits a file. This catches quality issues automatically without you having to remember.
 
 **Essential resources:**
-
 - [Bulletproof React](https://github.com/alan2207/bulletproof-react) — the single best reference for React project structure. Study the folder layout and read the docs explaining each decision.
 - [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) — official docs on CLAUDE.md, skills, hooks, and best practices.
 
@@ -269,25 +255,18 @@ Custom skills built for this playbook (lives in `.claude/skills/` — the standa
 ---
 
 ## Part 1: The Mindset Shifts
-
 Senior isn't about code. It's about how you think — and more specifically, how you approach problems.
 
 Going from shipping code to engineering well is less about leveling up your code and more about leveling up your thinking.
 
 **5 principles to internalize:**
-
 1. **Aim for simplicity.** Cut as much as you can. Large and complicated software changes too slowly. Write code that reveals your intentions and is easy to change.
-
 2. **YAGNI — You Aren't Going To Need It.** Don't write complicated software in anticipation of future requirements that may never appear. You are bad at predicting the future.
-
 3. **Discover abstractions, don't design them.** Wait until you see the pattern repeat before extracting it. Premature abstraction is worse than duplication.
-
 4. **Think about time as a design constraint.** It's okay to pick the quick way — but do it deliberately, document the trade-off, and plan to pay it down.
-
 5. **Type 1 vs Type 2 decisions.** Type 1 decisions are hard to reverse — proceed carefully. Type 2 decisions are reversible — move fast. Most decisions are Type 2.
 
 **Essential resources:**
-
 - "A Philosophy of Software Design" by John Ousterhout — the best book on simplicity and complexity in code. Short, practical. Start here.
 - [The Grug Brained Developer](https://grugbrain.dev) — funny, brutally honest essay on fighting complexity. 20 minutes.
 - [Goodbye, Clean Code](https://overreacted.io/goodbye-clean-code/) by Dan Abramov — the moment he realized premature abstraction was worse than duplication. 5 min read.
@@ -299,11 +278,9 @@ Going from shipping code to engineering well is less about leveling up your code
 ---
 
 ## Part 2: Questions to Ask at Every Stage
-
 These are the checklists that build judgment over time. Come back to these every time you build.
 
 ### Before Building
-
 ```
 - What problem am I actually solving? For whom?
 - What triggered this work? (customer feedback, bug, internal idea, strategic decision)
@@ -317,7 +294,6 @@ These are the checklists that build judgment over time. Come back to these every
 ```
 
 ### While Building
-
 ```
 - Can someone with no context understand this in 6 months?
 - Am I discovering this abstraction or forcing it?
@@ -330,7 +306,6 @@ These are the checklists that build judgment over time. Come back to these every
 ```
 
 ### Before Shipping
-
 ```
 Design
 - Does the overall design make sense?
@@ -355,7 +330,6 @@ PR Hygiene
 ```
 
 ### After Shipping
-
 ```
 - What broke? Why? Was it predictable?
 - What trade-off did I make? Was it right?
@@ -364,7 +338,6 @@ PR Hygiene
 ```
 
 **Essential resource:**
-
 - [Google's Code Review Developer Guide](https://google.github.io/eng-practices/review/reviewer/) — the actual guide Google uses for code reviews. The "What to look for in a code review" section is gold.
 
 > [!tip]- Further reading
@@ -375,11 +348,9 @@ PR Hygiene
 ---
 
 ## Part 3: What Good vs Bad Looks Like
-
 Reference this when building or reviewing code. If something looks like the right column, stop and fix it.
 
 ### Code Structure & Readability
-
 | Good | Bad |
 |------|-----|
 | Each file has a clear, single responsibility | One file doing five different things |
@@ -389,7 +360,6 @@ Reference this when building or reviewing code. If something looks like the righ
 | Small, focused functions that do one thing | 200-line functions with nested if/else chains |
 
 ### Error Handling & Logging
-
 | Good | Bad |
 |------|-----|
 | Errors are caught and handled with useful feedback | `try/catch` that swallows errors silently |
@@ -402,7 +372,6 @@ Reference this when building or reviewing code. If something looks like the righ
 See [[Logging in Production]] for deeper guidance.
 
 ### Auth & Security
-
 | Good | Bad |
 |------|-----|
 | Auth enforced in one place (middleware) | Auth check copy-pasted in every route |
@@ -410,7 +379,6 @@ See [[Logging in Production]] for deeper guidance.
 | Dependencies audited regularly | `npm audit` with critical vulnerabilities ignored |
 
 ### API Design
-
 | Good | Bad |
 |------|-----|
 | Consistent naming, proper HTTP status codes | Mixed conventions, everything returns 200 |
@@ -418,7 +386,6 @@ See [[Logging in Production]] for deeper guidance.
 | Designed for backward compatibility | Breaking changes deployed with no warning |
 
 ### Deployment & Shipping
-
 | Good | Bad |
 |------|-----|
 | CI/CD with tests, preview deploys, rollback plan | Manual `git pull` on a VPS and pray |
@@ -426,7 +393,6 @@ See [[Logging in Production]] for deeper guidance.
 | Deploy, verify, rollback in under 5 minutes | Rollback means reverting and redeploying for 20 minutes |
 
 **Essential resource:**
-
 - [Naming Things in Code](https://www.youtube.com/@CodeAesthetic) by CodeAesthetic (YouTube, ~8 min) — short video that clicks immediately. You'll start seeing bad naming everywhere after this.
 
 > [!tip]- Further reading
@@ -437,7 +403,6 @@ See [[Logging in Production]] for deeper guidance.
 ---
 
 ## Part 4: The Trade-Off Muscle
-
 This is the core skill. Not "always choose quality" or "always ship fast" — it's knowing when to switch gears.
 
 | Situation | Lean Toward |
@@ -451,7 +416,6 @@ This is the core skill. Not "always choose quality" or "always ship fast" — it
 | Tempted to add a new tool or service | First ask: "How would we solve this with what we already have?" Only add if the unnatural acts are truly unbearable. |
 
 **Essential resource:**
-
 - [Choose Boring Technology](https://boringtechnology.club) by Dan McKinley — why you should default to proven, boring tools. Every new technology has a cost. You get a limited number of "innovation tokens."
 
 > [!tip]- Further reading
@@ -462,7 +426,6 @@ This is the core skill. Not "always choose quality" or "always ship fast" — it
 ---
 
 ## Part 5: The Practice Loop
-
 Taste isn't learned from reading — it's forged through build, judge, break, learn, repeat.
 
 | Practice | What It Builds |
@@ -475,7 +438,6 @@ Taste isn't learned from reading — it's forged through build, judge, break, le
 | Teach or explain what you built | The biggest brain move isn't building the hardest thing — it's explaining the simple thing well |
 
 **Start with one codebase (browse, don't study):**
-
 - [Bulletproof React](https://github.com/alan2207/bulletproof-react) — the architecture reference. Study how it's structured, then look at code.
 
 > [!tip]- More codebases and people to follow
@@ -495,12 +457,10 @@ Taste isn't learned from reading — it's forged through build, judge, break, le
 ---
 
 ## Part 6: Recommended Learning Path
-
 A suggested progression — start wherever feels right, skip what you've already absorbed, revisit as you grow:
 
 ### Phase 1: Build the Eye
 You're already shipping code — this is about adding a judgment layer on top.
-
 - [ ] Read "A Philosophy of Software Design" by John Ousterhout
 - [x] Read "The Grug Brained Developer" (grugbrain.dev)
 - [x] Read "Goodbye, Clean Code" by Dan Abramov
@@ -510,14 +470,12 @@ You're already shipping code — this is about adding a judgment layer on top.
 
 ### Phase 2: Understand the System
 Zoom out to see how pieces connect.
-
 - [x] Read "Choose Boring Technology" by Dan McKinley
 - [ ] Read Google's Code Review guide
 - [ ] On your next feature, use the "While Building" checklist and write down what you notice
 
 ### Phase 3: Build the Muscle (ongoing)
 Judgment becomes instinct through repetition.
-
 - [ ] After every feature, log what you learned in the Learnings Log below
 - [ ] Review your own PRs using the "Before Shipping" checklist before requesting review
 - [ ] On your next new project, use the Part 0 scaffolding checklist before writing code
@@ -544,6 +502,13 @@ Judgment becomes instinct through repetition.
 > - Each entry should make sense without needing the original conversation
 > - Headlines should be memorable phrases that capture the core lesson
 > - When this section gets long, split it into its own `[[Engineering Learnings Log]]` file
+
+### 2026-03-26 — [patterns] Context engineering includes doc pointers — teach the AI where to look, not what to know
+- AI agents hallucinate less when they know where to find authoritative information. Adding framework doc URLs to CLAUDE.md is cheap context that prevents expensive mistakes.
+- Lightweight pointers > stuffing docs into context. A URL costs one line; pasting full docs fills the context window fast. The AI can `WebFetch` when it actually needs something.
+- Built this into `/eng-init` as a lookup table of common stacks (React, Next.js, Supabase, Tailwind, etc.). User says their stack, skill auto-populates the right doc URLs. Unknown tech → ask for the URL.
+- The behavioral nudge matters: "look these up before guessing" tells the AI to verify rather than assume. It's the same reason senior devs keep docs bookmarked — not because they don't know, but because they verify.
+- This is perishable info (URLs can change, frameworks evolve) but it lives in the right place: per-project CLAUDE.md, not the timeless playbook. Follows the "timeless over trendy" rule — principles in the playbook, tool-specific references in project config.
 
 ### 2026-03-25 — [tradeoff] Choose boring technology — spend innovation tokens on product, not infrastructure
 - Dan McKinley's "Innovation Token" model: you have ~3 tokens for novel, unproven technology choices. Spend them on what makes your product different, not on your stack.

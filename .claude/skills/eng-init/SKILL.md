@@ -2,7 +2,7 @@
 name: eng-init
 description: Scaffold a CLAUDE.md with engineering principles. Use when setting up a new project or initializing engineering conventions.
 disable-model-invocation: true
-allowed-tools: Read, Write, Bash, Glob, Grep
+allowed-tools: Read, Write, Bash, Glob, Grep, WebFetch
 ---
 
 Initialize a CLAUDE.md file in the current project with shared engineering principles.
@@ -42,11 +42,47 @@ When writing or editing code:
 - Code you write is also context for AI tools. Clear naming, small files, and co-located features make AI assistance dramatically better.
 ```
 
-3. **Project structure section** — scan the current directory and document the folder structure. If the project is new or empty, suggest a feature-based structure based on the tech stack.
+3. **Documentation references section** — based on the tech stack from step 1, add a section with official doc URLs so the AI knows where to look things up.
 
-4. **Commands section** — detect package.json or similar and list available scripts.
+   Use this lookup table for known stacks:
 
-5. **Contributing section** — add a short note:
+   | Stack | Docs URL |
+   |-------|----------|
+   | React | https://react.dev/reference |
+   | Next.js | https://nextjs.org/docs |
+   | Supabase | https://supabase.com/docs |
+   | Tailwind CSS | https://tailwindcss.com/docs |
+   | shadcn/ui | https://ui.shadcn.com/docs |
+   | TypeScript | https://www.typescriptlang.org/docs |
+   | Prisma | https://www.prisma.io/docs |
+   | Drizzle | https://orm.drizzle.team/docs/overview |
+   | Zod | https://zod.dev |
+   | tRPC | https://trpc.io/docs |
+   | Stripe | https://docs.stripe.com |
+   | Vercel | https://vercel.com/docs |
+   | Vite | https://vite.dev/guide |
+   | Express | https://expressjs.com/en/5x/api.html |
+   | Hono | https://hono.dev/docs |
+   | Postgres | https://www.postgresql.org/docs/current |
+   | Redis | https://redis.io/docs |
+
+   Only include entries that match the project's stack. If a technology isn't in the table, ask the user for the docs URL. Output a section like:
+
+   ```
+   ## Documentation references
+
+   When unsure about framework APIs, patterns, or best practices, look these up before guessing:
+
+   - React: https://react.dev/reference
+   - Next.js: https://nextjs.org/docs
+   - Supabase: https://supabase.com/docs
+   ```
+
+4. **Project structure section** — scan the current directory and document the folder structure. If the project is new or empty, suggest a feature-based structure based on the tech stack.
+
+5. **Commands section** — detect package.json or similar and list available scripts.
+
+6. **Contributing section** — add a short note:
 
 ```
 ## For contributors
