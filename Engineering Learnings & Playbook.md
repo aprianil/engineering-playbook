@@ -224,14 +224,6 @@ One-line description of the product and who it's for.
 - Background work (webhooks, emails, analytics) runs after the response
 - Errors use a custom AppError class with codes — handled once at the boundary
 
-## Context loading guide
-When working on a feature, load these files — nothing else:
-- Backend: app/api/{feature}/ + lib/{feature}/
-- Frontend: features/{feature}/
-- Shared: lib/{feature}/schema.ts (the contract between frontend and backend)
-- Auth: lib/auth/ (only if changing auth behavior)
-Don't load unrelated features. The structure is designed so each feature is self-contained across its three folders.
-
 ## Do
 - Validate all input at the API boundary with Zod schemas
 - Keep route files thin — delegate to lib/

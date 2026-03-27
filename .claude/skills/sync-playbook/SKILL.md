@@ -1,7 +1,6 @@
 ---
 name: sync-playbook
 description: Sync engineering playbook and deep dive files from Obsidian to GitHub. Also copies skills and checks if README needs updating.
-disable-model-invocation: true
 allowed-tools: Read, Write, Bash, Glob, Grep
 ---
 
