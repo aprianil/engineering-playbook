@@ -41,7 +41,19 @@ For existing projects, document what's actually there but note any deviations fr
 - Router/layout/config files compose pieces together — no business logic in wiring files
 ```
 
-4. **Engineering principles section** — always include:
+4. **Context loading guide section** — always include:
+
+```
+## Context loading guide
+When working on a feature, load these files — nothing else:
+- Backend: app/api/{feature}/ + lib/{feature}/
+- Frontend: features/{feature}/
+- Shared: lib/{feature}/schema.ts (the contract between frontend and backend)
+- Auth: lib/auth/ (only if changing auth behavior)
+Don't load unrelated features. The structure is designed so each feature is self-contained across its three folders.
+```
+
+5. **Engineering principles section** — always include:
 
 ```
 ## Engineering principles
@@ -67,7 +79,7 @@ When writing or editing code:
 - Code you write is also context for AI tools. Clear naming, small files, and co-located features make AI assistance dramatically better.
 ```
 
-5. **Do / Don't / Ask first sections** — always include:
+6. **Do / Don't / Ask first sections** — always include:
 
 ```
 ## Do
@@ -106,7 +118,7 @@ When writing or editing code:
 - Fix type errors before test failures — types are often the root cause
 ```
 
-7. **When stuck section** — always include:
+8. **When stuck section** — always include:
 
 ```
 ## When stuck
@@ -116,9 +128,9 @@ When writing or editing code:
 - If something seems wrong, investigate before deleting — it may be intentional
 ```
 
-8. **Commands section** — detect package.json or similar and list available scripts.
+9. **Commands section** — detect package.json or similar and list available scripts.
 
-9. **Documentation references section** — based on the tech stack from step 1, add a section with official doc URLs so the AI knows where to look things up.
+10. **Documentation references section** — based on the tech stack from step 1, add a section with official doc URLs so the AI knows where to look things up.
 
    Use this lookup table for known stacks:
 
