@@ -25,6 +25,7 @@ This is a living document — I'm still early in this journey. It grows as I lea
 - **[Working Effectively With AI.md](<Working Effectively With AI.md>)** — prompting patterns, context engineering, and verification for AI coding tools
 - **[Code Review - What to Look For and How to Do It.md](<Code Review - What to Look For and How to Do It.md>)** — Google's code review guide distilled — what to look for, how to comment, speed, handling pushback
 - **[Choosing a Tech Stack.md](<Choosing a Tech Stack.md>)** — reference stack for web apps (2026) — boring, AI-fluent, zero-ops
+- **[Anatomy of a Well-Structured Feature.md](<Anatomy of a Well-Structured Feature.md>)** — seven timeless patterns for how a feature should be structured across layers
 
 **Skills (Claude Code slash commands):**
 

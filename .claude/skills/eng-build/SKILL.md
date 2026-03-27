@@ -38,6 +38,12 @@ Before presenting the result, run through:
 - [ ] Are edge cases from the spec handled?
 - [ ] Does naming reveal intent without reading the body?
 - [ ] Can someone understand this without opening multiple files?
+- [ ] Are API routes thin? Is business logic in lib/, not in the route file?
+- [ ] Is input validated with a shared schema (Zod), not scattered manual checks?
+- [ ] Is auth handled via the project's wrapper, not copy-pasted?
+- [ ] Do side effects (webhooks, emails) run after the response, not blocking the user?
+- [ ] Are errors using the project's structured error type, not inline res.status().json()?
+- [ ] Is the PR small and focused? If not, can it be split by layer, component, or refactor vs feature?
 
 Flag anything that doesn't fully meet the criteria. Be honest — don't claim it's done if it's not.
 

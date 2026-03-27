@@ -67,7 +67,12 @@ How you'll know this feature actually worked after shipping. What changes in use
 
 ### Proposed approach
 - Existing code: which files/patterns in the codebase are relevant — reference actual paths and conventions already in use
-- File structure: exact files to create or modify, with paths. Follow the project's existing patterns.
+- File structure: exact files to create or modify, with paths. Follow the project's existing patterns. For new features, plan across all layers:
+  - Route file (thin — app/api/{feature}/)
+  - Business logic (lib/{feature}/)
+  - Shared schema (lib/{feature}/schema.ts or similar)
+  - Frontend UI (features/{feature}/ — components + hooks)
+- Auth: how is auth handled for new routes? Use the project's existing wrapper.
 - Key decisions: any trade-offs or choices, with reasoning
 - Edge cases: what happens when things go wrong
 

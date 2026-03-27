@@ -46,6 +46,7 @@
 | [[Working Effectively With AI]] | How to communicate with AI coding tools — prompting, context engineering, and verification |
 | [[Code Review - What to Look For and How to Do It]] | Google's code review guide distilled — what to look for, how to comment, speed, handling pushback |
 | [[Choosing a Tech Stack]] | Reference stack for web apps (2026) — boring, AI-fluent, zero-ops. Perishable — revisit when tools change |
+| [[Anatomy of a Well-Structured Feature]] | Seven timeless patterns for how a feature should be structured across layers — validated across five production codebases |
 
 ---
 
@@ -73,6 +74,28 @@ Avoid this (organized by type):
   formatDate.ts
 
 Do this instead (organized by feature — this is what a mature project looks like, not what you start with. See "How Features Grow" below for the progression):
+/app/api             ← API routes (thin — validate input, delegate to lib/)
+  /billing
+    route.ts         ← validates, calls lib/billing/, returns response
+  /user
+    route.ts
+/lib                 ← business logic + integrations, organized by feature
+  /billing
+    create-invoice.ts  ← the actual logic (reusable from any entry point)
+    billing.test.ts
+  /user
+    get-user.ts
+  /integrations      ← third-party configs (Stripe, Supabase, etc.)
+/features            ← feature-specific UI (components + hooks per feature)
+  /billing
+    /components
+      BillingCard.tsx
+      CreateInvoice.tsx
+    useBilling.tsx
+  /user
+    /components
+      UserProfile.tsx
+    useUser.tsx
 /components          ← shared, generic (Button, Form, Table — no business logic)
   /ui
     Button.tsx
@@ -80,32 +103,23 @@ Do this instead (organized by feature — this is what a mature project looks li
     Table.tsx
   /layouts
     DashboardLayout.tsx
-/features            ← self-contained business slices
-  /billing
-    /components      ← billing-specific UI (composes shared components)
-      BillingCard.tsx
-      CreateInvoice.tsx
-    useBilling.tsx
-    billingApi.ts
-    billing.test.ts
-  /user
-    /components
-      UserProfile.tsx
-    useUser.tsx
-/lib                 ← third-party configs and integrations
 ```
 
-**Two tiers of components:**
-- `src/components/` — shared, generic building blocks. Used across multiple features. Knows nothing about any business domain.
-- `features/billing/components/` — specific to that feature. Composes shared components with feature-specific logic. Lives inside the feature folder.
+**Three layers, each with a clear job:**
+- `app/api/billing/` — thin route. Validates input, delegates to `lib/billing/`, returns response. No business logic here.
+- `lib/billing/` — business logic. The actual work. Reusable from any entry point (API route, background job, CLI script).
+- `features/billing/` — feature-specific UI. Components, hooks, types. Composes shared components with feature-specific behavior.
+- `components/` — shared, generic UI. Used across multiple features. Knows nothing about any business domain.
 
 A component starts in its feature folder. It only "graduates" to shared when you discover it's genuinely needed by multiple features — not before (Principle #3).
 
-**Dependencies flow one direction:** shared → features → app (routes/pages). Features never import from each other. Shared never imports from features. This keeps the blast radius small — changes to billing can't break user.
+**Dependencies flow one direction:** `components/` → `features/` → `app/` (routes/pages). Features never import from each other. `lib/` is available to any layer — it's pure logic with no UI dependencies. This keeps the blast radius small — changes to billing can't break user.
 
-When you're working on billing, you only touch the billing folder. Context stays clean. No jumping across 6 folders to understand one feature.
+**Feature names mirror across layers:** if the feature is "billing," you'll find `app/api/billing/`, `lib/billing/`, `features/billing/`, and `useBilling.ts`. You always know where to look.
 
-This also means when AI helps you with billing, it reads the billing folder and gets the full picture — no noise from unrelated features polluting the context.
+When you're working on billing, you touch three predictable locations. Context stays clean. No jumping across 6 folders to understand one feature.
+
+This also means when AI helps you with billing, it reads the billing folders and gets the full picture — no noise from unrelated features polluting the context.
 
 ### Choosing Your Stack
 Before you organize folders, you pick your tools. Apply the innovation token model:
@@ -124,9 +138,9 @@ See [[Choosing a Tech Stack]] for a reference stack applying these principles.
 Before starting any new project, answer these:
 ```
 Structure
-- What are the 3-5 core features? Each one becomes a folder.
-- What's truly shared across features? That goes in /shared.
-- Where do API calls live? Co-located with the feature that uses them.
+- What are the 3-5 core features? Each one gets folders in lib/, features/, and app/api/.
+- What's truly shared across features? That goes in /components.
+- Where does business logic live? In lib/{feature}/ — not in API routes.
 - Where does state live? As close to where it's used as possible.
 - What's my naming convention? Pick one, write it down, stick to it.
 - What framework conventions already exist? Use them before inventing your own.
@@ -173,6 +187,8 @@ Step 3 (more complexity, still contained):
 
 The rule: split when a file does too many things, not before. This is Principle #3 in action — discover the structure, don't over-design it upfront.
 
+Once a feature has multiple files across layers (route, logic, hooks), there are seven patterns that keep it clean as it grows. See [[Anatomy of a Well-Structured Feature]] for the full breakdown — thin routes, shared schemas, auth wrappers, and more.
+
 ### Setting Up CLAUDE.md — Your AI Onboarding Doc
 A `CLAUDE.md` file at the project root is the first thing Claude Code reads when it enters your project. Think of it as a briefing doc — it tells AI who this project is, how it's built, and what rules to follow. Without it, you'll repeat the same context every conversation.
 
@@ -192,20 +208,66 @@ One-line description of the product and who it's for.
 - Language: [e.g. TypeScript]
 
 ## Project structure
-/features    — feature-based folders, each self-contained
-/shared      — reusable components and utilities
-/lib         — third-party integrations and configs
+/app/api     — API routes (thin — validate input, delegate to lib/)
+/lib         — business logic, organized by feature (e.g. lib/billing/)
+/components  — shared UI components (no business logic)
+/features    — feature-specific UI (components + hooks + types per feature)
+
+## How features are structured
+- API routes validate input and delegate — no business logic in route files
+- Business logic lives in lib/{feature}/ — reusable from any entry point
+- Schemas (Zod) defined once, shared between frontend and backend
+- Auth handled via a shared wrapper — not copy-pasted per route
+- Background work (webhooks, emails, analytics) runs after the response
+- Errors use a custom AppError class with codes — handled once at the boundary
+
+## Do
+- Validate all input at the API boundary with Zod schemas
+- Keep route files thin — delegate to lib/
+- Use the auth wrapper on every protected route
+- Name features consistently across layers (api/billing/, lib/billing/, use-billing.ts)
+- Run tests/build/lint to verify changes — don't just trust the code
+- Comments explain *why*, not *what* — if the code needs a comment to explain what it does, the code isn't clear enough
+- Use early returns to reduce nesting: `if (!user) return null;`
+- Use descriptive errors with context: `Unable to create invoice: User ${userId} has no payment method`
+
+## Don't
+- Put business logic in API routes or layout files
+- Copy-paste auth checks into individual routes
+- Return raw database types to the frontend — transform first
+- Skip input validation — even for internal APIs
+- Let AI write code without a way to verify it works
+- Use `as any` — find the real type instead
+- Commit secrets, API keys, or .env files
+- Add comments that restate the code (e.g. `// Get the user` above `getUser()`)
+
+## Ask first
+- Adding new dependencies (each one is a maintenance commitment)
+- Changing the database schema (hard to reverse)
+- Deleting files (might be someone's in-progress work)
+- Changes that touch more than one feature boundary
 
 ## Conventions
-- Feature folders: everything related to a feature lives together
 - Naming: PascalCase for components, camelCase for functions/hooks
 - Imports: use @/ alias for root-level imports
 - Components: split when they do too much — favor readability over line count
+- Errors: throw AppError with a code, never raw strings
 
 ## Commands
 - npm run dev — start dev server
 - npm run build — production build
 - npm run test — run tests
+
+## PR guidelines
+- Keep PRs under 500 lines and 10 files — one responsibility per PR
+- When a change is too big, split by layer (database → backend → frontend), by feature component (API → UI → integration), or by refactor vs feature (separate PRs)
+- Fix type errors before test failures — types are often the root cause
+
+## When stuck
+- Ask a clarifying question before making large speculative changes
+- Propose a short plan for complex tasks before coding
+- Fix type errors first — they often cause cascading test failures
+- If something seems wrong, investigate before deleting — it may be intentional
 
 ## What to watch out for
 - [Any known gotchas, quirks, or things that break easily]
@@ -300,6 +362,8 @@ These are the checklists that build judgment over time. Come back to these every
 - Am I building for a real requirement or an imaginary one?
 - Does the naming reveal intent without reading the body? If I can't name it simply, is it doing too much?
 - Can I understand this behavior without opening multiple files? (locality of behavior)
+- Is this route thin? Does the logic live in lib/ where it's reusable?
+- Is the user waiting for work they don't care about? (webhooks, analytics → background)
 - What happens when this input is empty/null/unexpected?
 - What else does this change touch? What breaks if it fails?
 - Am I handling the sad path, not just the happy path?
@@ -325,7 +389,8 @@ Side Effects
 - Is the failure mode graceful for the user?
 
 PR Hygiene
-- Is the PR small and focused on one thing?
+- Is the PR small and focused on one thing? (aim for <500 lines, <10 files)
+- If it's too big, can I split by layer (database → backend → frontend), by component (API → UI → integration), or by refactor vs feature?
 - Does the commit history tell a story?
 ```
 
@@ -358,10 +423,12 @@ Reference this when building or reviewing code. If something looks like the righ
 | Related code lives together, unrelated code is separated | Utility functions scattered across random files |
 | Dependencies flow one direction — features don't import from each other | Feature A imports from Feature B which imports from Feature C — tangled web |
 | Small, focused functions that do one thing | 200-line functions with nested if/else chains |
+| API routes are thin — validate and delegate to business logic in `lib/` | All logic crammed into the route file (validation, database calls, side effects) |
 
 ### Error Handling & Logging
 | Good | Bad |
 |------|-----|
+| Custom error types with codes, handled once at the boundary | Inline `res.status(400).json(...)` scattered across every route |
 | Errors are caught and handled with useful feedback | `try/catch` that swallows errors silently |
 | User sees a helpful message when something fails | Raw stack trace or silent failure |
 | Production logs with context: who, what, where, why it failed | `console.log("here")` scattered everywhere |
@@ -382,7 +449,8 @@ See [[Logging in Production]] for deeper guidance.
 | Good | Bad |
 |------|-----|
 | Consistent naming, proper HTTP status codes | Mixed conventions, everything returns 200 |
-| Validates input at the boundary | No validation, raw errors in responses |
+| Validates input at the boundary with a shared schema (Zod, etc.) | No validation, or manual if-checks scattered through the route |
+| One schema defines the contract — shared by frontend and backend | Frontend and backend disagree on field names, types drift silently |
 | Designed for backward compatibility | Breaking changes deployed with no warning |
 
 ### Deployment & Shipping
@@ -502,6 +570,29 @@ Judgment becomes instinct through repetition.
 > - Each entry should make sense without needing the original conversation
 > - Headlines should be memorable phrases that capture the core lesson
 > - When this section gets long, split it into its own `[[Engineering Learnings Log]]` file
+
+### 2026-03-27 — [structure] Seven patterns of a well-structured feature
+- Navigated five production codebases using the deep dive method. Same seven patterns appeared in every mature codebase regardless of language or framework. One codebase (Papermark) showed what happens when the patterns aren't partially applied — working product, but growing friction from duplicated auth, fat routes, and no shared schemas. Cal.com was the most disciplined — they codified these patterns as explicit engineering rules in their `CLAUDE.md` and `agents/rules/` directory.
+- **Seven timeless patterns:**
+- **1. Thin routes, thick logic.** API routes should only validate input and delegate to business logic that lives separately. Routes are the receptionist, not the doctor. This keeps logic reusable — the same function can be called from an API route, a CSV import, or a background job.
+- **2. One schema as the contract.** Define the shape of your data once. Frontend and backend both reference it. No drift, no "the API changed but the form didn't." Catches mismatches at build time instead of production. Every language has its version: Zod (JS), Django Serializers (Python), etc.
+- **3. Wrap cross-cutting concerns, don't copy them.** Auth, permissions, error handling — anything every route needs should be handled once in a wrapper or base class, not duplicated per file. You'll never accidentally ship an unprotected route. Security by structure, not by memory.
+- **4. Mirror feature names across layers.** If the feature is "issues," it should be `views/issue/`, `serializers/issue.py`, `services/issue/`, and `store/issue/`. Predictable naming means you always know where to look — no searching. This is feature-based architecture (3/25 learning) applied one level deeper.
+- **5. Side effects happen after the response.** Webhooks, analytics, notifications, audit logs — the user doesn't wait for work they didn't ask for. Every codebase separates this: `waitUntil` (JS), `.delay()` (Python/Celery), background queues. Respond first, do housekeeping after.
+- **6. Structured errors, handled at the boundary.** Define custom error types with codes, throw them anywhere, handle them once at the top. Individual routes don't format error responses — one central handler does. Every mature codebase has this.
+- **7. Wiring files do zero logic.** Routers, URL configs, layouts, providers — these files compose pieces together but contain no business logic themselves. They read like a table of contents for the codebase.
+- These don't directly improve UX — users don't care about your file structure. They compound into speed: a clean codebase means week 12 of building feels as fast as week 1. A messy one slows you down ~5% every week until you're fighting your own code more than building features.
+- **Comparison across five codebases:**
+
+| Principle | Dub (Next.js) | Documenso (Remix) | Papermark (Next.js) | Plane (Django+React) | Cal.com (Next.js) |
+|---|---|---|---|---|---|
+| 1. Thin routes | `withWorkspace` → `lib/api/` | `authenticatedProcedure` → `lib/server-only/` | Fat routes (all logic inline) | ViewSet → serializer + ORM | tRPC → Services → Repositories |
+| 2. Schema as contract | Zod in `lib/zod/schemas/` | Zod in `.types.ts` per route | Partial (some Zod, mostly manual) | Django Serializers | Zod DTOs at every boundary |
+| 3. Auth wrapped once | `withWorkspace` wrapper | `authenticatedProcedure` | Copy-pasted per route | `BaseViewSet` + `@allow_permission` | tRPC procedures + page-level checks |
+| 4. Feature name mirroring | `api/links/`, `lib/api/links/`, `use-links.ts` | `document-router/`, `lib/server-only/envelope/`, `trpc.document.*` | SWR hooks yes, backend inconsistent | `views/issue/`, `serializers/issue.py`, `services/issue/`, `store/issue/` | `features/bookings/` with repositories, services, hooks, components |
+| 5. Side effects after response | `waitUntil()` | `triggerWebhook()` | `waitUntil()` | `.delay()` (Celery) | Trigger.dev tasks |
+| 6. Structured errors | `DubApiError` with codes | `AppError` with `AppErrorCode` | `TeamError`/`DocumentError` (basic) | `BaseViewSet.handle_exception()` | `ErrorWithCode` + factory methods, auto-converted by middleware |
+| 7. Wiring = zero logic | `middleware.ts`, route files | `router.ts` files | `middleware.ts`, layouts | `urls.py` | `_app.ts`, routers, layouts |
 
 ### 2026-03-26 — [review] "I'll fix it later" is a wish, not a decision
 - Work piles up every week — there's always something more urgent. If a shortcut isn't tracked with a ticket and a plan for when to address it, it's never getting fixed. Six months later, nobody remembers why it was done that way, and now it's "just how it works."

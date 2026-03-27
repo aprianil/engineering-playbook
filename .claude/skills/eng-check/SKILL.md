@@ -18,6 +18,15 @@ Then review the code the user is pointing to (or the most recently edited files 
 - If shortcuts were taken, are they documented?
 - Are irreversible decisions being treated with enough care?
 
+**Feature structure (the seven patterns):**
+- Are API routes thin? Do they only validate input and delegate to business logic in lib/? Or is logic crammed into the route file?
+- Is there a shared schema (Zod) for validation? Or is validation scattered as manual if-checks?
+- Is auth handled via a wrapper/base class? Or copy-pasted into individual routes?
+- Are feature names mirrored across layers? (api/billing/, lib/billing/, use-billing.ts)
+- Do side effects (webhooks, emails, analytics) run after the response? Or is the user waiting for work they don't care about?
+- Are errors using a structured type with codes, handled at the boundary? Or are they inline res.status(400).json(...) scattered everywhere?
+- Are wiring files (routers, layouts, configs) free of business logic?
+
 **Structure:**
 - Is each file focused on one thing?
 - Is code organized by feature, not by type?
@@ -53,6 +62,10 @@ Then review the code the user is pointing to (or the most recently edited files 
 - Do comments explain why, not what? If code needs a comment explaining what it does, it should be rewritten.
 - Are there outdated comments that no longer match the code?
 - Do TODOs reference a ticket or have a name attached?
+
+**PR hygiene:**
+- Is this PR small and focused? (<500 lines, <10 files, one responsibility)
+- If it's too big, suggest how to split: by layer (database → backend → frontend), by component (API → UI → integration), or by refactor vs feature.
 
 **Output format:**
 - Start with a one-line verdict: looks good / has concerns / needs rework

@@ -16,7 +16,32 @@ Then create a CLAUDE.md that includes:
    - Tech stack
    - Any known gotchas
 
-2. **Engineering principles section** — always include these:
+2. **Project structure section** — scan the current directory and document the folder structure. If the project is new or empty, suggest this feature-based structure based on the tech stack:
+
+```
+## Project structure
+/app/api     — API routes (thin — validate input, delegate to lib/)
+/lib         — business logic, organized by feature (e.g. lib/billing/)
+/components  — shared UI components (no business logic)
+/features    — feature-specific UI (components + hooks + types per feature)
+```
+
+For existing projects, document what's actually there but note any deviations from this pattern.
+
+3. **How features are structured section** — always include:
+
+```
+## How features are structured
+- API routes validate input and delegate — no business logic in route files
+- Business logic lives in lib/{feature}/ — reusable from any entry point
+- Schemas (Zod) defined once, shared between frontend and backend
+- Auth handled via a shared wrapper — not copy-pasted per route
+- Background work (webhooks, emails, analytics) runs after the response
+- Errors use a custom AppError class with codes — handled once at the boundary
+- Router/layout/config files compose pieces together — no business logic in wiring files
+```
+
+4. **Engineering principles section** — always include:
 
 ```
 ## Engineering principles
@@ -42,7 +67,58 @@ When writing or editing code:
 - Code you write is also context for AI tools. Clear naming, small files, and co-located features make AI assistance dramatically better.
 ```
 
-3. **Documentation references section** — based on the tech stack from step 1, add a section with official doc URLs so the AI knows where to look things up.
+5. **Do / Don't / Ask first sections** — always include:
+
+```
+## Do
+- Validate all input at the API boundary with Zod schemas
+- Keep route files thin — delegate to lib/
+- Use the auth wrapper on every protected route
+- Name features consistently across layers (api/billing/, lib/billing/, use-billing.ts)
+- Run tests/build/lint to verify changes — don't just trust the code
+- Comments explain *why*, not *what* — if the code needs a comment to explain what it does, the code isn't clear enough
+- Use early returns to reduce nesting: `if (!user) return null;`
+- Use descriptive errors with context: `Unable to create invoice: User ${userId} has no payment method`
+
+## Don't
+- Put business logic in API routes or layout files
+- Copy-paste auth checks into individual routes
+- Return raw database types to the frontend — transform first
+- Skip input validation — even for internal APIs
+- Let AI write code without a way to verify it works
+- Use `as any` — find the real type instead
+- Commit secrets, API keys, or .env files
+- Add comments that restate the code (e.g. `// Get the user` above `getUser()`)
+
+## Ask first
+- Adding new dependencies (each one is a maintenance commitment)
+- Changing the database schema (hard to reverse)
+- Deleting files (might be someone's in-progress work)
+- Changes that touch more than one feature boundary
+```
+
+6. **PR guidelines section** — always include:
+
+```
+## PR guidelines
+- Keep PRs under 500 lines and 10 files — one responsibility per PR
+- When a change is too big, split by layer (database → backend → frontend), by feature component (API → UI → integration), or by refactor vs feature (separate PRs)
+- Fix type errors before test failures — types are often the root cause
+```
+
+7. **When stuck section** — always include:
+
+```
+## When stuck
+- Ask a clarifying question before making large speculative changes
+- Propose a short plan for complex tasks before coding
+- Fix type errors first — they often cause cascading test failures
+- If something seems wrong, investigate before deleting — it may be intentional
+```
+
+8. **Commands section** — detect package.json or similar and list available scripts.
+
+9. **Documentation references section** — based on the tech stack from step 1, add a section with official doc URLs so the AI knows where to look things up.
 
    Use this lookup table for known stacks:
 
@@ -78,11 +154,9 @@ When writing or editing code:
    - Supabase: https://supabase.com/docs
    ```
 
-4. **Project structure section** — scan the current directory and document the folder structure. If the project is new or empty, suggest a feature-based structure based on the tech stack.
+10. **What to watch out for section** — include any gotchas from step 1.
 
-5. **Commands section** — detect package.json or similar and list available scripts.
-
-6. **Contributing section** — add a short note:
+11. **Contributing section** — add a short note:
 
 ```
 ## For contributors
