@@ -140,9 +140,9 @@ Papermark shows what happens when the patterns aren't applied consistently — a
 These seven patterns apply from day one, even in a small single-app project:
 
 1. **Thin routes** — keep `app/api/citations/route.ts` thin. Put the logic in `lib/citations/`.
-2. **Schema as contract** — define Zod schemas once, use them for both API validation and frontend types.
+2. **Schema as contract** — define Zod schemas once in `lib/citations/schema.ts`, use them for both API validation and frontend types.
 3. **Auth wrapper** — write one `withAuth` wrapper. Use it on every route.
-4. **Feature mirroring** — `api/citations/`, `lib/citations/`, `hooks/use-citations.ts`.
+4. **Feature mirroring** — `app/api/citations/`, `lib/citations/`, `features/citations/` (UI + hooks).
 5. **Side effects** — if you send notifications or log analytics, use `waitUntil()` or a background queue.
 6. **Structured errors** — create one `AppError` class with codes. Handle it once in a middleware or error handler.
 7. **Wiring files** — keep `middleware.ts` and layout files free of business logic.

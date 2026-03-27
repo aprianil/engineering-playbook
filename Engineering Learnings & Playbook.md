@@ -175,17 +175,20 @@ Step 2 (it grows, now split):
     BillingPage.tsx
     useBilling.tsx
 
-Step 3 (more complexity, still contained):
-/features
-  /billing
-    BillingPage.tsx
-    BillingCard.tsx
-    useBilling.tsx
-    billingApi.ts
-    billing.test.ts
+Step 3 (more complexity — split across layers):
+/app/api/billing
+  route.ts              ← thin: validates, delegates to lib/
+/lib/billing
+  create-invoice.ts     ← business logic (reusable)
+  billing.schema.ts     ← shared Zod schema
+  billing.test.ts
+/features/billing
+  BillingPage.tsx
+  BillingCard.tsx
+  useBilling.tsx         ← hook that calls the API
 ```
 
-The rule: split when a file does too many things, not before. This is Principle #3 in action — discover the structure, don't over-design it upfront.
+The rule: split when a file does too many things, not before. This is Principle #3 in action — discover the structure, don't over-design it upfront. Start with one file in `/features`. When it needs an API route and business logic, split across layers.
 
 Once a feature has multiple files across layers (route, logic, hooks), there are seven patterns that keep it clean as it grows. See [[Anatomy of a Well-Structured Feature]] for the full breakdown — thin routes, shared schemas, auth wrappers, and more.
 
