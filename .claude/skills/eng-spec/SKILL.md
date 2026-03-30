@@ -2,7 +2,7 @@
 name: eng-spec
 description: Write a feature spec before building anything. Planning session — no code gets written.
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Bash, Agent
+allowed-tools: Read, Glob, Grep, Write, Bash, Agent, AskUserQuestion, EnterPlanMode, ExitPlanMode
 argument-hint: [feature-name]
 ---
 
@@ -10,21 +10,51 @@ Turn a loose feature description into a spec that anyone — human or AI — can
 
 **Before anything else:**
 - Read the project's CLAUDE.md for engineering principles and conventions. If none exists, suggest running `/eng-init` first.
-- Explore the codebase enough to ground your spec in real paths, patterns, and conventions — not guesses.
+- Explore the codebase enough to ground your work in real paths, patterns, and conventions.
 
-**What you need from the user (ask only what's missing):**
+**Assess whether the idea is ready to spec.**
+
+Clear requirements indicators — skip to spec writing:
+- User provides specific acceptance criteria or behavior
+- References existing patterns to follow
+- Describes exact expected behavior with constrained scope
+
+Vague or exploratory indicators — explore first:
+- "I want something like...", "what if we...", "I'm thinking about..."
+- Multiple possible directions, unclear scope
+- User seems unsure about what they actually want
+
+## Exploration mode
+
+When the idea is still forming, be a thinking partner — not an interviewer. Challenge assumptions, propose alternatives, surface risks. Use `AskUserQuestion` to keep the conversation focused — one question at a time, with concrete options when possible.
+
+Probe through these lenses (skip what's already clear):
+- What's the real problem? Is this the right framing, or a proxy for something more important?
+- Who cares about this? What are they doing when they hit it?
+- What triggered this? (customer feedback, bug, internal idea)
+- What happens if we do nothing?
+- Is there a simpler version that delivers most of the value?
+- What would success look like?
+
+When the exploration involves trade-offs, architectural choices, or multiple valid approaches — use `EnterPlanMode` to think it through properly. Write out the options, pros/cons, and your recommendation. Exit plan mode when you have a clear direction.
+
+**Exit exploration when:** the problem is clear, the scope is bounded, and you could write acceptance criteria. Then transition to spec writing.
+
+## Spec writing
+
+**What you need (ask only what's still missing after exploration):**
 - What problem does this solve? (one sentence)
-- Who is this for? What are they doing when they hit this?
-- What triggered this? (customer feedback, bug, internal idea — the background)
+- Who is this for?
+- What triggered this?
 - How will you know this is done? (acceptance criteria — suggest defaults from CLAUDE.md principles if the user isn't sure)
 
-Scale the spec to the task. Small feature → skip sections that don't apply. New initiative → full context. The structure flexes — the thinking doesn't.
+Scale the spec to the task. Small feature → skip sections that don't apply. New initiative → full context.
 
 **Apply the project's engineering principles throughout:**
 - Is this the simplest approach that solves the problem? (Principle #1)
 - Are we building for a real requirement or an imaginary one? (Principle #2 — YAGNI)
 - Are we designing abstractions upfront, or discovering them? (Principle #3)
-- Are any decisions here irreversible? Those deserve extra scrutiny. Reversible ones — move fast. (Principle #5)
+- Are any decisions here irreversible? Those deserve extra scrutiny. (Principle #5)
 - Does what we're adding compound over time, or is it a one-time need? (Principle #6)
 
 **The spec format:**
@@ -63,12 +93,13 @@ The prioritized list — what actually matters. For each:
 What this feature explicitly does NOT include.
 ```
 
-**After writing the spec — stress-test with fresh eyes (Principle #7).**
-Spawn a sub-agent to run `/eng-stress-test` on the spec. Use the Agent tool with the prompt:
+## Stress-test (Principle #7)
+
+After writing the spec, spawn a sub-agent to stress-test it with fresh eyes. Use the Agent tool with the prompt:
 
 "Read and stress-test this spec: [spec content]. Follow the /eng-stress-test skill instructions. The project root is [path]."
 
-The sub-agent reads the spec cold with no knowledge of how it was written. It loads CLAUDE.md and explores the codebase independently. Wait for its findings.
+The sub-agent reads the spec cold — no knowledge of how it was written. Wait for its findings.
 
 **Then present to the user:**
 1. The spec
