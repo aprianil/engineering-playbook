@@ -47,7 +47,6 @@ Or copy the `.claude/skills/` folder manually. Once in your project, the skills 
 | Build | [`/eng-build`](.claude/skills/eng-build/SKILL.md) | Build a feature from an approved spec. If the spec was thorough, this is the easy part. |
 | Review | [`/eng-check`](.claude/skills/eng-check/SKILL.md) | Check code against engineering principles. Last gate before shipping. |
 | Review | [`/deslop`](.claude/skills/deslop/SKILL.md) | Remove AI-generated slop: unnecessary comments, defensive checks, `any` casts. Run before `/eng-check`. |
-| Sync | [`/sync-playbook`](.claude/skills/sync-playbook/SKILL.md) | Sync playbook, deep dives, and skills from Obsidian to GitHub. |
 
 ## How it's built
 
