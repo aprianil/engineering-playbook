@@ -336,6 +336,7 @@ The hard part of engineering isn't typing code — it's thinking clearly before 
 - **Codify knowledge so it's reusable.** Conventions, principles, and learnings that compound should be written down — in CLAUDE.md, in playbooks, in specs. Knowledge that stays in your head helps once. Knowledge that's codified helps every future session.
 - **Keep quality high so future changes are easy.** The goal of quality isn't perfection — it's speed. Clean code changes fast. Messy code fights you.
 - **Complexity is incremental.** No single decision makes a codebase complex. It's hundreds of small "just this once" compromises that compound. The same way conventions compound positively, shortcuts compound negatively.
+- **The invisible work is engineering.** Specs, structure, conventions, context setup — the work that makes execution feel easy. If you spent a day on that and wrote zero code, you still shipped. This is glue work — it doesn't look like building, but nothing gets built well without it.
 
 The ratio shifts by context — a small UI tweak doesn't need 80% planning, and a new system touching core infrastructure might need 90%. The principle behind the ratio is more durable than the numbers: **thinking is cheaper than fixing.**
 
@@ -419,7 +420,7 @@ PR Hygiene
 ### After Shipping
 ```
 - What broke? Why? Was it predictable?
-- What trade-off did I make? Was it right?
+- What trade-off did I make? What did I choose, what did I reject, and why?
 - What would I do differently with hindsight?
 - What did I learn that changes how I build next time?
 ```
@@ -504,6 +505,8 @@ This is the core skill. Not "always choose quality" or "always ship fast" — it
 | Choosing between two good options | Pick either one fast. Indecision is more expensive than a wrong call. |
 | Choosing a tech stack for a new project | Boring. Pick the most adopted, most documented, most AI-fluent option. Save innovation tokens for the product. |
 | Tempted to add a new tool or service | First ask: "How would we solve this with what we already have?" Only add if the unnatural acts are truly unbearable. |
+| Task that needs your judgment (design, architecture, tradeoffs) | Do it yourself. This is where you compound. |
+| Task that's mechanical execution (boilerplate, migrations, formatting) | Delegate. Your judgment isn't needed here — your attention is the scarce resource. |
 
 **Essential resource:**
 - [Choose Boring Technology](https://boringtechnology.club) by Dan McKinley — why you should default to proven, boring tools. Every new technology has a cost. You get a limited number of "innovation tokens."

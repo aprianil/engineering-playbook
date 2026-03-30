@@ -89,7 +89,7 @@ The prioritized list — what actually matters. For each:
 ### Proposed approach
 - Existing code: relevant files and patterns already in use (reference real paths)
 - File structure: exact files to create or modify, following project conventions
-- Key decisions: trade-offs with reasoning
+- Key decisions: what was chosen, what was rejected, and why
 - Dependencies: what could block this (external APIs, other teams, migrations)
 
 ### Out of scope
