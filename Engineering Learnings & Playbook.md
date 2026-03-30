@@ -525,6 +525,7 @@ Taste isn't learned from reading — it's forged through build, judge, break, le
 | Write down why you made each decision | Forces you to articulate *why*, not just *what* |
 | Do post-mortems on your own failures | Not just what broke, but *why* it broke |
 | Teach or explain what you built | The biggest brain move isn't building the hardest thing — it's explaining the simple thing well |
+| Ask: which principle or skill didn't apply to anything I built recently? | Pruning — cut what's dead weight, update what's drifted, add what's missing |
 
 **Start with one codebase (browse, don't study):**
 - [Bulletproof React](https://github.com/alan2207/bulletproof-react) — the architecture reference. Study how it's structured, then look at code.
