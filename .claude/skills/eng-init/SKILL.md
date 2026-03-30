@@ -53,6 +53,7 @@ Most of the work happens before and after writing code — not during. Plan thor
 - Use early returns to reduce nesting: `if (!user) return null;`
 - Use descriptive errors with context: `Unable to create invoice: User ${userId} has no payment method`
 - Disable submit buttons after click to prevent double submissions
+- Sanitize user input before rendering — never use `dangerouslySetInnerHTML` or equivalent without explicit approval
 - Comments explain *why*, not *what* — if the code needs a comment to explain what it does, the code isn't clear enough
 
 ## Don't

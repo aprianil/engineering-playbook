@@ -49,6 +49,7 @@ Review the code the user is pointing to (or the most recently edited files if no
 - Edge cases covered (empty, null, unexpected input)?
 - Error handling useful, not silent?
 - Concurrency issues — race conditions, double submits?
+- Security — unsanitized user input rendered in UI (XSS), raw SQL queries (injection), secrets in code, missing auth on routes?
 - For UI: loading, error, and empty states handled?
 
 **Tests:**

@@ -56,6 +56,7 @@ Stress-test a spec or plan. You are a fresh pair of eyes — you did not write t
 - What happens when external dependencies fail?
 - Are there concurrency issues — race conditions, double submits, stale data?
 - Would a developer building from this spec need to ask follow-up questions? Where?
+- Security — does user input reach the database or UI without validation? Are new routes missing auth? Could secrets leak?
 
 **Prioritize ruthlessly.** Not every edge case is worth handling. Apply the same judgment as the playbook's trade-off muscle: handle what would hurt users, force a rewrite, or create security/data issues. Explicitly dismiss what's not worth the complexity — "this is a Type 2 concern, skip for now" is a valid call.
 
