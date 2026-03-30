@@ -48,6 +48,8 @@ Or copy the `.claude/skills/` folder manually. Once in your project, the skills 
 | Review | [`/eng-check`](.claude/skills/eng-check/SKILL.md) | Check code against engineering principles. Last gate before shipping. |
 | Review | [`/deslop`](.claude/skills/deslop/SKILL.md) | Remove AI-generated slop: unnecessary comments, defensive checks, `any` casts. Run before `/eng-check`. |
 
+**See it in action:** [How the Skills Work Together](<How the Skills Work Together.md>) — a full walkthrough from vague idea to shipped code, showing how each skill and principle connects.
+
 ## How it's built
 
 These are my actual Obsidian notes, synced to GitHub. If you use Obsidian, you can clone this repo into your vault and everything just works — `[[bidirectional links]]`, flat file structure, no subfolders. The playbook is the root note that links out to everything else.
