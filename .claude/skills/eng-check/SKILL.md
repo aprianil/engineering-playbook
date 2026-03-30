@@ -5,71 +5,62 @@ disable-model-invocation: false
 allowed-tools: Read, Glob, Grep
 ---
 
-Review the current code against the team's engineering principles.
+Review code against the project's engineering principles.
 
-If a CLAUDE.md exists in the project root, read it first to load the project's engineering principles. If not, use the principles below as the baseline.
+**First:** Read the project's CLAUDE.md. That's the source of truth for this project's conventions, structure, and principles. Everything below is a fallback for projects without one.
 
-Then review the code the user is pointing to (or the most recently edited files if not specified). Check against:
+Review the code the user is pointing to (or the most recently edited files if not specified).
 
 **Principles:**
-- Is this as simple as it can be?
-- Is anything being built for an imaginary future requirement? (YAGNI)
-- Are there forced abstractions that should stay as duplication?
-- If shortcuts were taken, are they documented?
-- Are irreversible decisions being treated with enough care?
+- Is this as simple as it can be? (Principle #1)
+- Is anything being built for an imaginary future requirement? (Principle #2 — YAGNI)
+- Are there forced abstractions that should stay as duplication? (Principle #3)
+- If shortcuts were taken, are they documented? (Principle #4)
+- Are irreversible decisions being treated with enough care? (Principle #5)
+- Is what's being added worth its cost across future sessions, or is it one-time complexity? (Principle #6)
 
 **Feature structure (the seven patterns):**
-- Are API routes thin? Do they only validate input and delegate to business logic in lib/? Or is logic crammed into the route file?
-- Is there a shared schema (Zod) for validation? Or is validation scattered as manual if-checks?
-- Is auth handled via a wrapper/base class? Or copy-pasted into individual routes?
-- Are feature names mirrored across layers? (api/billing/, lib/billing/, use-billing.ts)
-- Do side effects (webhooks, emails, analytics) run after the response? Or is the user waiting for work they don't care about?
-- Are errors using a structured type with codes, handled at the boundary? Or are they inline res.status(400).json(...) scattered everywhere?
-- Are wiring files (routers, layouts, configs) free of business logic?
+- Thin routes — validate and delegate, no business logic in route files
+- Shared schema — one definition, used by frontend and backend
+- Auth wrapped once — not copy-pasted per route
+- Feature names mirrored across layers
+- Side effects after the response — user doesn't wait for webhooks, emails, analytics
+- Structured errors with codes, handled at the boundary
+- Wiring files (routers, layouts, configs) do zero logic
 
-**Structure:**
-- Is each file focused on one thing?
-- Is code organized by feature, not by type?
-- Does naming reveal intent without reading the body? (No abbreviations, no type-in-name like `userList`, no repeated context like `user.getUserName()`, name length matches scope)
-- Would a new team member — or AI — understand this without reading 5 other files? (locality of behavior)
-- Are dependencies flowing one direction? Features should not import from other features. Shared code should not import from features.
-- Are feature-specific components living inside their feature folder, or incorrectly sitting in shared?
-- If a component can be described with "and" (does X AND Y AND Z), it should be split.
+**Structure & naming:**
+- Each file focused on one thing
+- Organized by feature, not by type
+- Naming reveals intent without reading the body
+- Locality of behavior — understand the feature without opening 5 files
+- Dependencies flow one direction — features don't import from each other
+- Feature-specific components live in their feature folder, not in shared
+- The "and" test — if a component does X AND Y AND Z, suggest splitting
 
 **Spec alignment (if a spec exists in `specs/`):**
-- Does the implementation match what the spec described?
-- Were any acceptance criteria missed or changed without reason?
-- Were any out-of-scope items accidentally included?
+- Does the implementation match the spec?
+- Were acceptance criteria missed or changed without reason?
+- Were out-of-scope items accidentally included?
 
-**Design:**
-- Does the change make sense as a whole? Does this functionality belong here — or in a different feature, layer, or library?
-- For UI changes: does it handle loading, error, and empty states?
-- Are there concurrency issues — race conditions, double submits?
-
-**Quality:**
-- Are edge cases handled (empty, null, unexpected input)?
-- Is error handling useful, not silent?
-- Is the sad path covered, not just the happy path?
-- Are there side effects that could break other things?
+**Correctness:**
+- Does it handle the sad path, not just the happy path?
+- Edge cases covered (empty, null, unexpected input)?
+- Error handling useful, not silent?
+- Concurrency issues — race conditions, double submits?
+- For UI: loading, error, and empty states handled?
 
 **Tests:**
-- Do tests exist for the changed behavior?
-- Are they testing behavior, not implementation details?
-- Would they actually fail if the code broke?
-- Are the tests themselves simple and readable?
+- Tests exist for changed behavior
+- Testing behavior, not implementation details
+- Would actually fail if the code broke
 
-**Comments:**
-- Do comments explain why, not what? If code needs a comment explaining what it does, it should be rewritten.
-- Are there outdated comments that no longer match the code?
-- Do TODOs reference a ticket or have a name attached?
+**Comments & PR hygiene:**
+- Comments explain why, not what
+- TODOs reference a ticket or have a name
+- PR is small and focused (<500 lines, <10 files, one responsibility)
 
-**PR hygiene:**
-- Is this PR small and focused? (<500 lines, <10 files, one responsibility)
-- If it's too big, suggest how to split: by layer (database → backend → frontend), by component (API → UI → integration), or by refactor vs feature.
-
-**Output format:**
-- Start with a one-line verdict: looks good / has concerns / needs rework
-- List specific issues found, referencing the principle or checklist item
-- For each issue, suggest a concrete fix
-- End with: "Checked against project engineering principles"
+**Output:**
+- One-line verdict: **looks good** / **has concerns** / **needs rework**
+- Specific issues found, referencing the principle or pattern violated
+- Concrete fix for each issue
 - Keep it concise — flag what matters, skip what's fine

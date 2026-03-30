@@ -1,20 +1,22 @@
 # Working Effectively With AI
 
-> A deep dive from the [[Engineering Learnings & Playbook]]. How to communicate with AI coding tools so they produce code you'd actually write yourself.
+> A deep dive from the [Engineering Learnings & Playbook](Engineering Learnings & Playbook.md). How to work with AI coding tools — and how to evolve your approach as models get more capable.
 
 ---
 
 ## The Core Mental Model
 
-AI is a multiplier, not a replacement. It multiplies what you already know — your engineering judgment, your understanding of the problem, your habits. Good habits in, good code out. Bad habits in, bad code out faster.
+AI is a multiplier, not a replacement. It multiplies what you already know — your engineering judgment, your understanding of the problem, your taste. Good judgment in, good code out.
 
-**You are the architect. AI is the builder.** You think, you set context, you direct, you judge. AI types.
+**You own the what and the why. The model figures out the how.** Your job is to set the goal, provide the right context and tools, define what "done" looks like, and judge the result. The model's job is to get there — and increasingly, it's better at choosing its own path than following yours.
+
+This mental model should evolve as models do. The less you need to choreograph, the more you should focus on being clear about the outcome. Don't hold onto scaffolding that models have outgrown.
 
 ---
 
 ## Context Engineering
 
-The quality of AI output is directly tied to the quality of context you give it. This isn't just about prompting — it's about how you structure your entire project.
+The quality of AI output is directly tied to the quality of context it can access. This isn't just about prompting — it's about how you structure your project and what tools you give the model.
 
 ### Project Structure = AI Context
 
@@ -41,72 +43,67 @@ What to include:
 
 Write it once, benefit every session. See Part 0 of the playbook for the template.
 
+### Give Tools, Not Answers
+
+Instead of pasting documentation into prompts, give the model a way to fetch what it needs. Instead of describing your database schema, give it access to query it. Instead of explaining what the UI looks like, give it a browser tool.
+
+- **Documentation pointers** in CLAUDE.md (URLs the model can fetch when needed) beat pasted docs that fill the context window
+- **MCPs** (Model Context Protocol) extend what the model can see and do — browser tools, dev tools, database access, doc fetchers
+- **File access** — a well-structured codebase the model can explore is better than a long description of the codebase
+
+The principle: the model should be able to get the context it needs, when it needs it. Don't try to front-load everything. Give it tools to discover.
+
 ---
 
-## Prompting for Code
+## Communicating Intent
 
-### The 3-Section Pattern
+### Goal + Constraints > Step-by-Step Instructions
 
-A reliable structure for any coding task:
+Give the model a clear goal and the constraints it should respect. Let it figure out the path.
 
-**1. Task** — What to build. Be technically specific. Include the exact behavior, not just the feature name. Information that only a programmer would know: tech stack, how things should connect, terminal commands.
+**What works:**
+- A clear description of the outcome you want
+- Constraints that matter (what not to break, what conventions to follow, what's out of scope)
+- Acceptance criteria — how you'll know it's done
+- Access to the codebase, docs, and tools it needs
 
-**2. Background** — Supporting context. Documentation links, relevant files, screenshots of how you want it to look, reference implementations. The more AI knows about your intent, the less it guesses.
+**What you can let go of:**
+- Prescribing the exact execution order
+- Breaking the task into micro-steps for the model (break it down for *your* thinking, but you don't need to hand-feed each step)
+- Over-specifying implementation details the model can figure out from context
 
-**3. Do not** — Constraints and boundaries. What AI shouldn't touch, shouldn't change, shouldn't modify. This is surprisingly effective at reducing slop.
+The difference between "AI is useless" and "AI is incredible" is still about how well you communicate — but the communication is shifting from "how to do it" to "what done looks like."
 
-### Why Specificity Matters
+### Decomposition Is a Thinking Tool, Not an AI Limitation
 
-When AI has to guess architecture, tech stack, or implementation details, you get:
-- Code that looks good at first glance but is poorly structured underneath
-- Styling and features that don't match your intent
-- More errors, more debugging, more wasted time
+Breaking problems down is fundamental engineering. If you can't decompose a task, you don't understand it well enough. That hasn't changed.
 
-When you provide full technical context:
-- Code that runs first try
-- Code that matches what you'd write yourself
-- Less back-and-forth fixing
-
-The difference between "AI is useless" and "AI is incredible" is often not the AI — it's how well you communicate what you want.
-
-### Break Big Tasks Into Small Ones
-
-AI is good at small, scoped tasks. It struggles with big, complex ones. So break it down:
-
-1. Understand the problem
-2. Understand the existing codebase — folder structure, relevant files, patterns already in use. Do this during planning, not during execution.
-3. Plan the solution (you do this, not AI)
-4. Break it into small, independent tasks
-5. Give each task to AI with full context — including concrete file paths and decisions, not vague descriptions
-
-If you can't break it down, you don't understand the problem well enough yet. This isn't an AI trick — it's fundamental engineering. The only difference is whether you type the solution or AI does.
+What's changed: you don't need to spoon-feed each piece to the model sequentially. Decompose to sharpen *your* thinking, then give the model the full picture and let it execute. The model can handle more than you think — and the gap between what it can handle now vs six months ago is large.
 
 ---
 
 ## Verification
 
-AI should never just write code. It needs a way to prove the code works:
+The model should always have a way to prove its work. This is timeless — it doesn't change as models improve.
 
 - **Tests** — generate them or write them, then make sure they pass
 - **Running the app** — browser, preview, dev server
 - **CLI commands** — build, lint, type check
 - **CI/CD pipelines** — automated verification on push
+- **Visual verification** — browser tools (Playwright, etc.) catch what code-level tests miss, especially for front-end work
 
-If you let AI generate the verification (tests, etc.), verify the verification. Don't trust AI to check its own homework without oversight.
-
-For front-end and design tasks, visual verification tools (browser MCPs, screenshot comparison) help catch what tests miss.
+If the model generates the tests, verify the tests too. Trust but verify.
 
 ---
 
-## MCPs (Model Context Protocol)
+## The Bitter Lesson Applied
 
-MCPs are tools that extend what AI can do. Find the ones that match your stack:
+Rich Sutton's Bitter Lesson: general methods that leverage computation always win over hand-engineered solutions. Applied to working with AI:
 
-- **Documentation fetchers** (e.g., Context7) — AI grabs docs automatically instead of you pasting them
-- **Dev tools access** (e.g., Chrome DevTools MCP) — AI can see console errors, network requests, layout shifts
-- **Framework-specific tools** (e.g., Next.js dev tools MCP) — AI gets build errors, project state, metadata
-
-The point isn't specific tools — it's that these exist and the right combination makes a big difference for your workflow.
+- **Don't over-orchestrate.** Fancy multi-step workflows with strict sequencing almost always lose to giving the model the goal and letting it work. A year ago you needed the scaffolding. Now you mostly don't.
+- **Invest in context, not choreography.** A good CLAUDE.md, a clean project structure, and the right tools will outlast any clever prompting technique. Models change fast — your project structure and principles don't.
+- **Let go of what models outgrow.** If you're still doing something because "that's how you work with AI," test whether it's still necessary. The model from six months ago is not the model you're using today.
+- **The general approach wins.** Clear goals, good tools, clean context, strong verification. This works regardless of which model or which tool. Specific prompting tricks are brittle and expire.
 
 ---
 
@@ -114,15 +111,14 @@ The point isn't specific tools — it's that these exist and the right combinati
 
 Every principle that makes you a better engineer also makes you better at working with AI:
 
-- Being specific → better prompts
-- Breaking down problems → scoped AI tasks
-- Setting constraints → the "do not" section
-- Writing documentation → rules files
-- Verifying your work → AI verification
-- Good project structure → clean AI context
+- Clear thinking → clear goals for the model
+- Understanding the problem → knowing what "done" looks like
+- Good project structure → clean context the model can navigate
+- Writing conventions down → rules files that persist across sessions
+- Verifying your work → verification the model can run itself
 
-AI doesn't replace engineering skills. It amplifies them. Build the skills first — AI makes them go further.
+The shift over time: less "how to instruct AI" and more "how to set up an environment where AI can do great work." Think less about the prompt, more about the project.
 
 ---
 
-*This note consolidates learnings from the playbook's logs on context engineering, Bulletproof React's architecture, and practical AI prompting patterns. Come back to this when starting a new project or when AI output quality drops.*
+*This note evolves as models do. The principles (clarity, verification, good structure) are timeless. The specific techniques should be revisited when your current approach starts feeling like unnecessary scaffolding.*

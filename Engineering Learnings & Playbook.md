@@ -328,12 +328,14 @@ Senior isn't about code. It's about how you think — and more specifically, how
 
 Going from shipping code to engineering well is less about leveling up your code and more about leveling up your thinking.
 
-**5 principles to internalize:**
+**7 principles to internalize:**
 1. **Aim for simplicity.** Cut as much as you can. Large and complicated software changes too slowly. Write code that reveals your intentions and is easy to change.
 2. **YAGNI — You Aren't Going To Need It.** Don't write complicated software in anticipation of future requirements that may never appear. You are bad at predicting the future.
 3. **Discover abstractions, don't design them.** Wait until you see the pattern repeat before extracting it. Premature abstraction is worse than duplication.
 4. **Think about time as a design constraint.** It's okay to pick the quick way — but do it deliberately, document the trade-off, and plan to pay it down.
 5. **Type 1 vs Type 2 decisions.** Type 1 decisions are hard to reverse — proceed carefully. Type 2 decisions are reversible — move fast. Most decisions are Type 2.
+6. **Invest in what compounds.** Conventions, principles, and structure that improve every future session are worth adding now. One-time needs get added when they're needed — not before. Applies to code (abstractions), AI context (CLAUDE.md, skills), and project structure. The test: "will this make the next 10 sessions better, or just this one?"
+7. **The builder shouldn't be the reviewer.** Fresh eyes catch what the author can't — in code reviews, spec reviews, and AI workflows. When you write something, have someone (or something) else challenge it before you commit. The author has blind spots about their own assumptions.
 
 **Essential resources:**
 - "A Philosophy of Software Design" by John Ousterhout — the best book on simplicity and complexity in code. Short, practical. Start here.
@@ -577,6 +579,18 @@ Judgment becomes instinct through repetition.
 > - Each entry should make sense without needing the original conversation
 > - Headlines should be memorable phrases that capture the core lesson
 > - When this section gets long, split it into its own `[Engineering Learnings Log](Engineering Learnings Log.md)` file
+
+### 2026-03-30 — [patterns] Invest in what compounds, defer what doesn't
+- The filter for when to add something upfront vs later: "will this make the next 10 sessions better, or just this one?" If it compounds — conventions, principles, structure — add it now. If it's a one-time need, add it when you need it.
+- This is YAGNI applied to context and process, not just code. Don't preload AI skills with context that's only relevant later. Don't add abstractions until the pattern repeats. Don't scaffold for hypothetical contributors.
+- Examples: engineering principles in CLAUDE.md compound (every session benefits). An open source section in `/eng-init` doesn't compound until you're actually maintaining an open source project. A stress-test step in `/eng-spec` compounds (every spec benefits from challenge).
+- The same principle applies to what you feed AI. Every piece of context in a skill or rules file has a cost — it takes up space and attention. Only include what earns its keep across many uses.
+
+### 2026-03-30 — [review] The builder shouldn't be the reviewer
+- The agent that writes a spec has blind spots about its own assumptions — same reason code reviews exist. Asking it to stress-test its own work produces weaker challenges than a fresh agent that reads the spec cold.
+- Built this into `/eng-spec`: after writing the spec, it spawns a separate sub-agent (`/eng-stress-test`) that reads the spec with no knowledge of how it was written. The sub-agent loads CLAUDE.md and explores the codebase independently, then challenges the design.
+- This is a general principle, not just an AI workflow trick. It applies to code reviews, design critiques, spec reviews, and QA. The author's sunk cost and familiarity create blind spots that only fresh eyes can catch.
+- The sub-agent pattern in Claude Code: the parent agent spawns a child with the Agent tool. The child gets its own fresh context window — no inherited reasoning or bias. It only knows what it reads.
 
 ### 2026-03-29 — [patterns] Goal + tools + constraints > step-by-step orchestration
 - Anthropic's own advice: don't box the model in. Give it tools, give it a goal, let it figure out the path. A year ago you needed scaffolding and strict workflows. Now you mostly don't — and the gap keeps widening.

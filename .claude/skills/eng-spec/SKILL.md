@@ -2,94 +2,79 @@
 name: eng-spec
 description: Write a feature spec before building anything. Planning session — no code gets written.
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Bash
+allowed-tools: Read, Glob, Grep, Write, Bash, Agent
 argument-hint: [feature-name]
 ---
 
-Write a feature spec before building anything. This is a planning session — no code gets written here.
+Turn a loose feature description into a spec that anyone — human or AI — can build from without follow-up questions. This is a planning session. No code gets written.
 
-The user will describe what they want loosely. Your job is to turn it into a clear spec that captures enough context for anyone — human or AI — to build from it in a separate session without needing to ask 20 follow-up questions. The spec is the single source of truth: context, decisions, and criteria in one place. No handoffs.
+**Before anything else:**
+- Read the project's CLAUDE.md for engineering principles and conventions. If none exists, suggest running `/eng-init` first.
+- Explore the codebase enough to ground your spec in real paths, patterns, and conventions — not guesses.
 
-Scale the spec to the task. Small feature? Skip sections that don't apply. New initiative? Fill in the full context. The structure flexes — the thinking doesn't.
+**What you need from the user (ask only what's missing):**
+- What problem does this solve? (one sentence)
+- Who is this for? What are they doing when they hit this?
+- What triggered this? (customer feedback, bug, internal idea — the background)
+- How will you know this is done? (acceptance criteria — suggest defaults from CLAUDE.md principles if the user isn't sure)
 
-**Step 1: Read the guardrails and understand the codebase**
-- Read the project's CLAUDE.md for engineering principles and conventions.
-- If no CLAUDE.md exists, ask if the user wants to run `/eng-init` first.
-- Scan the current project structure — folder layout, existing features, naming patterns, how similar features are built. Understand what exists before proposing what to add.
-- Identify the files and patterns most relevant to the feature being planned. Read them if needed — this is the time to understand the codebase, not during execution.
+Scale the spec to the task. Small feature → skip sections that don't apply. New initiative → full context. The structure flexes — the thinking doesn't.
 
-The goal: by the end of this step, you should know enough about the project to write a spec with concrete file paths and decisions, not placeholder guesses.
+**Apply the project's engineering principles throughout:**
+- Is this the simplest approach that solves the problem? (Principle #1)
+- Are we building for a real requirement or an imaginary one? (Principle #2 — YAGNI)
+- Are we designing abstractions upfront, or discovering them? (Principle #3)
+- Are any decisions here irreversible? Those deserve extra scrutiny. Reversible ones — move fast. (Principle #5)
+- Does what we're adding compound over time, or is it a one-time need? (Principle #6)
 
-**Step 2: Gather context**
-If the user hasn't already covered these, ask — but only what's missing. Don't interrogate.
-
-- "What problem does this solve?" (one sentence)
-- "Who is this for? What are they doing when they hit this?" (the user, their situation, their frustration or need)
-- "What triggered this?" (customer feedback, bug report, internal idea, strategic decision — the background that led here)
-
-This is the Context box. The richer it is, the better everything downstream performs.
-
-**Step 3: Ask for acceptance criteria**
-Ask: "How will you know this is good? What should I check before considering this done?"
-
-If the user isn't sure, suggest criteria based on the playbook principles:
-- Can a new team member understand this code quickly?
-- Are edge cases handled (empty state, errors, slow/down API)?
-- Does the file structure follow the project's conventions?
-- Is the UI functional for the user on the sad path, not just the happy path?
-- Is it simple enough that it doesn't need comments to explain?
-
-Let the user add, remove, or adjust.
-
-**Step 4: Write the spec**
-Based on everything gathered + CLAUDE.md principles, write a spec. Include only the sections that apply — skip what's not relevant for the size of the task.
+**The spec format:**
 
 ```
 ## Feature: [name]
 
 ### Context
-Why this exists. The background — customer feedback, bug reports, research, or decisions that led to this work. Enough that someone reading this 3 months from now understands the motivation without asking anyone.
+Why this exists. The background — enough that someone reading this 3 months from now understands the motivation without asking anyone.
 
 ### What
 One-line description of what this feature does.
 
 ### Who
-Who this is for and what they're doing when they encounter this. Not a persona doc — just enough to anchor the design decisions.
+Who this is for and what they're doing when they encounter this.
 
 ### User flow
-The steps a user takes, in order. What they see, what they do, what happens. Cover the happy path and the sad path (errors, empty states, slow connections).
+The steps a user takes. Happy path and sad path (errors, empty states, slow connections).
 
 ### Acceptance criteria
-- [ ] [each criterion from step 3]
+- [ ] [concrete, verifiable criteria]
 
-### Success metrics
-How you'll know this feature actually worked after shipping. What changes in user behavior, error rates, support tickets, or business outcomes? Skip for small features — include for anything you'd want to evaluate later.
+### Edge cases & risks
+The prioritized list — what actually matters. For each:
+- What could go wrong
+- How to handle it
+- What's explicitly not worth handling yet, and why
 
 ### Proposed approach
-- Existing code: which files/patterns in the codebase are relevant — reference actual paths and conventions already in use
-- File structure: exact files to create or modify, with paths. Follow the project's existing patterns. For new features, plan across all layers:
-  - Route file (thin — app/api/{feature}/)
-  - Business logic (lib/{feature}/)
-  - Shared schema (lib/{feature}/schema.ts or similar)
-  - Frontend UI (features/{feature}/ — components + hooks)
-- Auth: how is auth handled for new routes? Use the project's existing wrapper.
-- Key decisions: any trade-offs or choices, with reasoning
-- Edge cases: what happens when things go wrong
-
-### Dependencies & risks
-What could block or break this. External APIs, other teams, data migrations, timing constraints. Skip if none.
+- Existing code: relevant files and patterns already in use (reference real paths)
+- File structure: exact files to create or modify, following project conventions
+- Key decisions: trade-offs with reasoning
+- Dependencies: what could block this (external APIs, other teams, migrations)
 
 ### Out of scope
-What this feature explicitly does NOT include. Prevents scope creep and sets clear boundaries for AI and humans alike.
+What this feature explicitly does NOT include.
 ```
 
-**Step 5: Get approval**
-Present the spec to the user. Do NOT write any code yet. Wait for approval or adjustments.
+**After writing the spec — stress-test with fresh eyes (Principle #7).**
+Spawn a sub-agent to run `/eng-stress-test` on the spec. Use the Agent tool with the prompt:
 
-**Step 6: Save the spec**
-Once approved, save the spec as a markdown file in the project:
-- Save to `specs/[feature-name].md` (create the `specs/` directory if it doesn't exist)
-- Use a kebab-case filename based on the feature name (e.g., `specs/commenting-system.md`)
-- Confirm the file path with the user
+"Read and stress-test this spec: [spec content]. Follow the /eng-stress-test skill instructions. The project root is [path]."
 
-This file is the contract between planning and execution.
+The sub-agent reads the spec cold with no knowledge of how it was written. It loads CLAUDE.md and explores the codebase independently. Wait for its findings.
+
+**Then present to the user:**
+1. The spec
+2. The stress-test findings
+3. Your recommendation on which findings to address
+
+Wait for approval or adjustments. Do not write code.
+
+Once approved, save to `specs/[feature-name].md` (kebab-case, create the directory if needed). This file is the contract between planning and execution.

@@ -40,7 +40,8 @@ npx degit aprianil/engineering-playbook/.claude/skills .claude/skills
 Or copy the `.claude/skills/` folder manually. Once in your project, the skills are available immediately.
 
 - **[eng-init](.claude/skills/eng-init/SKILL.md)** — `/eng-init` — scaffold a CLAUDE.md with playbook principles baked in. Run once per project.
-- **[eng-spec](.claude/skills/eng-spec/SKILL.md)** — `/eng-spec` — planning session. Captures context, user flow, acceptance criteria, and saves a spec file. No code.
+- **[eng-spec](.claude/skills/eng-spec/SKILL.md)** — `/eng-spec` — planning session. Captures context, user flow, acceptance criteria, and saves a spec file. Automatically stress-tests the spec with a sub-agent before presenting. No code.
+- **[eng-stress-test](.claude/skills/eng-stress-test/SKILL.md)** — `/eng-stress-test` — stress-test any spec or plan with fresh eyes. Challenges assumptions, catches overengineering, surfaces risks. Called automatically by `/eng-spec`, or run standalone.
 - **[eng-build](.claude/skills/eng-build/SKILL.md)** — `/eng-build` — execution session. Reads a spec file and builds from it.
 - **[eng-check](.claude/skills/eng-check/SKILL.md)** — `/eng-check` — review code against engineering principles. Auto-triggers when you ask Claude to review code.
 - **[deslop](.claude/skills/deslop/SKILL.md)** — `/deslop` — remove AI-generated slop: unnecessary comments, defensive checks, `any` casts, style inconsistencies. Run after AI writes code, before `/eng-check`.
