@@ -6,7 +6,7 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent
 argument-hint: [spec-file]
 ---
 
-Build a feature from an approved spec file. This is an execution session — the planning is already done.
+Build a feature from an approved spec file. This is an execution session — the planning is already done. If the spec was thorough, this should be the easy part.
 
 **What you need before starting:**
 - Read the project's CLAUDE.md for engineering principles and conventions.

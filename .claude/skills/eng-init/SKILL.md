@@ -30,7 +30,7 @@ Use this template, adapting to what you found in the project:
 
 ## Engineering principles
 
-These guide how code is written and reviewed in this project:
+Most of the work happens before and after writing code — not during. Plan thoroughly, review to catch issues, codify knowledge so it's reusable, keep quality high so future changes are easy. If execution feels hard, the planning was incomplete.
 
 1. Aim for simplicity. Cut as much as you can. Write code that reveals intentions and is easy to change.
 2. YAGNI — don't build for imaginary future requirements.

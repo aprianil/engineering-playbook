@@ -328,6 +328,16 @@ Senior isn't about code. It's about how you think — and more specifically, how
 
 Going from shipping code to engineering well is less about leveling up your code and more about leveling up your thinking.
 
+### Most of the Work Happens Before and After Writing Code
+The hard part of engineering isn't typing code — it's thinking clearly before and after.
+
+- **Plan thoroughly before writing code.** An hour of planning saves days of rework. Explore the problem, challenge assumptions, stress-test the design. When you sit down to build, the path should be clear.
+- **Review to catch issues and capture learnings.** Review is half the 80%, not an afterthought. Fresh eyes catch what the builder can't.
+- **Codify knowledge so it's reusable.** Conventions, principles, and learnings that compound should be written down — in CLAUDE.md, in playbooks, in specs. Knowledge that stays in your head helps once. Knowledge that's codified helps every future session.
+- **Keep quality high so future changes are easy.** The goal of quality isn't perfection — it's speed. Clean code changes fast. Messy code fights you.
+
+The ratio shifts by context — a small UI tweak doesn't need 80% planning, and a new system touching core infrastructure might need 90%. The principle behind the ratio is more durable than the numbers: **thinking is cheaper than fixing.**
+
 **7 principles to internalize:**
 1. **Aim for simplicity.** Cut as much as you can. Large and complicated software changes too slowly. Write code that reveals your intentions and is easy to change.
 2. **YAGNI — You Aren't Going To Need It.** Don't write complicated software in anticipation of future requirements that may never appear. You are bad at predicting the future.
@@ -579,6 +589,13 @@ Judgment becomes instinct through repetition.
 > - Each entry should make sense without needing the original conversation
 > - Headlines should be memorable phrases that capture the core lesson
 > - When this section gets long, split it into its own `[Engineering Learnings Log](Engineering Learnings Log.md)` file
+
+### 2026-03-30 — [tradeoff] Most of the work happens before and after writing code
+- The hard part of engineering isn't typing code — it's thinking clearly before and after. Plan thoroughly, review to catch issues, codify knowledge, keep quality high so future changes are easy.
+- Maps to the skill workflow: `/eng-spec` (explore + spec) and `/eng-stress-test` + `/eng-check` + `/deslop` (review) are where the bulk of the value lives. `/eng-build` (execution) should feel like the easy part.
+- The balance shifts by context: small UI tweak needs less planning. New system touching core infrastructure needs almost all thinking. The framing is directional, not a formula.
+- This is why the exploration mode in `/eng-spec` matters — rushing past "what are we actually building?" to get to code faster is the most expensive mistake.
+- If execution feels hard, the planning was incomplete. If review finds too many issues, the planning was rushed.
 
 ### 2026-03-30 — [patterns] Invest in what compounds, defer what doesn't
 - The filter for when to add something upfront vs later: "will this make the next 10 sessions better, or just this one?" If it compounds — conventions, principles, structure — add it now. If it's a one-time need, add it when you need it.

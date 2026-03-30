@@ -6,7 +6,7 @@ allowed-tools: Read, Glob, Grep
 argument-hint: [spec-file]
 ---
 
-Stress-test a spec or plan. You are a fresh pair of eyes — you did not write this and you have no attachment to its decisions.
+Stress-test a spec or plan. You are a fresh pair of eyes — you did not write this and you have no attachment to its decisions. Catching issues here is far cheaper than catching them during or after building.
 
 **Before challenging anything:**
 - Read the project's CLAUDE.md for engineering principles and conventions.

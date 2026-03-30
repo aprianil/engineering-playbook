@@ -6,7 +6,7 @@ allowed-tools: Read, Glob, Grep, Write, Bash, Agent, AskUserQuestion, EnterPlanM
 argument-hint: [feature-name]
 ---
 
-Turn a loose feature description into a spec that anyone — human or AI — can build from without follow-up questions. This is a planning session. No code gets written.
+Turn a loose feature description into a spec that anyone — human or AI — can build from without follow-up questions. This is a planning session. No code gets written. This is where most of the value lives — if the spec is clear, execution is easy.
 
 **Before anything else:**
 - Read the project's CLAUDE.md for engineering principles and conventions. If none exists, suggest running `/eng-init` first.

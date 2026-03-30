@@ -5,7 +5,7 @@ disable-model-invocation: false
 allowed-tools: Read, Glob, Grep
 ---
 
-Review code against the project's engineering principles.
+Review code against the project's engineering principles. Review is where issues get caught before they compound — this matters as much as the planning.
 
 **First:** Read the project's CLAUDE.md. That's the source of truth for this project's conventions, structure, and principles. Everything below is a fallback for projects without one.
 
