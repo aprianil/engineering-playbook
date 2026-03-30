@@ -32,7 +32,7 @@ Use this template, adapting to what you found in the project:
 
 Most of the work happens before and after writing code — not during. Plan thoroughly, review to catch issues, codify knowledge so it's reusable, keep quality high so future changes are easy. If execution feels hard, the planning was incomplete.
 
-1. Aim for simplicity. Simple = readable, changeable, few things to think about. Simple is not the same as easy — a framework can be easy to start with but complex to change. Prefer deep over shallow: a good function has a simple interface and does a lot behind it.
+1. Aim for simplicity. Simple = readable, changeable, few things to think about. Simple is not the same as easy — a framework can be easy to start with but complex to change. Prefer deep over shallow: a good function has a simple interface and does a lot behind it. A self-contained 200-line file is simpler than a 50-line file that imports from 8 others.
 2. YAGNI — don't build for requirements that don't exist yet.
 3. Discover abstractions, don't design them. Wait until the pattern repeats before extracting. Duplication is cheaper than the wrong abstraction.
 4. Time is a design constraint. Shortcuts are fine if deliberate and documented. "I'll fix it later" without a ticket is a wish, not a decision.
