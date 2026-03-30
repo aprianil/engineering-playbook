@@ -340,7 +340,7 @@ The hard part of engineering isn't typing code — it's thinking clearly before 
 The ratio shifts by context — a small UI tweak doesn't need 80% planning, and a new system touching core infrastructure might need 90%. The principle behind the ratio is more durable than the numbers: **thinking is cheaper than fixing.**
 
 **9 principles to internalize:**
-1. **Aim for simplicity.** Simple = readable, changeable, few things to think about. A self-contained 200-line file is simpler than a 50-line file that imports from 8 others.
+1. **Aim for simplicity.** Simple = readable, changeable, few things to think about. Simple is not the same as easy — a framework can be easy to start with but complex to change. Prefer deep over shallow: a good function has a simple interface and does a lot behind it. A self-contained 200-line file is simpler than a 50-line file that imports from 8 others.
 2. **YAGNI — You Aren't Going To Need It.** Don't build for requirements that don't exist yet. You are bad at predicting the future.
 3. **Discover abstractions, don't design them.** Wait until the pattern repeats before extracting. Premature abstraction is worse than duplication.
 4. **Think about time as a design constraint.** Shortcuts are fine if deliberate and documented. "I'll fix it later" without a ticket is a wish, not a decision.

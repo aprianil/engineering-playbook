@@ -32,7 +32,7 @@ Use this template, adapting to what you found in the project:
 
 Most of the work happens before and after writing code — not during. Plan thoroughly, review to catch issues, codify knowledge so it's reusable, keep quality high so future changes are easy. If execution feels hard, the planning was incomplete.
 
-1. Aim for simplicity. Simple = readable, changeable, few things to think about. A self-contained 200-line file is simpler than a 50-line file that imports from 8 others.
+1. Aim for simplicity. Simple = readable, changeable, few things to think about. Simple is not the same as easy — a framework can be easy to start with but complex to change. Prefer deep over shallow: a good function has a simple interface and does a lot behind it.
 2. YAGNI — don't build for requirements that don't exist yet.
 3. Discover abstractions, don't design them. Wait until the pattern repeats before extracting. Duplication is cheaper than the wrong abstraction.
 4. Time is a design constraint. Shortcuts are fine if deliberate and documented. "I'll fix it later" without a ticket is a wish, not a decision.
@@ -158,7 +158,62 @@ When unsure about framework APIs, patterns, or best practices, look these up bef
 - Follow the principles above — they apply to all code in this project
 ```
 
-After generating, suggest the user set up hooks for mechanical enforcement:
-- A lint hook that runs on file edits catches style issues automatically
-- A test hook that runs on commits catches regressions automatically
-- These enforce what CLAUDE.md guides — belt and suspenders
+After generating the CLAUDE.md, set up project-level hooks for mechanical enforcement in `.claude/settings.json`.
+
+Detect the project's tooling from package.json, Makefile, etc. and configure hooks accordingly:
+
+**1. Lint on file edit (PostToolUse → Edit|Write|NotebookEdit)**
+- If ESLint is installed: run `eslint --fix` on the edited file
+- If Biome is installed: run `biome check --fix` on the edited file
+- If Python with ruff: run `ruff check --fix` on the edited file
+- Only trigger on file types the linter handles
+- Exit 2 on lint errors so Claude gets feedback and fixes them
+
+**2. Typecheck + test on commit (PreToolUse → Bash, if git commit)**
+- If tsconfig.json + tsc: run `tsc --noEmit`
+- If test script exists in package.json (not the default placeholder): run `npm test`
+- If pytest/cargo test/go test detected: run the appropriate command
+- Exit 2 on failure to block the commit
+
+Write hook scripts to `.claude/hooks/` in the project root (create the directory). Make them executable.
+
+Write `.claude/settings.json` with the hooks configuration. If settings.json already exists, merge the hooks key — don't overwrite other settings.
+
+Example `.claude/settings.json`:
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/lint-on-edit.sh",
+            "statusMessage": "Linting edited file...",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "if": "Bash(git commit*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/typecheck-and-test.sh",
+            "statusMessage": "Running typecheck and tests...",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Adapt the hook scripts to the specific tools detected in the project. Keep them simple — check if the tool exists, run it, exit 2 on failure.
+
+Tell the user what hooks were set up and how they work: lint catches issues on every edit, typecheck + tests gate commits.
