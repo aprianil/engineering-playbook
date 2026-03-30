@@ -335,6 +335,7 @@ The hard part of engineering isn't typing code — it's thinking clearly before 
 - **Review to catch issues and capture learnings.** Review is half the 80%, not an afterthought. Fresh eyes catch what the builder can't.
 - **Codify knowledge so it's reusable.** Conventions, principles, and learnings that compound should be written down — in CLAUDE.md, in playbooks, in specs. Knowledge that stays in your head helps once. Knowledge that's codified helps every future session.
 - **Keep quality high so future changes are easy.** The goal of quality isn't perfection — it's speed. Clean code changes fast. Messy code fights you.
+- **Complexity is incremental.** No single decision makes a codebase complex. It's hundreds of small "just this once" compromises that compound. The same way conventions compound positively, shortcuts compound negatively.
 
 The ratio shifts by context — a small UI tweak doesn't need 80% planning, and a new system touching core infrastructure might need 90%. The principle behind the ratio is more durable than the numbers: **thinking is cheaper than fixing.**
 
