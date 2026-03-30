@@ -32,13 +32,15 @@ Use this template, adapting to what you found in the project:
 
 Most of the work happens before and after writing code — not during. Plan thoroughly, review to catch issues, codify knowledge so it's reusable, keep quality high so future changes are easy. If execution feels hard, the planning was incomplete.
 
-1. Aim for simplicity. Cut as much as you can. Write code that reveals intentions and is easy to change.
-2. YAGNI — don't build for imaginary future requirements.
-3. Discover abstractions, don't design them. Wait for the pattern to repeat before extracting. Duplication is cheaper than the wrong abstraction.
-4. Time is a design constraint. Shortcuts are okay if deliberate and documented.
-5. Type 1 vs Type 2 decisions. Most decisions are reversible — move fast on those. Be careful with irreversible ones.
-6. Invest in what compounds. Conventions and structure that improve every future session are worth adding now. One-time needs get added when needed — not before.
+1. Aim for simplicity. Simple = readable, changeable, few things to think about. A self-contained 200-line file is simpler than a 50-line file that imports from 8 others.
+2. YAGNI — don't build for requirements that don't exist yet.
+3. Discover abstractions, don't design them. Wait until the pattern repeats before extracting. Duplication is cheaper than the wrong abstraction.
+4. Time is a design constraint. Shortcuts are fine if deliberate and documented. "I'll fix it later" without a ticket is a wish, not a decision.
+5. Type 1 vs Type 2 decisions. Type 1 = hard to reverse (database schema, public APIs) — proceed carefully. Type 2 = reversible (UI, naming, library choice) — just decide. Most decisions are Type 2.
+6. Invest in what compounds. If it makes the next 10 sessions better, add it now. If it's a one-time need, add it when needed.
 7. The builder shouldn't be the reviewer. Fresh eyes catch what the author can't. Have someone (or a separate agent) challenge your work before committing.
+8. Verify, don't trust. Every change needs a way to prove it works — tests, build, lint, browser. Applies to your own code and AI-generated code equally.
+9. Own what you ship. If you can't explain why the code is structured this way, you don't understand it enough to maintain it.
 
 ## Do
 - Validate all input at the API boundary with Zod schemas

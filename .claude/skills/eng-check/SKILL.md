@@ -12,12 +12,14 @@ Review code against the project's engineering principles. Review is where issues
 Review the code the user is pointing to (or the most recently edited files if not specified).
 
 **Principles:**
-- Is this as simple as it can be? (Principle #1)
+- Is this as simple as it can be? Can someone new read, understand, and change it without breaking anything else? Cut concepts and dependencies, not just lines of code. (Principle #1)
 - Is anything being built for an imaginary future requirement? (Principle #2 — YAGNI)
 - Are there forced abstractions that should stay as duplication? (Principle #3)
-- If shortcuts were taken, are they documented? (Principle #4)
-- Are irreversible decisions being treated with enough care? (Principle #5)
+- If shortcuts were taken, are they documented with a concrete plan to revisit? A TODO without a ticket is a wish. (Principle #4)
+- Are irreversible decisions (database schema, public APIs, data models) being treated with enough care? Are reversible decisions being over-planned? (Principle #5)
 - Is what's being added worth its cost across future sessions, or is it one-time complexity? (Principle #6)
+- Has every change been verified — tests, build, lint, browser? (Principle #8)
+- Can the person who ships this explain why it's structured this way? Is anything opaque or "it works but I don't know why"? (Principle #9)
 
 **Feature structure (the seven patterns):**
 - Thin routes — validate and delegate, no business logic in route files

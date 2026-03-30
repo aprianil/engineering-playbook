@@ -15,9 +15,10 @@ Stress-test a spec or plan. You are a fresh pair of eyes — you did not write t
 
 **Challenge through the project's engineering principles:**
 
-*Simplicity (Principle #1)*
+*Simplicity (Principle #1) — simple = readable, changeable, few things to think about*
 - Is there a simpler approach that solves the same problem?
-- Could anything be cut without losing value?
+- Could anything be cut — not lines of code, but concepts, dependencies, or indirection?
+- Can someone new read this and understand it without a guided tour?
 
 *YAGNI (Principle #2)*
 - Is anything being built for an imaginary future requirement?
@@ -27,16 +28,24 @@ Stress-test a spec or plan. You are a fresh pair of eyes — you did not write t
 - Are abstractions being designed upfront that should be discovered later?
 - Is duplication being forced into a shared pattern prematurely?
 
-*Trade-offs (Principle #4)*
-- If shortcuts are proposed, are they documented with a plan to revisit?
+*Trade-offs (Principle #4) — shortcuts are fine if deliberate and tracked*
+- If shortcuts are proposed, are they documented with a concrete plan to revisit? ("I'll fix it later" without a ticket is a wish, not a decision.)
 - Are any trade-offs being ignored or hidden?
 
-*Reversibility (Principle #5)*
+*Reversibility (Principle #5) — Type 1 = hard to undo, Type 2 = easy to undo*
 - Are any decisions hard to reverse? (Database schema, public API contracts, data migrations) Flag these explicitly.
-- Are reversible decisions being over-planned? Move fast on Type 2 decisions.
+- Are reversible decisions being over-planned? "Can I undo this next week?" If yes, move fast.
 
 *Compounding (Principle #6)*
 - Is the spec investing in things that compound, or front-loading one-time concerns?
+
+*Verification (Principle #8) — every change needs a way to prove it works*
+- Does the spec define how to verify the feature works? Tests, build checks, browser validation?
+- Are there behaviors that would be hard to test or verify? Flag them.
+
+*Ownership (Principle #9) — if you can't explain it, you can't maintain it*
+- Is anything in the proposed approach so complex that the person building it won't understand why it's structured that way?
+- Would this require deep framework knowledge that the team doesn't have?
 
 *What good vs bad looks like*
 - Does the proposed structure match the project's "good" column — thin routes, shared schemas, auth wrappers, feature-name mirroring, side effects after response, structured errors, wiring files with zero logic?

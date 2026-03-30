@@ -338,14 +338,16 @@ The hard part of engineering isn't typing code — it's thinking clearly before 
 
 The ratio shifts by context — a small UI tweak doesn't need 80% planning, and a new system touching core infrastructure might need 90%. The principle behind the ratio is more durable than the numbers: **thinking is cheaper than fixing.**
 
-**7 principles to internalize:**
-1. **Aim for simplicity.** Cut as much as you can. Large and complicated software changes too slowly. Write code that reveals your intentions and is easy to change.
-2. **YAGNI — You Aren't Going To Need It.** Don't write complicated software in anticipation of future requirements that may never appear. You are bad at predicting the future.
-3. **Discover abstractions, don't design them.** Wait until you see the pattern repeat before extracting it. Premature abstraction is worse than duplication.
-4. **Think about time as a design constraint.** It's okay to pick the quick way — but do it deliberately, document the trade-off, and plan to pay it down.
-5. **Type 1 vs Type 2 decisions.** Type 1 decisions are hard to reverse — proceed carefully. Type 2 decisions are reversible — move fast. Most decisions are Type 2.
-6. **Invest in what compounds.** Conventions, principles, and structure that improve every future session are worth adding now. One-time needs get added when they're needed — not before. Applies to code (abstractions), AI context (CLAUDE.md, skills), and project structure. The test: "will this make the next 10 sessions better, or just this one?"
-7. **The builder shouldn't be the reviewer.** Fresh eyes catch what the author can't — in code reviews, spec reviews, and AI workflows. When you write something, have someone (or something) else challenge it before you commit. The author has blind spots about their own assumptions.
+**9 principles to internalize:**
+1. **Aim for simplicity.** Simple = readable, changeable, few things to think about. A self-contained 200-line file is simpler than a 50-line file that imports from 8 others.
+2. **YAGNI — You Aren't Going To Need It.** Don't build for requirements that don't exist yet. You are bad at predicting the future.
+3. **Discover abstractions, don't design them.** Wait until the pattern repeats before extracting. Premature abstraction is worse than duplication.
+4. **Think about time as a design constraint.** Shortcuts are fine if deliberate and documented. "I'll fix it later" without a ticket is a wish, not a decision.
+5. **Type 1 vs Type 2 decisions.** Type 1 = hard to reverse (database schema, public APIs) — proceed carefully. Type 2 = reversible (UI, naming, library choice) — just decide. Most decisions are Type 2.
+6. **Invest in what compounds.** If it makes the next 10 sessions better, add it now. If it's a one-time need, add it when you need it.
+7. **The builder shouldn't be the reviewer.** Fresh eyes catch what the author can't. Have someone — or a separate agent — challenge your work before you commit.
+8. **Verify, don't trust.** Every change needs a way to prove it works — tests, build, lint, browser. Applies to your own code and AI-generated code equally.
+9. **Own what you ship.** If you can't explain why the code is structured this way, you don't understand it enough to maintain it. AI types, you think.
 
 **Essential resources:**
 - "A Philosophy of Software Design" by John Ousterhout — the best book on simplicity and complexity in code. Short, practical. Start here.
@@ -589,6 +591,12 @@ Judgment becomes instinct through repetition.
 > - Each entry should make sense without needing the original conversation
 > - Headlines should be memorable phrases that capture the core lesson
 > - When this section gets long, split it into its own `[Engineering Learnings Log](Engineering Learnings Log.md)` file
+
+### 2026-03-30 — [patterns] Verify, don't trust + Own what you ship
+- Added two new principles after stress-testing the existing seven. Both fill gaps that are especially important when building with AI.
+- "Verify, don't trust" was already implicit everywhere (tests, build, lint, browser checks) but never stated as a principle. Making it explicit means it applies consistently — to your own code, to AI-generated code, to dependencies.
+- "Own what you ship" captures the difference between using AI well and being a middleman. If you can't explain the code, you can't maintain it. Understanding compounds; copy-pasting doesn't. This is what separates "AI-assisted" from "AI-dependent."
+- Also tightened all 9 principles to bold one-liner + max 2 sentences. Same format as the AEO playbook's 11 principles — scannable (read the bold) and deep (read the explanation when needed).
 
 ### 2026-03-30 — [tradeoff] Most of the work happens before and after writing code
 - The hard part of engineering isn't typing code — it's thinking clearly before and after. Plan thoroughly, review to catch issues, codify knowledge, keep quality high so future changes are easy.

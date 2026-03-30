@@ -51,11 +51,14 @@ When the exploration involves trade-offs, architectural choices, or multiple val
 Scale the spec to the task. Small feature → skip sections that don't apply. New initiative → full context.
 
 **Apply the project's engineering principles throughout:**
-- Is this the simplest approach that solves the problem? (Principle #1)
+- Is this the simplest approach? Readable, changeable, few things to think about? (Principle #1)
 - Are we building for a real requirement or an imaginary one? (Principle #2 — YAGNI)
 - Are we designing abstractions upfront, or discovering them? (Principle #3)
-- Are any decisions here irreversible? Those deserve extra scrutiny. (Principle #5)
+- If we're taking shortcuts, do they have a concrete plan to revisit? (Principle #4)
+- Are any decisions here irreversible (database schema, public APIs)? Those deserve extra scrutiny. Reversible ones — just decide. (Principle #5)
 - Does what we're adding compound over time, or is it a one-time need? (Principle #6)
+- How will we verify this works? What tests, checks, or browser validation should the spec require? (Principle #8)
+- Will the user understand why the code is structured this way after building? Flag anything that needs explanation in the spec. (Principle #9)
 
 **The spec format:**
 
