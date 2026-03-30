@@ -26,6 +26,8 @@ This is a living document — I'm still early in this journey. It grows as I lea
 - **[Code Review - What to Look For and How to Do It.md](<Code Review - What to Look For and How to Do It.md>)** — Google's code review guide distilled — what to look for, how to comment, speed, handling pushback
 - **[Choosing a Tech Stack.md](<Choosing a Tech Stack.md>)** — reference stack for web apps (2026) — boring, AI-fluent, zero-ops
 - **[Anatomy of a Well-Structured Feature.md](<Anatomy of a Well-Structured Feature.md>)** — seven timeless patterns for how a feature should be structured across layers
+- **[Building Engineering Taste.md](<Building Engineering Taste.md>)** — reading path for developing the eye — from code quality vocabulary to systems thinking
+- **[Open Source Maintainership.md](<Open Source Maintainership.md>)** — building trust, community design, release mechanics, saying no — for a product person's first open source project
 
 **Skills (Claude Code slash commands):**
 

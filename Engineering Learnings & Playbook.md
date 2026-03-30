@@ -19,7 +19,7 @@
 > - Check for internal conflicts before adding anything new. Don't let new advice contradict existing principles.
 > - Tone: practical, direct, written for a designer/product builder. Not academic, not CS-heavy.
 > - Only use the principles and learnings documented here when writing or editing code in my projects. Don't guess or invent new philosophy — work with what's in this file.
-> - **This playbook is the root, not the container.** When a topic needs a deep dive, suggest creating a new .md file in this vault (flat structure, no subfolders — all files live at the vault root) and link to it from here using `[[Note Name]]`. Keep the playbook as a clean hub that links out — don't let it grow into a textbook.
+> - **This playbook is the root, not the container.** When a topic needs a deep dive, suggest creating a new .md file in this vault (flat structure, no subfolders — all files live at the vault root) and link to it from here using `[Note Name](Note Name.md)`. Keep the playbook as a clean hub that links out — don't let it grow into a textbook.
 
 ---
 
@@ -35,18 +35,20 @@
 
 | Note | What it covers |
 |------|---------------|
-| [[How to Read and Navigate an Unfamiliar Codebase]] | Finding your way through a project you didn't build |
-| [[How to Learn From Your Engineer's Code]] | Turning PRs and code review into a learning tool |
-| [[Debugging Mindset]] | A systematic approach to fixing bugs instead of guessing |
-| [[Git Workflow Fundamentals]] | Commits, branches, PRs, and the mechanics of shipping code |
-| [[Testing - When and What to Test]] | What's worth testing, what's not, and how to think about it |
-| [[Communicating Technically With Engineers]] | Asking the right questions, translating between product and engineering |
-| [[Logging in Production]] | Production logging is permanent code, not debugging leftovers |
-| [[Race Conditions]] | Timing bugs when things happen at the same time — common when vibe coding |
-| [[Working Effectively With AI]] | How to communicate with AI coding tools — prompting, context engineering, and verification |
-| [[Code Review - What to Look For and How to Do It]] | Google's code review guide distilled — what to look for, how to comment, speed, handling pushback |
-| [[Choosing a Tech Stack]] | Reference stack for web apps (2026) — boring, AI-fluent, zero-ops. Perishable — revisit when tools change |
-| [[Anatomy of a Well-Structured Feature]] | Seven timeless patterns for how a feature should be structured across layers — validated across five production codebases |
+| [How to Read and Navigate an Unfamiliar Codebase](How to Read and Navigate an Unfamiliar Codebase.md) | Finding your way through a project you didn't build |
+| [How to Learn From Your Engineer's Code](How to Learn From Your Engineer's Code.md) | Turning PRs and code review into a learning tool |
+| [Debugging Mindset](Debugging Mindset.md) | A systematic approach to fixing bugs instead of guessing |
+| [Git Workflow Fundamentals](Git Workflow Fundamentals.md) | Commits, branches, PRs, and the mechanics of shipping code |
+| [Testing - When and What to Test](Testing - When and What to Test.md) | What's worth testing, what's not, and how to think about it |
+| [Communicating Technically With Engineers](Communicating Technically With Engineers.md) | Asking the right questions, translating between product and engineering |
+| [Logging in Production](Logging in Production.md) | Production logging is permanent code, not debugging leftovers |
+| [Race Conditions](Race Conditions.md) | Timing bugs when things happen at the same time — common when vibe coding |
+| [Working Effectively With AI](Working Effectively With AI.md) | How to communicate with AI coding tools — prompting, context engineering, and verification |
+| [Code Review - What to Look For and How to Do It](Code Review - What to Look For and How to Do It.md) | Google's code review guide distilled — what to look for, how to comment, speed, handling pushback |
+| [Choosing a Tech Stack](Choosing a Tech Stack.md) | Reference stack for web apps (2026) — boring, AI-fluent, zero-ops. Perishable — revisit when tools change |
+| [Anatomy of a Well-Structured Feature](Anatomy of a Well-Structured Feature.md) | Seven timeless patterns for how a feature should be structured across layers — validated across five production codebases |
+| [Building Engineering Taste](Building Engineering Taste.md) | Reading path for developing the eye — from code quality vocabulary to systems thinking |
+| [Open Source Maintainership](Open Source Maintainership.md) | Building trust, community design, release mechanics, saying no — for a product person's first open source project |
 
 ---
 
@@ -132,7 +134,7 @@ Technology selection
 - Ship first, switch later — portability concerns before users are a procrastination vector.
 ```
 
-See [[Choosing a Tech Stack]] for a reference stack applying these principles.
+See [Choosing a Tech Stack](Choosing a Tech Stack.md) for a reference stack applying these principles.
 
 ### The Scaffolding Checklist
 Before starting any new project, answer these:
@@ -190,7 +192,7 @@ Step 3 (more complexity — split across layers):
 
 The rule: split when a file does too many things, not before. This is Principle #3 in action — discover the structure, don't over-design it upfront. Start with one file in `/features`. When it needs an API route and business logic, split across layers.
 
-Once a feature has multiple files across layers (route, logic, hooks), there are seven patterns that keep it clean as it grows. See [[Anatomy of a Well-Structured Feature]] for the full breakdown — thin routes, shared schemas, auth wrappers, and more.
+Once a feature has multiple files across layers (route, logic, hooks), there are seven patterns that keep it clean as it grows. See [Anatomy of a Well-Structured Feature](Anatomy of a Well-Structured Feature.md) for the full breakdown — thin routes, shared schemas, auth wrappers, and more.
 
 ### Setting Up CLAUDE.md — Your AI Onboarding Doc
 A `CLAUDE.md` file at the project root is the first thing Claude Code reads when it enters your project. Think of it as a briefing doc — it tells AI who this project is, how it's built, and what rules to follow. Without it, you'll repeat the same context every conversation.
@@ -279,19 +281,21 @@ One-line description of the product and who it's for.
 This takes 5 minutes to write and pays off in every AI session. Claude Code will follow these conventions automatically instead of guessing.
 
 ### Working With AI Coding Tools
-Beyond rules files, there are habits that make AI consistently useful. These apply regardless of which tool you use — the principles are the same.
+Beyond rules files, there are principles that make AI consistently useful. These apply regardless of which tool you use.
 
-**The AI context mindset** — every time you structure a file or name a function, you're not just writing for yourself. You're writing for a future AI session that needs to understand this code fast. Clear naming, small files, and co-located features all make AI assistance dramatically better. The same things that make code maintainable for humans make it navigable for AI.
+**Goal + constraints, not step-by-step instructions** — give the model a clear outcome, the constraints it should respect, and access to the tools it needs. Let it figure out the path. Don't choreograph its execution — models are increasingly better at choosing their own approach than following yours.
 
-**Be specific when giving tasks** — the difference between "AI is useless" and "AI is incredible" is often how well you communicate. Give it the technical details, the constraints, the docs, and what it should *not* touch. When AI has to guess, you get code that looks right but isn't.
+**Context mindset** — every time you structure a file or name a function, you're writing for a future AI session that needs to understand this code fast. Clean naming, small files, and co-located features make AI assistance dramatically better. The same things that make code maintainable for humans make it navigable for AI.
 
-**Break tasks down** — AI is good at small, focused tasks. It struggles with big, ambiguous ones. If you can't break a task down into smaller pieces, you don't understand the problem well enough yet. This isn't an AI trick — it's fundamental engineering.
+**Give tools, not answers** — instead of pasting docs into prompts, give the model a URL it can fetch. Instead of describing the UI, give it a browser tool. Let the model pull context when it needs it rather than front-loading everything.
 
-**Verify, don't trust** — AI should never just write code. Give it a way to prove the code works: tests, build commands, browser checks. If you let AI generate the tests, verify the tests too.
+**Verify, don't trust** — the model should always have a way to prove its work: tests, build commands, browser checks, CI/CD. This is timeless regardless of how capable models get.
 
-**Extend with tools** — most AI coding tools support plugins or extensions (MCPs, etc.) that give AI access to documentation, dev tools, databases. Find the ones that match your stack — the right combination makes a real difference.
+**Decompose for your thinking, not the model's** — breaking problems down is fundamental engineering. But you don't need to hand-feed each step to the model. Decompose to sharpen your understanding, then give the model the full picture.
 
-See [[Working Effectively With AI]] for the full deep dive on prompting patterns, context engineering, and verification.
+**Let go of what models outgrow** — techniques that were necessary a year ago may be unnecessary scaffolding today. If something feels like hand-holding, test whether the model still needs it.
+
+See [Working Effectively With AI](Working Effectively With AI.md) for the full deep dive on context engineering, tool-first thinking, and verification.
 
 **Claude Code-specific practices:**
 
@@ -439,7 +443,7 @@ Reference this when building or reviewing code. If something looks like the righ
 | Request IDs to trace one user's journey across the system | Logs from all users mixed together with no way to filter |
 | Sensitive data (passwords, tokens, card numbers) never logged | Full credentials dumped into logs |
 
-See [[Logging in Production]] for deeper guidance.
+See [Logging in Production](Logging in Production.md) for deeper guidance.
 
 ### Auth & Security
 | Good | Bad |
@@ -572,7 +576,15 @@ Judgment becomes instinct through repetition.
 > - Newest entries go at the top
 > - Each entry should make sense without needing the original conversation
 > - Headlines should be memorable phrases that capture the core lesson
-> - When this section gets long, split it into its own `[[Engineering Learnings Log]]` file
+> - When this section gets long, split it into its own `[Engineering Learnings Log](Engineering Learnings Log.md)` file
+
+### 2026-03-29 — [patterns] Goal + tools + constraints > step-by-step orchestration
+- Anthropic's own advice: don't box the model in. Give it tools, give it a goal, let it figure out the path. A year ago you needed scaffolding and strict workflows. Now you mostly don't — and the gap keeps widening.
+- This is the Bitter Lesson applied to AI-assisted coding. General methods (clear goals, good tools, clean context) always outperform hand-engineered orchestration (step 1 → step 2 → step 3 workflows).
+- What to hold onto: decomposition is still fundamental engineering — but it's a *thinking* tool for humans, not a limitation of the model. Decompose to sharpen your understanding, then give the model the full picture.
+- What to let go of: prescriptive prompt structures (Task/Background/Do not), micro-step choreography in skills, breaking tasks down *for the model's sake*. These were training wheels. Test whether they're still needed — they probably aren't.
+- The durable investments: CLAUDE.md (conventions), project structure (context engineering), tool access (MCPs, browser, docs), verification (tests, build, visual checks), acceptance criteria (definition of done). These work regardless of model generation.
+- Updated `/eng-build` to reflect this: goal + constraints + verify, not step-by-step execution instructions. Updated [Working Effectively With AI](Working Effectively With AI.md) deep dive with tool-first thinking and the Bitter Lesson framing.
 
 ### 2026-03-27 — [structure] Seven patterns of a well-structured feature
 - Navigated five production codebases using the deep dive method. Same seven patterns appeared in every mature codebase regardless of language or framework. One codebase (Papermark) showed what happens when the patterns aren't partially applied — working product, but growing friction from duplicated auth, fat routes, and no shared schemas. Cal.com was the most disciplined — they codified these patterns as explicit engineering rules in their `CLAUDE.md` and `agents/rules/` directory.
@@ -626,7 +638,7 @@ Judgment becomes instinct through repetition.
 - Use rules files (CLAUDE.md, guidelines.md) so AI remembers project context across sessions. Write it once, benefit every session.
 - Always give AI a way to verify its work — tests, browser, CLI, CI/CD. Don't let it just write code blindly.
 - Don't let AI think for you. Let it type for you. The moment you outsource your thinking, you're not applying any skill — you're just a middleman.
-- See [[Working Effectively With AI]] for the full deep dive.
+- See [Working Effectively With AI](Working Effectively With AI.md) for the full deep dive.
 
 ### 2026-03-25 — [structure] Feature-based architecture is context engineering for AI
 - Bulletproof React's structure isn't just clean for humans — it controls what AI sees, which controls the quality of what it produces.
