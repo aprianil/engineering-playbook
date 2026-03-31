@@ -12,7 +12,7 @@ This skill spawns a sub-agent with fresh context. The builder shouldn't review t
 **How it works:**
 
 1. Read the project's CLAUDE.md for conventions.
-2. Get the changed files: `git diff main --name-only`.
+2. Get the changed files: detect the base branch (`git symbolic-ref refs/remotes/origin/HEAD` or fall back to `main`/`master`), then diff against the merge base (`git diff $(git merge-base <base> HEAD) --name-only`). This ensures only changes on the current branch are reviewed.
 3. Spawn a sub-agent (Agent tool) with the CLAUDE.md conventions, the list of changed files, and this goal:
 
 > You are reviewing code changes with fresh eyes. You did not write this code.

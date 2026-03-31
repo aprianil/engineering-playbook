@@ -40,6 +40,8 @@ These aren't steps — they're judgment. If something feels off, pause and flag 
 
 Be honest about what's done and what isn't. Present the result referencing the spec's acceptance criteria as a checklist.
 
+**Mark the spec as built.** Add `status: built` and the date to the top of the spec file. This keeps `specs/` clean -- you can tell at a glance what's pending vs done.
+
 **After shipping — reflect (only if something surprised you):**
 Skip this if the build was straightforward. Most sessions won't produce a learning. But if something unexpected came up, ask the user:
 - What trade-off did we make? What did we choose, what did we reject?

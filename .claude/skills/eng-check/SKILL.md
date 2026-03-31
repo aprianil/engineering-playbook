@@ -1,7 +1,7 @@
 ---
 name: eng-check
 description: Review code against engineering principles. Use when the user asks to review code, check quality, or wants a code review before shipping.
-disable-model-invocation: false
+disable-model-invocation: true
 allowed-tools: Read, Glob, Grep
 ---
 
