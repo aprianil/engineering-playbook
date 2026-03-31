@@ -22,6 +22,15 @@ Before writing code, give the user a brief summary of what you're about to build
 
 After that, execute. Break the work into whatever chunks make sense, briefly state progress at natural milestones, and use the tools available to verify your work as you go.
 
+**While building, hold these in mind:**
+- Am I discovering this abstraction or forcing it?
+- Am I building for a real requirement or an imaginary one?
+- Can someone understand this behavior without opening multiple files?
+- What happens when this input is empty, null, or unexpected?
+- What else does this change touch? What breaks if it fails?
+
+These aren't steps — they're judgment. If something feels off, pause and flag it.
+
 **When you think you're done, check:**
 - Does every acceptance criterion in the spec pass?
 - Does the code follow the project's conventions (from CLAUDE.md)?
@@ -31,11 +40,15 @@ After that, execute. Break the work into whatever chunks make sense, briefly sta
 
 Be honest about what's done and what isn't. Present the result referencing the spec's acceptance criteria as a checklist.
 
-**Capture learnings (only if something surprised you):**
-Skip this if the build was straightforward. Only ask if something unexpected came up — a codebase quirk, an API behavior, a pattern that worked unusually well or poorly.
+**After shipping — reflect (only if something surprised you):**
+Skip this if the build was straightforward. Most sessions won't produce a learning. But if something unexpected came up, ask the user:
+- What trade-off did we make? What did we choose, what did we reject?
+- What would we do differently next time?
+- Did anything break or feel harder than expected? Why?
 
-Where it goes depends on scope:
-- **CLAUDE.md** — only if it's a convention or constraint that affects how all code should be written in this project. Keep CLAUDE.md lean.
-- **docs/learnings.md** — codebase quirks, API gotchas, edge cases discovered. Accumulated knowledge that's useful but doesn't need to load every session.
+**Where learnings go depends on scope:**
+- **CLAUDE.md** — conventions or constraints that affect how all code should be written in this project. Keep it lean.
+- **docs/learnings.md** — codebase quirks, API gotchas, edge cases. Useful knowledge that doesn't need to load every session.
+- **Engineering Learnings & Playbook** (via `/sync-playbook`) — timeless insights that change how you think about building, not just this project.
 
-Before adding, check `docs/learnings.md` for duplicates. Update an existing entry rather than adding a new one if the topic is already covered. Not every build session produces a learning — most won't.
+Before adding, check for duplicates. Update an existing entry rather than adding a new one if the topic is already covered.

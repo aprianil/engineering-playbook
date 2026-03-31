@@ -73,7 +73,7 @@ You see the spec + stress-test findings together. Adjust, approve, save to `spec
 
 ---
 
-## Step 3: `/eng-build` (execution)
+## Step 3: `/eng-build` (execution + reflection)
 
 New session. Claude reads the CLAUDE.md and the approved spec. The planning is done — execution should feel easy.
 
@@ -96,18 +96,23 @@ Acceptance criteria:
 
 The feature follows the project's structure conventions — thin routes, business logic in `lib/`, shared Zod schema, feature-specific UI components.
 
+While building, the skill holds judgment questions in mind — am I discovering this abstraction or forcing it? What breaks if this fails? Can someone understand this without opening multiple files? These aren't steps, they're a lens. If something feels off, it pauses and flags.
+
+After shipping, the skill prompts reflection — but only if something surprised you. What trade-off did we make? What would we do differently? Learnings get routed to the right place: CLAUDE.md for project conventions, `docs/learnings.md` for codebase quirks, or the playbook's Learnings Log for timeless insights.
+
 **Principles in play:** #1 (simple structure — 6 focused files), #4 (documented trade-offs in the spec), #8 (verified against acceptance criteria).
 
 ---
 
-## Step 4: `/deslop` (clean up AI artifacts)
+## Step 4: `/deslop` (clean up with fresh eyes)
 
 ```
 Removed 3 unnecessary comments, one redundant try/catch,
-replaced an `as any` cast with a proper type. 3 changes.
+replaced an `as any` cast with a proper type, inlined a
+single-use helper. 4 changes.
 ```
 
-AI writes functional code, but it also writes slop — comments that restate the obvious, defensive checks that aren't needed, type casts that hide real issues. `/deslop` catches these before review.
+`/deslop` spawns a fresh sub-agent that reads the code without the build session's context or bias (Principle #7). It removes AI slop — comments that restate the obvious, defensive checks that can't trigger, type casts that hide real issues — and simplifies unnecessary complexity like redundant logic or single-use abstractions. The sub-agent follows the project's CLAUDE.md conventions, not its own preferences.
 
 ---
 
@@ -154,15 +159,15 @@ That's the difference between shipping code and owning it.
      |
 /eng-spec          Explore → Spec → Stress-test
      |
-/eng-build         Execute from the approved spec
+/eng-build         Execute from the approved spec + reflect
      |
-/deslop            Clean AI artifacts
+/deslop            Clean up with fresh eyes (sub-agent)
      |
 /eng-check         Verify against principles
      |
 You review         Own what you ship
 ```
 
-Most of the work happens before and after writing code. The spec forces planning. The stress-test catches assumptions. The build follows the spec. Deslop cleans artifacts. Eng-check verifies quality. And at the end, you understand what you shipped.
+Most of the work happens before and after writing code. The spec forces planning. The stress-test catches assumptions. The build follows the spec and reflects on what surprised you. Deslop brings fresh eyes to clean up. Eng-check verifies quality. And at the end, you understand what you shipped.
 
 The principles aren't abstract — they're embedded in every step.
