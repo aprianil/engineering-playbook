@@ -42,6 +42,10 @@ When the exploration involves trade-offs, architectural choices, or multiple val
 
 ## Spec writing
 
+**Before writing, check scope.** If the feature touches multiple independent subsystems, suggest separate specs. Each spec should produce independently working, testable software. A bloated spec that tries to do everything leads to a bloated build.
+
+**Then map the file structure first.** Lock which files get created, modified, or tested before writing the rest of the spec. This forces decomposition decisions early — when they're cheap to change — and gives the builder a clear map.
+
 **What you need (ask only what's still missing after exploration):**
 - What problem does this solve? (one sentence)
 - Who is this for?

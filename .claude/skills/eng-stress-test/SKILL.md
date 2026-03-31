@@ -51,6 +51,11 @@ Stress-test a spec or plan. You are a fresh pair of eyes — you did not write t
 - Does the proposed structure match the project's "good" column — thin routes, shared schemas, auth wrappers, feature-name mirroring, side effects after response, structured errors, wiring files with zero logic?
 - Are there patterns from the "bad" column sneaking in?
 
+*Spec coverage — can you trace each acceptance criterion to the proposed approach?*
+- For each acceptance criterion, can you point to where in the file structure and approach it gets implemented?
+- Are there criteria with no clear home? That's a gap in the plan.
+- Are there files or components in the approach that don't map to any criterion? That's scope creep.
+
 *Edge cases that matter*
 - What would hurt users or corrupt data if missed?
 - What happens when external dependencies fail?
