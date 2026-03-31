@@ -12,7 +12,10 @@ Review code against the project's engineering principles. This spawns a sub-agen
 1. Read the project's CLAUDE.md for conventions and principles.
 2. Get the changed files: detect the base branch, then `git diff $(git merge-base <base> HEAD) --name-only`.
 3. If a spec exists in `specs/` for this feature, read it.
-4. Spawn a sub-agent (Agent tool) with the CLAUDE.md, the list of changed files, the spec (if any), and everything below as the review instructions.
+4. Spawn two sub-agents in parallel, each with the CLAUDE.md, the list of changed files, and the spec (if any):
+   - **Architecture reviewer** -- gets the Principles, Feature structure, Structure & naming, and Spec alignment sections below. Focuses on design, patterns, and structure.
+   - **Correctness reviewer** -- gets the Correctness, Tests, and Comments & PR hygiene sections below. Focuses on bugs, edge cases, security, and testing.
+5. Merge findings into a single report. Deduplicate if both flagged the same issue.
 
 ---
 

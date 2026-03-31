@@ -38,6 +38,8 @@ Probe through these lenses (skip what's already clear):
 
 When the exploration involves trade-offs, architectural choices, or multiple valid approaches — use `EnterPlanMode` to think it through properly. Write out the options, pros/cons, and your recommendation. Exit plan mode when you have a clear direction.
 
+When evaluating multiple approaches that need research (e.g., comparing APIs, libraries, or architectural patterns), spawn parallel sub-agents to explore each option independently. Each sub-agent gets one option to research — read docs, check feasibility, identify trade-offs. The parent compares findings and recommends. This is faster and each sub-agent goes deeper than sequential exploration.
+
 **Exit exploration when:** the problem is clear, the scope is bounded, and you could write acceptance criteria. Then transition to spec writing.
 
 ## Spec writing
