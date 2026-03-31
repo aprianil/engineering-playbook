@@ -78,7 +78,7 @@ One-line verdict: **ready to build** / **address these first** / **rethink appro
 Prioritized list (3-7 items for most specs). Each item:
 - The concern (one line)
 - Why it matters (what breaks or what's expensive to fix later)
-- Suggested fix or question to resolve
+- A specific question that would resolve it (not a fix -- your job is to challenge, not to prescribe solutions)
 
 End with what the spec got right — one or two lines. Prevents the stress-test from being pure criticism.
 
