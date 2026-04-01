@@ -151,6 +151,9 @@ When unsure about framework APIs, patterns, or best practices, look these up bef
 
 [If a technology isn't in this table, ask the user for the docs URL.]
 
+## Knowledge base
+- `docs/solutions/` — non-obvious solutions from past sessions. Search here before debugging from scratch.
+
 ## What to watch out for
 [Include any gotchas from the user]
 
@@ -184,6 +187,18 @@ Example `.claude/settings.json`:
 ```json
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-compound-drafts.sh",
+            "timeout": 5,
+            "statusMessage": "Checking for compound drafts..."
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write|NotebookEdit",
@@ -215,6 +230,27 @@ Example `.claude/settings.json`:
 }
 ```
 
-Adapt the hook scripts to the specific tools detected in the project. Keep them simple — check if the tool exists, run it, exit 2 on failure.
+**3. Compound drafts check (SessionStart)**
 
-Tell the user what hooks were set up and how they work: lint catches issues on every edit, typecheck + tests gate commits.
+Always create this hook regardless of stack. Write `.claude/hooks/check-compound-drafts.sh`:
+
+```bash
+#!/bin/bash
+# Check for unprocessed compound drafts from eng-check.
+# Outputs a quiet note if drafts exist -- doesn't interrupt the session.
+# Auto-cleans drafts older than 30 days.
+
+DRAFTS_DIR="docs/solutions/.drafts"
+
+if [ -d "$DRAFTS_DIR" ]; then
+  find "$DRAFTS_DIR" -name "*.md" -type f -mtime +30 -delete 2>/dev/null
+  DRAFT_COUNT=$(find "$DRAFTS_DIR" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$DRAFT_COUNT" -gt 0 ]; then
+    echo "Note: $DRAFT_COUNT compound draft(s) in docs/solutions/.drafts/ from past reviews. Run /eng-compound when you're ready."
+  fi
+fi
+```
+
+Adapt the other hook scripts to the specific tools detected in the project. Keep them simple — check if the tool exists, run it, exit 2 on failure.
+
+Tell the user what hooks were set up and how they work: lint catches issues on every edit, typecheck + tests gate commits, compound drafts are checked at session start.

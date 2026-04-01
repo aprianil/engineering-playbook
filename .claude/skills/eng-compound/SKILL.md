@@ -81,11 +81,6 @@ Keep it short. A good solution doc is 20-40 lines.
 
 ## After writing
 
-**Assess transferability.** Ask the user: "Is this specific to this project, or would it apply to any project using [relevant stack/tool]?"
-
-- **Project-specific** -- stays in `docs/solutions/`. Done.
-- **Transferable** -- add a note at the bottom: `> Transferable: candidate for engineering-playbook deep dive on [topic]`. The user decides when to promote it.
-
 **Make it discoverable.** Check the project's CLAUDE.md. If there's no mention of `docs/solutions/`, add a one-liner:
 
 ```markdown
