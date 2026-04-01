@@ -40,13 +40,35 @@ When the exploration involves trade-offs, architectural choices, or multiple val
 
 When evaluating multiple approaches that need research (e.g., comparing APIs, libraries, or architectural patterns), spawn parallel sub-agents to explore each option independently. Each sub-agent gets one option to research — read docs, check feasibility, identify trade-offs. The parent compares findings and recommends. This is faster and each sub-agent goes deeper than sequential exploration.
 
-**Exit exploration when:** the problem is clear, the scope is bounded, and you could write acceptance criteria. Then transition to spec writing.
+**Exit exploration when:** the problem is clear, the scope is bounded, and you could write acceptance criteria. Then transition to research.
+
+## Research (ground the spec in evidence)
+
+Before writing the spec, gather concrete evidence from the codebase. This prevents the spec from being written on vibes -- the proposed approach should reference real files, real patterns, and real constraints.
+
+**Skip this step when the feature is small and the codebase is familiar enough that you already know the relevant files and patterns.** Don't launch agents to confirm what's obvious.
+
+Launch two parallel sub-agents, each focused on one concern:
+
+| Agent | What it researches | What it returns |
+| --- | --- | --- |
+| **Codebase fit** | What existing patterns should this feature follow? What files will be touched or created? Is there code that already solves part of this? | File paths with line numbers, relevant code snippets, the pattern to follow |
+| **Edge cases & constraints** | What inputs or states could break this? What happens when external dependencies fail? Are any decisions irreversible (DB schema, public APIs)? | Prioritized list of risks with severity (blocks build vs. handle later) |
+
+Each agent gets:
+- The feature description and direction from exploration (inline)
+- The project's CLAUDE.md conventions (inline)
+- The project root path
+
+The agents explore the codebase independently. Wait for both to return before writing the spec.
+
+**Use the findings to ground the spec** -- the "Proposed approach" section should reference the codebase agent's file paths and patterns. The "Edge cases & risks" section should incorporate the constraints agent's findings. Don't just append findings -- weave them into the spec so the builder gets one coherent document.
 
 ## Spec writing
 
 **Before writing, check scope.** If the feature touches multiple independent subsystems, suggest separate specs. Each spec should produce independently working, testable software. A bloated spec that tries to do everything leads to a bloated build.
 
-**Then map the file structure first.** Lock which files get created, modified, or tested before writing the rest of the spec. This forces decomposition decisions early — when they're cheap to change — and gives the builder a clear map.
+**Then map the file structure first.** Lock which files get created, modified, or tested before writing the rest of the spec. This forces decomposition decisions early — when they're cheap to change — and gives the builder a clear map. The codebase fit research should inform this directly -- follow the patterns it found.
 
 **What you need (ask only what's still missing after exploration):**
 - What problem does this solve? (one sentence)

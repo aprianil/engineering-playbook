@@ -49,7 +49,7 @@ Simplicity -- DataForSEO handles the hard part.
 Type 2 decision -- you can switch to direct APIs later.
 ```
 
-Once the idea is clear, the skill writes a full spec -- context, user flow, acceptance criteria, edge cases, proposed file structure.
+Once the idea is clear, the skill **launches parallel research agents** to ground the spec in real codebase evidence before writing it. Two agents run simultaneously -- one maps which files and patterns the feature should follow, the other surfaces edge cases and constraints (irreversible decisions, failure modes, risky inputs). The spec is then written from their findings, so the "Proposed approach" references real file paths and the "Edge cases" section reflects actual constraints -- not guesses.
 
 Then it **spawns a sub-agent to stress-test the spec with fresh eyes** (the builder shouldn't be the reviewer). The stress-test agent reads the spec cold, loads the project's CLAUDE.md, explores the codebase, and challenges the design:
 
@@ -69,7 +69,7 @@ Verdict: address these first
 
 You see the spec + stress-test findings together. Adjust, approve, save to `specs/citation-tracking.md`.
 
-**Principles in play:** simplicity (chose the simpler approach), YAGNI (only two platforms, not three), Type 2 decision (reversible API choice), fresh eyes on the spec, stress-test caught the verification gap.
+**Principles in play:** simplicity (chose the simpler approach), YAGNI (only two platforms, not three), Type 2 decision (reversible API choice), parallel research grounded the spec in real file paths and constraints, fresh eyes on the spec, stress-test caught the verification gap.
 
 ---
 
