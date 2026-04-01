@@ -113,7 +113,7 @@ After writing the spec, spawn a sub-agent to stress-test it with fresh eyes. Pas
 
 Example prompt structure:
 
-"You are stress-testing this spec with fresh eyes. You did not write it.
+"You are stress-testing this spec with fresh eyes. You did not write it. Your job is to catch issues now while they're cheap to fix.
 
 Here is the spec:
 [paste full spec content]
@@ -124,7 +124,28 @@ Here are the project's engineering principles:
 Here are the key files and patterns referenced:
 [paste file paths + relevant code snippets you already found during research]
 
-Follow the /eng-stress-test skill instructions. The project root is [path]. You may explore the codebase further if needed, but the context above should cover most of what you need."
+The project root is [path]. You may explore the codebase further if needed, but the context above should cover most of what you need.
+
+Challenge the spec through these lenses (skip what's clearly fine):
+- Simplicity: is there a simpler approach? Could concepts, dependencies, or indirection be cut?
+- YAGNI: is anything built for an imaginary future requirement?
+- Abstractions: are abstractions designed upfront that should be discovered later?
+- Trade-offs: are shortcuts documented with a concrete plan to revisit?
+- Reversibility: are any decisions hard to reverse (DB schema, public APIs, migrations)? Flag these. Are reversible decisions being over-planned?
+- Compounding: does this invest in things that compound, or front-load one-time concerns?
+- Verification: does the spec define how to verify the feature works?
+- Ownership: is anything so complex the builder won't understand why it's structured that way?
+- Edge cases: what would hurt users or corrupt data if missed? Concurrency issues? Security gaps?
+
+Do NOT generate generic checklists. Only raise concerns specific to this feature. Do NOT suggest complexity for hypothetical scenarios.
+
+Prioritize ruthlessly -- handle what would hurt users, force a rewrite, or create security/data issues. Dismiss what's not worth the complexity.
+
+YOUR OUTPUT (return this as your response):
+1. One-line verdict: 'ready to build' / 'address these first' / 'rethink approach'
+2. Prioritized list (3-7 items). Each item: the concern (one line), why it matters, suggested fix or question to resolve.
+3. End with what the spec got right (one or two lines).
+If you found nothing meaningful: 'spec is solid, no concerns' is valid."
 
 The sub-agent reads the spec cold -- no knowledge of how it was written. But it doesn't waste time re-reading files the parent already has. Wait for its findings.
 
