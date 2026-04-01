@@ -166,18 +166,19 @@ That's the difference between shipping code and owning it.
 /eng-init            Set up project principles (once)
      |
 /eng-spec            Explore --> Research --> Spec --> Stress-test
-     |
+     |               (searches docs/solutions/ for prior art)
 /eng-build           Execute from the approved spec + reflect
      |
 /deslop              Clean up with fresh eyes (sub-agent)
      |
-/eng-check           Verify against principles (two sub-agents)
+/eng-check           Verify against principles + draft compound learnings
      |
 You review           Own what you ship
      |
 Ship PR              Merge and deploy
      |
-/eng-compound        Capture non-obvious solutions (when something surprised you)
+/eng-compound        Enriches draft with PR history, you confirm
+                     (SessionStart hook reminds you; stale drafts auto-clean)
 ```
 
 ### Standalone skills
@@ -186,7 +187,7 @@ Most skills fit the cycle above, but these can also be used independently:
 
 - **`/eng-stress-test`** -- auto-triggered by `/eng-spec`, but you can also run it standalone on any spec or plan. Useful when you've written a spec by hand or want to re-challenge one after changes.
 - **`/deslop`** -- works on any branch with changes, not just after `/eng-build`. Good for cleaning up code from any session.
-- **`/eng-compound`** -- run after any session where something non-obvious was learned. Not just after `/eng-build` -- debugging sessions, production incidents, or even code review discoveries are all valid triggers. The captured solutions feed back into `/eng-spec`'s research phase, so future planning sessions benefit from past learnings.
+- **`/eng-compound`** -- primarily auto-triggered: `/eng-check` writes drafts when it spots something non-obvious, and a SessionStart hook quietly reminds you they exist. But you can also run it standalone after debugging sessions or production incidents. Captured solutions feed back into `/eng-spec`'s research phase. Stale drafts (30+ days) are auto-cleaned.
 
 ---
 

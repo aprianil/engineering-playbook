@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/check-compound-drafts.sh",
+            "timeout": 5,
+            "statusMessage": "Checking for compound drafts..."
+          }
+        ]
+      }
+    ]
+  }
+}

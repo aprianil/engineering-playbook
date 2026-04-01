@@ -95,3 +95,35 @@ The CLAUDE.md principles and the full diff have been provided to you inline. Use
 - Label each: **blocker** (must fix) or **nit** (optional, won't block approval)
 - Concrete fix for each issue
 - Keep it concise -- flag what matters, skip what's fine
+
+## Compound draft (automatic)
+
+After the review, evaluate: **did this PR involve something non-obvious that a teammate would hit again?**
+
+Non-obvious means: not findable from reading the code, docs, or error messages. API quirks, debugging insights that took real effort, integration gotchas, patterns that broke in unexpected ways.
+
+**If nothing is worth capturing -- do nothing. Most PRs won't produce a draft. That's fine.**
+
+If something is worth capturing, write a draft to `docs/solutions/.drafts/[descriptive-name].md`. Create the directory if needed.
+
+Format:
+
+```markdown
+---
+title: [descriptive title]
+date: [YYYY-MM-DD]
+tags: [relevant technology, pattern, or domain tags]
+pr: [PR number or branch name -- used to look up full PR history after merge]
+status: draft
+---
+
+## What was non-obvious
+
+[What eng-check or the review surfaced that a teammate would benefit from knowing]
+
+## Signal
+
+[The specific review findings, edge cases, or patterns that flagged this as worth capturing]
+```
+
+Keep drafts short -- 10-20 lines. They're seeds, not finished docs. After the PR merges, `/eng-compound` enriches them with the full PR history (review comments, fixes, discussions) and presents the complete solution for the user to confirm.
