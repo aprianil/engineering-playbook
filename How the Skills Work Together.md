@@ -169,13 +169,13 @@ That's the difference between shipping code and owning it.
      |
 /eng-build           Execute from the approved spec + reflect
      |
-/eng-compound        Capture non-obvious solutions (when something surprised you)
-     |
 /deslop              Clean up with fresh eyes (sub-agent)
      |
 /eng-check           Verify against principles (two sub-agents)
      |
 You review           Own what you ship
+     |
+/eng-compound        Capture non-obvious solutions (when something surprised you)
 ```
 
 ### Standalone skills
