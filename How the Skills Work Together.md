@@ -98,7 +98,7 @@ The feature follows the project's structure conventions -- thin routes, business
 
 While building, the skill holds judgment questions in mind -- am I discovering this abstraction or forcing it? What breaks if this fails? Can someone understand this without opening multiple files? These aren't steps, they're a lens. If something feels off, it pauses and flags.
 
-After building, the skill prompts reflection -- but only if something surprised you. What trade-off did we make? What would we do differently? Learnings get routed to the right place: CLAUDE.md for project conventions, `docs/learnings.md` for codebase quirks, or the playbook's Learnings Log for timeless insights.
+After building, the skill prompts reflection -- but only if something surprised you. What trade-off did we make? What would we do differently? If something non-obvious was learned -- an API quirk, a debugging insight, a pattern that wasn't googleable -- the skill suggests running `/eng-compound` to capture it so the team never pays the same cost again.
 
 **Principles in play:** simplicity (6 focused files), documented trade-offs (in the spec), verified against acceptance criteria.
 
@@ -165,9 +165,11 @@ That's the difference between shipping code and owning it.
 ```
 /eng-init            Set up project principles (once)
      |
-/eng-spec            Explore --> Spec --> Stress-test
+/eng-spec            Explore --> Research --> Spec --> Stress-test
      |
 /eng-build           Execute from the approved spec + reflect
+     |
+/eng-compound        Capture non-obvious solutions (when something surprised you)
      |
 /deslop              Clean up with fresh eyes (sub-agent)
      |
@@ -178,13 +180,14 @@ You review           Own what you ship
 
 ### Standalone skills
 
-Most skills fit the cycle above, but two can also be used independently:
+Most skills fit the cycle above, but these can also be used independently:
 
 - **`/eng-stress-test`** -- auto-triggered by `/eng-spec`, but you can also run it standalone on any spec or plan. Useful when you've written a spec by hand or want to re-challenge one after changes.
 - **`/deslop`** -- works on any branch with changes, not just after `/eng-build`. Good for cleaning up code from any session.
+- **`/eng-compound`** -- run after any session where something non-obvious was learned. Not just after `/eng-build` -- debugging sessions, production incidents, or even code review discoveries are all valid triggers. The captured solutions feed back into `/eng-spec`'s research phase, so future planning sessions benefit from past learnings.
 
 ---
 
-Most of the work happens before and after writing code. The spec forces planning. The stress-test catches assumptions. The build follows the spec and reflects on what surprised you. Deslop brings fresh eyes to clean up. Eng-check splits the review into two lenses so nothing gets missed. And at the end, you understand what you shipped.
+Most of the work happens before and after writing code. The spec forces planning. The research grounds it in real codebase evidence. The stress-test catches assumptions. The build follows the spec and reflects on what surprised you. Compound captures what was learned so the team never solves the same problem twice. Deslop brings fresh eyes to clean up. Eng-check splits the review into two lenses so nothing gets missed. And at the end, you understand what you shipped.
 
 The principles aren't abstract -- they're embedded in every step.

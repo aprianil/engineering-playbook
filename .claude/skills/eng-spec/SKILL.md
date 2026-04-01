@@ -52,7 +52,7 @@ Launch two parallel sub-agents, each focused on one concern:
 
 | Agent | What it researches | What it returns |
 | --- | --- | --- |
-| **Codebase fit** | What existing patterns should this feature follow? What files will be touched or created? Is there code that already solves part of this? | File paths with line numbers, relevant code snippets, the pattern to follow |
+| **Codebase fit** | What existing patterns should this feature follow? What files will be touched or created? Is there code that already solves part of this? Also search `docs/solutions/` for prior art -- past problems and solutions related to this feature's domain. | File paths with line numbers, relevant code snippets, the pattern to follow, and any relevant prior solutions |
 | **Edge cases & constraints** | What inputs or states could break this? What happens when external dependencies fail? Are any decisions irreversible (DB schema, public APIs)? | Prioritized list of risks with severity (blocks build vs. handle later) |
 
 Each agent gets:

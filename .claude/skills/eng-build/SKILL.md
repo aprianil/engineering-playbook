@@ -79,8 +79,8 @@ Skip this if the build was straightforward. Most sessions won't produce a learni
 - Did anything break or feel harder than expected? Why?
 
 **Where learnings go depends on scope:**
+- **`/eng-compound`** — non-obvious solutions that would save a teammate's AI session from hitting the same problem. "Would someone benefit from knowing this before they encounter it?" If yes, run `/eng-compound`.
 - **CLAUDE.md** — conventions or constraints that affect how all code should be written in this project. Keep it lean.
-- **docs/learnings.md** — codebase quirks, API gotchas, edge cases. Useful knowledge that doesn't need to load every session.
 - **Engineering Learnings & Playbook** (via `/sync-playbook`) — timeless insights that change how you think about building, not just this project.
 
 Before adding, check for duplicates. Update an existing entry rather than adding a new one if the topic is already covered.

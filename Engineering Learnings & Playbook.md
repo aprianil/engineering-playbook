@@ -306,6 +306,7 @@ Custom skills built for this playbook (lives in `.claude/skills/` — the standa
 - `/eng-spec` — planning session. Captures context (who, why, what triggered this), defines user flow and acceptance criteria, and saves a spec file. No code gets written — just thinking.
 - `/eng-build` — execution session. Reads a spec file and builds from it. Clean context, clear instructions. The spec is the contract.
 - `/eng-check` — reviews code against the engineering principles in the project's CLAUDE.md. Auto-triggers when you ask Claude to review code.
+- `/eng-compound` — captures non-obvious solutions after a build or debug session so the team never solves the same problem twice. Feeds back into `/eng-spec`'s research phase.
 - `/sync-playbook` — syncs the playbook and deep dive files from Obsidian to GitHub.
 
 **Hooks** — automated actions that run before or after tool calls. For example, a hook that runs your linter every time Claude Code edits a file. This catches quality issues automatically without you having to remember.
