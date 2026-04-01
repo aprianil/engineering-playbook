@@ -42,9 +42,10 @@ Or copy the `.claude/skills/` folder manually. Once in your project, the skills 
 | Phase | Skill | What it does |
 |---|---|---|
 | Setup | [`/eng-init`](.claude/skills/eng-init/SKILL.md) | Scaffold a CLAUDE.md with playbook principles baked in. Run once per project. |
-| Plan | [`/eng-spec`](.claude/skills/eng-spec/SKILL.md) | Explore a vague idea or write a spec for a clear one. Stress-tests the spec with a sub-agent before presenting. No code. |
+| Plan | [`/eng-spec`](.claude/skills/eng-spec/SKILL.md) | Explore a vague idea or write a spec for a clear one. Researches the codebase with parallel agents, then stress-tests the spec before presenting. No code. |
 | Plan | [`/eng-stress-test`](.claude/skills/eng-stress-test/SKILL.md) | Stress-test any spec or plan with fresh eyes. Auto-triggered by `/eng-spec`, or run standalone. |
 | Build | [`/eng-build`](.claude/skills/eng-build/SKILL.md) | Build a feature from an approved spec. If the spec was thorough, this is the easy part. |
+| Learn | [`/eng-compound`](.claude/skills/eng-compound/SKILL.md) | Capture non-obvious solutions so the team never solves the same problem twice. Feeds back into `/eng-spec`'s research phase. |
 | Review | [`/eng-check`](.claude/skills/eng-check/SKILL.md) | Check code against engineering principles. Last gate before shipping. |
 | Review | [`/deslop`](.claude/skills/deslop/SKILL.md) | Remove AI-generated slop: unnecessary comments, defensive checks, `any` casts. Run before `/eng-check`. |
 
