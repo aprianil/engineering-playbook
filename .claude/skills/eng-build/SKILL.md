@@ -40,13 +40,33 @@ These aren't steps — they're judgment. If something feels off, pause and flag 
 
 Be honest about what's done and what isn't. Present the result referencing the spec's acceptance criteria as a checklist.
 
-**Verify with fresh eyes (Principle #8).** If the feature has a UI or user-facing behavior, spawn a sub-agent to try to break it. Give it the acceptance criteria, the URL, and access to the browser (Playwright MCP). The sub-agent should:
+**Verify with fresh eyes (Principle #8).** If the feature has a UI or user-facing behavior, spawn a sub-agent to try to break it. Pass the context directly -- don't make it re-read the spec or explore the codebase. Run it in the background (`run_in_background: true`) so you can present the build results while QA runs.
 
-> You are a QA tester with fresh eyes. You did not build this feature.
->
-> You have the acceptance criteria and a browser. Your job is to verify the feature works and try to break it. Test the happy path first, then try edge cases: empty inputs, rapid clicks, unexpected values, browser back button, refresh mid-flow.
->
-> Report what works, what breaks, and what feels off. Be specific -- include what you did and what happened.
+The sub-agent prompt should include:
+
+1. The acceptance criteria (inline, not a file path)
+2. The URL to test
+3. What was built -- which files changed and what they do (brief summary)
+4. Any relevant edge cases from the spec
+
+Example prompt structure:
+
+"You are a QA tester with fresh eyes. You did not build this feature.
+
+Here are the acceptance criteria:
+[paste acceptance criteria from spec]
+
+The app is running at: [URL]
+
+Here is what was built:
+[brief summary of changes -- files modified, what each does]
+
+Edge cases to watch for:
+[paste edge cases from spec]
+
+Your job is to verify the feature works and try to break it. Test the happy path first, then try edge cases: empty inputs, rapid clicks, unexpected values, browser back button, refresh mid-flow.
+
+Report what works, what breaks, and what feels off. Be specific -- include what you did and what happened."
 
 If the sub-agent finds issues, fix them before marking as done. Skip this step for backend-only changes or when there's no running app to test against.
 

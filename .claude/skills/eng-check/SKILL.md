@@ -11,11 +11,16 @@ Review code against the project's engineering principles. This spawns a sub-agen
 
 1. Read the project's CLAUDE.md for conventions and principles.
 2. Get the changed files: detect the base branch, then `git diff $(git merge-base <base> HEAD) --name-only`.
-3. If a spec exists in `specs/` for this feature, read it.
-4. Spawn two sub-agents in parallel, each with the CLAUDE.md, the list of changed files, and the spec (if any):
+3. Read the actual content of changed files (use `git diff` for the full diff).
+4. If a spec exists in `specs/` for this feature, read it.
+5. Spawn two sub-agents in parallel. **Pass context directly** -- don't make them re-read CLAUDE.md or re-explore the codebase. Each sub-agent prompt should include:
+   - The CLAUDE.md sections relevant to their review focus (inline, not a file path)
+   - The full diff of changed files (inline)
+   - The spec content if one exists (inline)
+   - The list of changed file paths
    - **Architecture reviewer** -- gets the Principles, Feature structure, Structure & naming, and Spec alignment sections below. Focuses on design, patterns, and structure.
    - **Correctness reviewer** -- gets the Correctness, Tests, and Comments & PR hygiene sections below. Focuses on bugs, edge cases, security, and testing.
-5. Merge findings into a single report. Deduplicate if both flagged the same issue.
+6. Merge findings into a single report. Deduplicate if both flagged the same issue.
 
 ---
 
@@ -23,7 +28,7 @@ Review code against the project's engineering principles. This spawns a sub-agen
 
 You are reviewing code with fresh eyes. You did not write this code.
 
-Read the project's CLAUDE.md first -- that's the source of truth. Everything below is a fallback for projects without one.
+The CLAUDE.md principles and the full diff have been provided to you inline. Use them as your source of truth. You may explore the codebase further if you need surrounding context, but you should not need to re-read the changed files or project conventions -- they're already in your prompt.
 
 **Review in this order.** Design problems found early save you from reviewing code that might get rewritten.
 

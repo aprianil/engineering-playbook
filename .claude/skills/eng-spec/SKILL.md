@@ -104,11 +104,29 @@ What this feature explicitly does NOT include.
 
 ## Stress-test (Principle #7)
 
-After writing the spec, spawn a sub-agent to stress-test it with fresh eyes. Use the Agent tool with the prompt:
+After writing the spec, spawn a sub-agent to stress-test it with fresh eyes. Pass the context directly -- don't make it re-discover what you already know. Use the Agent tool with a prompt that includes:
 
-"Read and stress-test this spec: [spec content]. Follow the /eng-stress-test skill instructions. The project root is [path]."
+1. The full spec content (inline, not a file path to read)
+2. The CLAUDE.md engineering principles (inline the relevant sections)
+3. Key file paths and code snippets the spec references
+4. The project root path
 
-The sub-agent reads the spec cold — no knowledge of how it was written. Wait for its findings.
+Example prompt structure:
+
+"You are stress-testing this spec with fresh eyes. You did not write it.
+
+Here is the spec:
+[paste full spec content]
+
+Here are the project's engineering principles:
+[paste relevant CLAUDE.md sections]
+
+Here are the key files and patterns referenced:
+[paste file paths + relevant code snippets you already found during research]
+
+Follow the /eng-stress-test skill instructions. The project root is [path]. You may explore the codebase further if needed, but the context above should cover most of what you need."
+
+The sub-agent reads the spec cold -- no knowledge of how it was written. But it doesn't waste time re-reading files the parent already has. Wait for its findings.
 
 **Then present to the user:**
 1. The spec
