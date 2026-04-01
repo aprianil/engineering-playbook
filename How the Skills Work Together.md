@@ -175,6 +175,8 @@ That's the difference between shipping code and owning it.
      |
 You review           Own what you ship
      |
+Ship PR              Merge and deploy
+     |
 /eng-compound        Capture non-obvious solutions (when something surprised you)
 ```
 

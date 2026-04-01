@@ -9,7 +9,7 @@ argument-hint: [optional: description of what was learned]
 Capture a non-obvious solution so the team never pays the same debugging cost twice. Without this step, AI-assisted engineering is amnesiac -- every session is equally fast, but no session is faster than the last. This is what makes cycle N+1 faster than cycle N.
 
 **When to run:**
-- After `/eng-build` or `/eng-check` when something unexpected came up
+- After shipping a PR where something non-obvious was learned during the build, review, or fix cycle
 - After a debugging session that took real effort to resolve
 - When a teammate asks "did we hit this before?" and the answer is yes but undocumented
 
