@@ -38,7 +38,7 @@ Probe through these lenses (skip what's already clear):
 
 When the exploration involves trade-offs, architectural choices, or multiple valid approaches — use `EnterPlanMode` to think it through properly. Write out the options, pros/cons, and your recommendation. Exit plan mode when you have a clear direction.
 
-When evaluating multiple approaches that need research (e.g., comparing APIs, libraries, or architectural patterns), spawn parallel sub-agents to explore each option independently. Each sub-agent gets one option to research — read docs, check feasibility, identify trade-offs. The parent compares findings and recommends. This is faster and each sub-agent goes deeper than sequential exploration.
+When evaluating multiple approaches that need research (e.g., comparing APIs, libraries, or architectural patterns), spawn parallel sub-agents (**model: "opus"**) to explore each option independently. Each sub-agent gets one option to research — read docs, check feasibility, identify trade-offs. The parent compares findings and recommends. This is faster and each sub-agent goes deeper than sequential exploration.
 
 **Exit exploration when:** the problem is clear, the scope is bounded, and you could write acceptance criteria. Then transition to research.
 
@@ -48,7 +48,7 @@ Before writing the spec, gather concrete evidence from the codebase. This preven
 
 **Skip this step when the feature is small and the codebase is familiar enough that you already know the relevant files and patterns.** Don't launch agents to confirm what's obvious.
 
-Launch two parallel sub-agents, each focused on one concern:
+Launch two parallel sub-agents (**model: "opus"**), each focused on one concern:
 
 | Agent | What it researches | What it returns |
 | --- | --- | --- |
@@ -126,7 +126,7 @@ What this feature explicitly does NOT include.
 
 ## Stress-test (Principle #7)
 
-After writing the spec, spawn a sub-agent to stress-test it with fresh eyes. Pass the context directly -- don't make it re-discover what you already know. Use the Agent tool with a prompt that includes:
+After writing the spec, spawn a sub-agent (**model: "opus"**) to stress-test it with fresh eyes. Pass the context directly -- don't make it re-discover what you already know. Use the Agent tool with a prompt that includes:
 
 1. The full spec content (inline, not a file path to read)
 2. The CLAUDE.md engineering principles (inline the relevant sections)
