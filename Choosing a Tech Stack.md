@@ -1,6 +1,6 @@
 # Choosing a Tech Stack
 
-> A deep dive from the [[Engineering Learnings & Playbook]]. Applying the "Choose Boring Technology" principles to pick a concrete stack. This note is perishable — tools change, principles don't. Last reviewed: 2026-03-25.
+> A deep dive from the [Engineering Learnings & Playbook](Engineering%20Learnings%20%26%20Playbook.md). Applying the "Choose Boring Technology" principles to pick a concrete stack. This note is perishable — tools change, principles don't. Last reviewed: 2026-03-25.
 
 ---
 

@@ -1,6 +1,6 @@
 # Working Effectively With AI
 
-> A deep dive from the [[Engineering Learnings & Playbook]]. How to work with AI coding tools — and how to evolve your approach as models get more capable.
+> A deep dive from the [Engineering Learnings & Playbook](Engineering%20Learnings%20%26%20Playbook.md). How to work with AI coding tools — and how to evolve your approach as models get more capable.
 
 ---
 

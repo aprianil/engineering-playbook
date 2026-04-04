@@ -28,8 +28,9 @@ Stress-test a spec or plan. You are a fresh pair of eyes — you did not write t
 - Are abstractions being designed upfront that should be discovered later?
 - Is duplication being forced into a shared pattern prematurely?
 
-*Trade-offs (Principle #4) — shortcuts are fine if deliberate and tracked*
-- If shortcuts are proposed, are they documented with a concrete plan to revisit? ("I'll fix it later" without a ticket is a wish, not a decision.)
+*Quality (Principle #4) — never trade quality for speed*
+- Are assumptions treated as verified facts? (API response shapes from docs but not tested, constraints described but not enforced, "we'll figure it out during build" on decisions that are cheaper to get right now)
+- If shortcuts are proposed, are they scope cuts or quality cuts? Scope cuts are fine if documented. Quality cuts compound.
 - Are any trade-offs being ignored or hidden?
 
 *Reversibility (Principle #5) — Type 1 = hard to undo, Type 2 = easy to undo*

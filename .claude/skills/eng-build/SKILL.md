@@ -40,7 +40,7 @@ These aren't steps — they're judgment. If something feels off, pause and flag 
 
 Be honest about what's done and what isn't. Present the result referencing the spec's acceptance criteria as a checklist.
 
-**Verify with fresh eyes (Principle #8).** If the feature has a UI or user-facing behavior, spawn a sub-agent (**model: "opus"**) to try to break it. Pass the context directly -- don't make it re-read the spec or explore the codebase. Run it in the background (`run_in_background: true`) so you can present the build results while QA runs.
+**Verify with fresh eyes (Principle #8).** If the feature has a UI or user-facing behavior, spawn a sub-agent to try to break it. Pass the context directly -- don't make it re-read the spec or explore the codebase. Run it in the background (`run_in_background: true`) so you can present the build results while QA runs.
 
 The sub-agent prompt should include:
 

@@ -13,7 +13,7 @@ Review code against the project's engineering principles. This spawns a sub-agen
 2. Get the changed files: detect the base branch, then `git diff $(git merge-base <base> HEAD) --name-only`.
 3. Read the actual content of changed files (use `git diff` for the full diff).
 4. If a spec exists in `specs/` for this feature, read it.
-5. Spawn two sub-agents in parallel using **model: "opus"**. **Pass context directly** -- don't make them re-read CLAUDE.md or re-explore the codebase. Each sub-agent prompt should include:
+5. Spawn two sub-agents in parallel. **Pass context directly** -- don't make them re-read CLAUDE.md or re-explore the codebase. Each sub-agent prompt should include:
    - The CLAUDE.md sections relevant to their review focus (inline, not a file path)
    - The full diff of changed files (inline)
    - The spec content if one exists (inline)
