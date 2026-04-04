@@ -191,7 +191,7 @@ After approval, check whether the work can be split into independent pieces that
 **How to split:**
 - Map the dependency graph. The shape varies — it might be "foundation → parallel tracks → integration" or "three parallel tracks from the start" or "two tracks that merge halfway." Let the work dictate the shape
 - Write all build specs sequentially in the main conversation. Each spec benefits from decisions made in the previous ones. Do not farm out spec writing to parallel agents — they lose the accumulated context and the specs drift from each other
-- Each build spec is self-contained: buildable with only that spec + CLAUDE.md
+- Each build spec is a full spec — apply the same spec format, acceptance criteria, edge cases, and stress-test process as the parent. Not a task list carved from the parent, but a standalone spec a builder can execute and verify
 - Each build spec states what's being built alongside it — not for coordination, but so the builder understands the boundaries. What they own, what's off-limits, and what they can expect to exist when the tracks merge
 - No file overlap between specs
 - Each build spec gets its own stress-test (parallel sub-agents are fine here — stress-testing benefits from fresh eyes)
