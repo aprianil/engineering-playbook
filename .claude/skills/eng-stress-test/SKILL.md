@@ -57,6 +57,11 @@ Stress-test a spec or plan. You are a fresh pair of eyes — you did not write t
 - Are there criteria with no clear home? That's a gap in the plan.
 - Are there files or components in the approach that don't map to any criterion? That's scope creep.
 
+*Rationalization red flags*
+- Scan for common rationalizations that hide bad decisions:
+  - "We can always refactor later" / "It's just a prototype" / "We might need this someday" / "It's only a small addition" / "Everyone does it this way" / "We don't have time to do it right" / "It's too late to change"
+- If the spec uses any of these (explicitly or implicitly), call it out. These aren't reasons, they're avoidance patterns.
+
 *Edge cases that matter*
 - What would hurt users or corrupt data if missed?
 - What happens when external dependencies fail?

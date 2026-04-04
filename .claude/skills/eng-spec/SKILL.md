@@ -118,8 +118,18 @@ The prioritized list — what actually matters. For each:
 ### Proposed approach
 - Existing code: relevant files and patterns already in use (reference real paths)
 - File structure: exact files to create or modify, following project conventions
-- Key decisions: what was chosen, what was rejected, and why
+- Key decisions: what was chosen, what was rejected, and why (this is the decision record; future you will thank present you for writing the "why")
 - Dependencies: what could block this (external APIs, other teams, migrations)
+
+### Rationalization check
+Before finalizing, scan the spec for these red flags. If any feel true, revisit the decision:
+- "We can always refactor later" (translation: we won't)
+- "It's just a prototype" (prototypes ship)
+- "We might need this someday" (YAGNI)
+- "It's only a small addition" (small additions compound into big complexity)
+- "Everyone does it this way" (appeal to popularity, not evidence)
+- "We don't have time to do it right" (you don't have time to do it twice)
+- "It's too late to change" (sunk cost; if the direction is wrong, changing now is cheaper than later)
 
 ### Out of scope
 What this feature explicitly does NOT include.

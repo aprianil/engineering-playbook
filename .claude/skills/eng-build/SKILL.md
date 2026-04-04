@@ -20,7 +20,9 @@ Build the feature described in the spec. The acceptance criteria are your defini
 
 Before writing code, give the user a brief summary of what you're about to build and flag anything that looks outdated or unclear. Wait for the go-ahead.
 
-After that, execute. Break the work into whatever chunks make sense, briefly state progress at natural milestones, and use the tools available to verify your work as you go.
+After that, execute. Break the work into logical vertical slices: each chunk should deliver a complete path through the feature (e.g., route + handler + UI), not a horizontal layer (e.g., all routes first, then all handlers). This keeps the feature testable and working at every checkpoint. Briefly state progress at natural milestones, and use the tools available to verify your work as you go.
+
+**When something breaks unexpectedly:** If you hit an error that isn't a simple typo or missing import and you can't resolve it in one attempt, shift into the eng-debug methodology: stop, preserve the error evidence, reproduce, localize, understand the root cause, fix it, and write a guard test. Don't guess randomly or suppress the error. Complete the debug loop before resuming the build. If the root cause was non-obvious, flag it for `/eng-compound` after the PR merges.
 
 **While building, hold these in mind:**
 - Am I discovering this abstraction or forcing it?
