@@ -1,7 +1,7 @@
 ---
 name: eng-spec
 description: Write a feature spec before building anything. Planning session — no code gets written.
-disable-model-invocation: true
+disable-model-invocation: false
 allowed-tools: Read, Glob, Grep, Write, Bash, Agent, AskUserQuestion, EnterPlanMode, ExitPlanMode
 argument-hint: [feature-name]
 ---
@@ -87,6 +87,7 @@ Scale the spec to the task. Small feature → skip sections that don't apply. Ne
 - Does what we're adding compound over time, or is it a one-time need? (Principle #6)
 - How will we verify this works? What tests, checks, or browser validation should the spec require? (Principle #8)
 - Will the user understand why the code is structured this way after building? Flag anything that needs explanation in the spec. (Principle #9)
+- Can this be decomposed into independent pieces that can be built in parallel? (Principle #11)
 
 **The spec format:**
 
@@ -180,3 +181,20 @@ The sub-agent reads the spec cold -- no knowledge of how it was written. But it 
 Wait for approval or adjustments. Do not write code.
 
 Once approved, save to `specs/[feature-name].md` (kebab-case, create the directory if needed). This file is the contract between planning and execution.
+
+## Decompose for parallelism (Principle #11)
+
+After approval, check whether the work can be split into independent pieces that can be built in parallel. Not every spec needs splitting — small features ship as one spec.
+
+**When to split:** the spec has a dependency graph where some work can happen concurrently. Look for files with no dependencies on each other, or groups of work that only connect at defined interfaces.
+
+**How to split:**
+- Map the dependency graph. The shape varies — it might be "foundation → parallel tracks → integration" or "three parallel tracks from the start" or "two tracks that merge halfway." Let the work dictate the shape
+- Write all build specs sequentially in the main conversation. Each spec benefits from decisions made in the previous ones. Do not farm out spec writing to parallel agents — they lose the accumulated context and the specs drift from each other
+- Each build spec is self-contained: buildable with only that spec + CLAUDE.md
+- Each build spec states what's being built alongside it — not for coordination, but so the builder understands the boundaries. What they own, what's off-limits, and what they can expect to exist when the tracks merge
+- No file overlap between specs
+- Each build spec gets its own stress-test (parallel sub-agents are fine here — stress-testing benefits from fresh eyes)
+- The parent spec stays as the decision document. Add a build status section listing all split specs with their dependencies and status
+
+Save build specs as `specs/[parent-name]-[letter]-[short-name].md`.

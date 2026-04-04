@@ -340,7 +340,7 @@ The hard part of engineering isn't typing code — it's thinking clearly before 
 
 The ratio shifts by context — a small UI tweak doesn't need 80% planning, and a new system touching core infrastructure might need 90%. The principle behind the ratio is more durable than the numbers: **thinking is cheaper than fixing.**
 
-**9 principles to internalize:**
+**11 principles to internalize:**
 1. **Aim for simplicity.** Simple = readable, changeable, few things to think about. Simple is not the same as easy — a framework can be easy to start with but complex to change. Prefer deep over shallow: a good function has a simple interface and does a lot behind it. A self-contained 200-line file is simpler than a 50-line file that imports from 8 others.
 2. **YAGNI — You Aren't Going To Need It.** Don't build for requirements that don't exist yet. You are bad at predicting the future.
 3. **Discover abstractions, don't design them.** Wait until the pattern repeats before extracting. Premature abstraction is worse than duplication.
@@ -350,6 +350,8 @@ The ratio shifts by context — a small UI tweak doesn't need 80% planning, and 
 7. **The builder shouldn't be the reviewer.** Fresh eyes catch what the author can't. Have someone — or a separate agent — challenge your work before you commit.
 8. **Verify, don't trust.** Every change needs a way to prove it works — tests, build, lint, browser. Applies to your own code and AI-generated code equally.
 9. **Own what you ship.** If you can't explain why the code is structured this way, you don't understand it enough to maintain it. AI types, you think.
+10. **Context before action.** Load and understand the relevant context before starting any work — specs, code, architecture, constraints. Not everything, just what's relevant. Five minutes of context loading prevents hours of rework from wrong assumptions.
+11. **Decompose for parallelism.** Spec with full context, build in parallel. One spec session produces multiple independent build specs — each self-contained, no file overlap, buildable with only its spec + CLAUDE.md. The spec writing stays sequential (decisions compound on each other), the building is where parallelism pays off.
 
 **Essential resources:**
 - "A Philosophy of Software Design" by John Ousterhout — the best book on simplicity and complexity in code. Short, practical. Start here.
@@ -596,6 +598,13 @@ Judgment becomes instinct through repetition.
 > - Each entry should make sense without needing the original conversation
 > - Headlines should be memorable phrases that capture the core lesson
 > - When this section gets long, split it into its own `[Engineering Learnings Log](Engineering%20Learnings%20Log.md)` file
+
+### 2026-04-04 — [patterns] Spec with full context, build in parallel
+- Splitting a large spec into parallel build specs works best when the spec writing happens sequentially in one conversation. Each spec benefits from decisions made in the previous ones (e.g., a snake_case type fix discovered during the client spec informed the parser spec).
+- Parallel sub-agents for spec *writing* lose accumulated context and the specs drift. Parallel sub-agents for *stress-testing* work great because fresh eyes is the whole point.
+- Each build spec needs to state what's being built alongside it — not for coordination, but so the builder understands where their work ends and someone else's begins. File ownership boundaries, shared types, what to expect at merge time.
+- The dependency graph shape isn't always "foundation → parallel → integration." Let the work dictate the shape.
+- Added as Principle #11. Also added Principle #10 (context before action) which was in CLAUDE.md but missing from the playbook.
 
 ### 2026-03-31 — [patterns] Fresh eyes, hard questions, and knowing when to prescribe
 - Principle #7 (builder shouldn't be the reviewer) is a general pattern, not just for specs. Every step that judges work benefits from fresh context -- cleanup, code review, QA verification, spec challenge. The agent that built it has sunk cost bias. A fresh agent reads the output cold and catches what the builder rationalizes.

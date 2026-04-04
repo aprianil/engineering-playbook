@@ -41,6 +41,8 @@ Most of the work happens before and after writing code — not during. Plan thor
 7. The builder shouldn't be the reviewer. Fresh eyes catch what the author can't. Have someone (or a separate agent) challenge your work before committing.
 8. Verify, don't trust. Every change needs a way to prove it works — tests, build, lint, browser. Applies to your own code and AI-generated code equally.
 9. Own what you ship. If you can't explain why the code is structured this way, you don't understand it enough to maintain it.
+10. Context before action. Load and understand the relevant context before starting any work — specs, code, architecture, constraints. Not everything, just what's relevant. Five minutes of context loading prevents hours of rework from wrong assumptions.
+11. Decompose for parallelism. Spec with full context, build in parallel. One spec session produces multiple independent build specs — each self-contained, no file overlap, buildable with only its spec + CLAUDE.md. The spec writing stays sequential (decisions compound on each other), the building is where parallelism pays off.
 
 ## Do
 - Validate all input at the API boundary with Zod schemas
