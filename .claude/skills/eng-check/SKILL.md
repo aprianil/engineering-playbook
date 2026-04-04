@@ -77,6 +77,13 @@ The CLAUDE.md principles and the full diff have been provided to you inline. Use
 - Security -- unsanitized user input rendered in UI (XSS), raw SQL queries (injection), secrets in code, missing auth on routes?
 - For UI: loading, error, and empty states handled?
 
+**Performance:**
+- N+1 query patterns (fetching in a loop instead of batching)?
+- Unbounded data fetching (no limit/pagination on list endpoints)?
+- Synchronous operations that should be async?
+- Unnecessary re-renders in UI components?
+- Heavy work happening in the request path that should be backgrounded?
+
 **Tests:**
 - Tests exist for changed behavior
 - Testing behavior, not implementation details
@@ -92,8 +99,10 @@ The CLAUDE.md principles and the full diff have been provided to you inline. Use
 **Output:**
 - One-line verdict: **looks good** / **has concerns** / **needs rework**
 - Specific issues found, referencing the principle or pattern violated
-- Label each: **blocker** (must fix) or **nit** (optional, won't block approval)
+- Label each: **blocker** (must fix before merge), **important** (should fix before merge, won't block approval alone), or **nit** (optional improvement)
 - Concrete fix for each issue
+- End with one line on what the code does well -- specific, not generic praise
+- If you're uncertain about something, say so and suggest investigation rather than guessing
 - Keep it concise -- flag what matters, skip what's fine
 
 ## Compound draft (automatic)
