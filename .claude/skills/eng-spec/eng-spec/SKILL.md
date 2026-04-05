@@ -1,7 +1,7 @@
 ---
 name: eng-spec
 description: Write a feature spec before building anything. Planning session — no code gets written.
-disable-model-invocation: false
+disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Write, Bash, Agent, AskUserQuestion, EnterPlanMode, ExitPlanMode
 argument-hint: [feature-name]
 ---
@@ -87,7 +87,6 @@ Scale the spec to the task. Small feature → skip sections that don't apply. Ne
 - Does what we're adding compound over time, or is it a one-time need? (Principle #6)
 - How will we verify this works? What tests, checks, or browser validation should the spec require? (Principle #8)
 - Will the user understand why the code is structured this way after building? Flag anything that needs explanation in the spec. (Principle #9)
-- Can this be decomposed into independent pieces that can be built in parallel? (Principle #11)
 
 **The spec format:**
 
@@ -118,18 +117,8 @@ The prioritized list — what actually matters. For each:
 ### Proposed approach
 - Existing code: relevant files and patterns already in use (reference real paths)
 - File structure: exact files to create or modify, following project conventions
-- Key decisions: what was chosen, what was rejected, and why (this is the decision record; future you will thank present you for writing the "why")
+- Key decisions: what was chosen, what was rejected, and why
 - Dependencies: what could block this (external APIs, other teams, migrations)
-
-### Rationalization check
-Before finalizing, scan the spec for these red flags. If any feel true, revisit the decision:
-- "We can always refactor later" (translation: we won't)
-- "It's just a prototype" (prototypes ship)
-- "We might need this someday" (YAGNI)
-- "It's only a small addition" (small additions compound into big complexity)
-- "Everyone does it this way" (appeal to popularity, not evidence)
-- "We don't have time to do it right" (you don't have time to do it twice)
-- "It's too late to change" (sunk cost; if the direction is wrong, changing now is cheaper than later)
 
 ### Out of scope
 What this feature explicitly does NOT include.
@@ -137,32 +126,27 @@ What this feature explicitly does NOT include.
 
 ## Stress-test (Principle #7)
 
-After writing the spec, spawn a sub-agent to stress-test it with fresh eyes. Pass the context bundle directly so it never re-reads files you already have.
+After writing the spec, spawn a sub-agent to stress-test it with fresh eyes. Pass the context directly -- don't make it re-discover what you already know. Use the Agent tool with a prompt that includes:
 
-**The context bundle — exactly these four things, nothing else:**
+1. The full spec content (inline, not a file path to read)
+2. The CLAUDE.md engineering principles (inline the relevant sections)
+3. Key file paths and code snippets the spec references
+4. The project root path
 
-1. **The spec** — full content, inline. Not a file path.
-2. **Engineering principles** — the numbered principles list and the Do/Don't sections from CLAUDE.md. Not the entire file — just the sections the stress test checks against.
-3. **Codebase context** — the findings from your research agents (file paths, code snippets, patterns). This is what the stress test would otherwise spend time re-exploring. Include what the codebase fit agent and edge cases agent returned — that's the non-duplicable context.
-4. **Project root path** — so the stress test can spot-check if something looks off, but shouldn't need to explore broadly.
-
-**Do not include:** full CLAUDE.md (redundant — only principles matter), the exploration conversation (process noise), or anything the stress test can derive from the spec itself.
-
-Use the Agent tool with this prompt structure:
+Example prompt structure:
 
 "You are stress-testing this spec with fresh eyes. You did not write it. Your job is to catch issues now while they're cheap to fix.
 
-## Spec
-[full spec content]
+Here is the spec:
+[paste full spec content]
 
-## Engineering principles
-[numbered principles + Do/Don't sections from CLAUDE.md]
+Here are the project's engineering principles:
+[paste relevant CLAUDE.md sections]
 
-## Codebase context
-[research agent findings: file paths, relevant code snippets, patterns, constraints]
+Here are the key files and patterns referenced:
+[paste file paths + relevant code snippets you already found during research]
 
-## Project root
-[path]
+The project root is [path]. You may explore the codebase further if needed, but the context above should cover most of what you need.
 
 Challenge the spec through these lenses (skip what's clearly fine):
 - Simplicity: is there a simpler approach? Could concepts, dependencies, or indirection be cut?
@@ -186,7 +170,7 @@ YOUR OUTPUT (return this as your response):
 3. End with what the spec got right (one or two lines).
 If you found nothing meaningful: 'spec is solid, no concerns' is valid."
 
-Wait for its findings.
+The sub-agent reads the spec cold -- no knowledge of how it was written. But it doesn't waste time re-reading files the parent already has. Wait for its findings.
 
 **Then present to the user:**
 1. The spec
@@ -196,20 +180,3 @@ Wait for its findings.
 Wait for approval or adjustments. Do not write code.
 
 Once approved, save to `specs/[feature-name].md` (kebab-case, create the directory if needed). This file is the contract between planning and execution.
-
-## Decompose for parallelism (Principle #11)
-
-After approval, check whether the work can be split into independent pieces that can be built in parallel. Not every spec needs splitting — small features ship as one spec.
-
-**When to split:** the spec has a dependency graph where some work can happen concurrently. Look for files with no dependencies on each other, or groups of work that only connect at defined interfaces.
-
-**How to split:**
-- Map the dependency graph. The shape varies — it might be "foundation → parallel tracks → integration" or "three parallel tracks from the start" or "two tracks that merge halfway." Let the work dictate the shape
-- Write all build specs sequentially in the main conversation. Each spec benefits from decisions made in the previous ones. Do not farm out spec writing to parallel agents — they lose the accumulated context and the specs drift from each other
-- Each build spec runs the full `/eng-spec` process — same spec format, research, acceptance criteria, edge cases, stress-test. Not a task list carved from the parent, but a standalone spec
-- Each build spec states what's being built alongside it — not for coordination, but so the builder understands the boundaries. What they own, what's off-limits, and what they can expect to exist when the tracks merge
-- No file overlap between specs
-- Each build spec gets its own stress-test (parallel sub-agents are fine here — stress-testing benefits from fresh eyes)
-- The parent spec stays as the decision document. Add a build status section listing all split specs with their dependencies and status
-
-Save build specs as `specs/[parent-name]-[letter]-[short-name].md`.
