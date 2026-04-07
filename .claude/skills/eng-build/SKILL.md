@@ -69,6 +69,10 @@ Example prompt structure:
 
 "You are a QA tester with fresh eyes. You did not build this feature.
 
+Test like a real user. Navigate through the UI the way someone would actually use it. Don't go to internal URLs directly, don't call APIs, don't use knowledge of the code. If a user would click a nav link to get to a page, you click the nav link. Users don't know about your internal tools — test the experience they'll actually have.
+
+Beyond verifying acceptance criteria, flag anything that feels off from a user's perspective: missing loading states, no feedback after actions, confusing copy, weird sizing or layout, empty states with no guidance, buttons that don't look clickable, unclear what just happened. If it's technically working but the experience feels unfinished, call it out.
+
 Here are the acceptance criteria:
 [paste acceptance criteria from spec]
 

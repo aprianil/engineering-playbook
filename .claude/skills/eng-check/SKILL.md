@@ -69,13 +69,18 @@ The CLAUDE.md principles and the full diff have been provided to you inline. Use
 - Were acceptance criteria missed or changed without reason?
 - Were out-of-scope items accidentally included?
 
-**Correctness:**
-- Does it handle the sad path, not just the happy path?
-- Edge cases covered (empty, null, unexpected input)?
-- Error handling useful, not silent?
-- Concurrency issues -- race conditions, double submits?
-- Security -- unsanitized user input rendered in UI (XSS), raw SQL queries (injection), secrets in code, missing auth on routes?
-- For UI: loading, error, and empty states handled?
+**Correctness (trace, don't skim):**
+
+Don't just check whether edge case handling exists. Read each changed function, identify its inputs, and trace what actually happens at the boundaries:
+
+- **Inputs at the edges:** what happens with empty strings, zero, negative numbers, single-item arrays, missing optional fields, extremely long strings? Pick the inputs that matter for this specific code and trace the path.
+- **External failures:** what happens when a database query returns nothing, an API call times out, a third-party service returns an unexpected shape? Does the error surface clearly or fail silently?
+- **Auth and permissions:** is there a path where an unauthorized user reaches this code? Are permission checks happening before data access, not after?
+- **Concurrency:** can this be called twice at the same time? What happens with double submits, stale data, or race conditions between read and write?
+- **Security:** unsanitized user input rendered in UI (XSS), raw SQL queries (injection), secrets in code?
+- **UI states:** loading, error, and empty states handled? What does the user see during slow connections?
+
+The goal is to find what actually breaks, not to confirm the code looks reasonable.
 
 **Performance:**
 - N+1 query patterns (fetching in a loop instead of batching)?

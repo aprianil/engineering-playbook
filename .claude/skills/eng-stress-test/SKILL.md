@@ -8,18 +8,10 @@ argument-hint: [spec-file]
 
 Stress-test a spec or plan. You are a fresh pair of eyes — you did not write this and you have no attachment to its decisions. Catching issues here is far cheaper than catching them during or after building.
 
-## Context modes
-
-This skill runs in one of two modes depending on what context the caller provides:
-
-**Fast mode (context provided inline).** When the caller passes the spec content, engineering principles, and codebase context directly in the prompt — use that. Do NOT re-read CLAUDE.md, the spec file, or explore the codebase. The caller already did the research. Go straight to challenging.
-
-**Cold mode (file path only).** When invoked standalone with just a spec file path and no inline context:
+**Before challenging anything:**
 - Read the project's CLAUDE.md for engineering principles and conventions.
 - Read the spec file completely.
 - Explore the codebase enough to challenge concretely — reference real files, real patterns, real constraints. Generic feedback ("have you considered error handling?") is useless.
-
-**How to tell which mode you're in:** if your prompt contains the spec content and a "Context bundle" or equivalent section with file paths, code snippets, and principles — you're in fast mode. If you only have a file path to read — you're in cold mode.
 
 **Challenge through the project's engineering principles:**
 
