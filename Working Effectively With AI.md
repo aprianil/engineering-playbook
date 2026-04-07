@@ -1,6 +1,6 @@
 # Working Effectively With AI
 
-> A deep dive from the [[Engineering Learnings & Playbook]]. How to work with AI coding tools — and how to evolve your approach as models get more capable.
+> A deep dive from the [Engineering Learnings & Playbook](Engineering Learnings & Playbook.md). How to work with AI coding tools — and how to evolve your approach as models get more capable.
 
 ---
 
@@ -93,6 +93,22 @@ The model should always have a way to prove its work. This is timeless — it do
 - **Visual verification** — browser tools (Playwright, etc.) catch what code-level tests miss, especially for front-end work
 
 If the model generates the tests, verify the tests too. Trust but verify.
+
+### Spotting AI-Generated UI
+
+AI tends to converge on the same aesthetic. Learn to recognize it so you can catch and fix it:
+
+| Pattern | Problem | What to do instead |
+|---------|---------|-------------------|
+| Purple/indigo color defaults | Every AI app looks the same | Use your actual project palette |
+| Excessive gradients | Visual noise that competes with content | Flat or subtle gradients per your design system |
+| Maximum border radius on everything | Ignores corner radius hierarchy | Consistent values from your design system |
+| Generic hero sections | Disconnected from actual content | Content-first, purposeful layouts |
+| Oversized equal padding everywhere | Destroys visual hierarchy | Follow a consistent spacing scale |
+| Stock card grids | Ignores information priority | Layouts driven by what the user actually needs |
+| Heavy drop shadows | Competes with content | Subtle or none unless the design calls for it |
+
+If you're using AI to build UI and the result looks like it could be any app, it's probably hitting these patterns. The fix is specificity: give the model your design system, your colors, your spacing scale. Generic input produces generic output.
 
 ---
 

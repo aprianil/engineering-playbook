@@ -15,14 +15,28 @@ Build a feature from an approved spec file. This is an execution session — the
 
 Trust the spec. The planning session already explored the codebase, identified relevant files, and made architectural decisions. If something in the spec seems outdated or wrong, flag it to the user — don't go off-script.
 
+**Keep the spec alive.** The spec is a living document, not a frozen artifact. When things change during the build:
+- If the approach shifts (different data model, different API shape), update the spec first, then implement. A spec that doesn't match the code actively misleads the next person.
+- If scope changes (features cut or added), reflect it in the spec.
+- Reference the spec section in PRs — link back to what each PR implements.
+
 **Your goal:**
 Build the feature described in the spec. The acceptance criteria are your definition of done. The project's CLAUDE.md conventions are your constraints. You have access to the codebase, tools, and everything you need — figure out the best way to get there.
 
 Before writing code, give the user a brief summary of what you're about to build and flag anything that looks outdated or unclear. Wait for the go-ahead.
 
-After that, execute. Break the work into logical vertical slices: each chunk should deliver a complete path through the feature (e.g., route + handler + UI), not a horizontal layer (e.g., all routes first, then all handlers). This keeps the feature testable and working at every checkpoint. Briefly state progress at natural milestones, and use the tools available to verify your work as you go.
+After that, execute. Follow the task list in the spec. Each task is a vertical slice — a complete path through the feature (e.g., schema + API + UI for one flow), not a horizontal layer. This keeps the feature testable and working at every step.
+
+**Checkpoint after every 2-3 tasks.** Stop and verify:
+- Tests pass
+- Application builds without errors
+- Core user flow works end-to-end (if applicable)
+
+Don't push through 5 tasks hoping they all work together at the end. Catch breakage early while the cause is obvious. Briefly state progress at each checkpoint.
 
 **When something breaks unexpectedly:** If you hit an error that isn't a simple typo or missing import and you can't resolve it in one attempt, shift into the eng-debug methodology: stop, preserve the error evidence, reproduce, localize, understand the root cause, fix it, and write a guard test. Don't guess randomly or suppress the error. Complete the debug loop before resuming the build. If the root cause was non-obvious, flag it for `/eng-compound` after the PR merges.
+
+**Scope discipline.** Only touch what the task requires. Don't refactor adjacent code, add unspecified features, or "improve" things you notice along the way. If something genuinely needs fixing, flag it — don't silently fix it mid-task.
 
 **While building, hold these in mind:**
 - Am I discovering this abstraction or forcing it?

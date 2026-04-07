@@ -40,7 +40,24 @@ When the exploration involves trade-offs, architectural choices, or multiple val
 
 When evaluating multiple approaches that need research (e.g., comparing APIs, libraries, or architectural patterns), spawn parallel sub-agents to explore each option independently. Each sub-agent gets one option to research — read docs, check feasibility, identify trade-offs. The parent compares findings and recommends. This is faster and each sub-agent goes deeper than sequential exploration.
 
-**Exit exploration when:** the problem is clear, the scope is bounded, and you could write acceptance criteria. Then transition to research.
+**Exit exploration when:** the problem is clear, the scope is bounded, and you could write acceptance criteria. Then transition to surfacing assumptions.
+
+## Surface assumptions
+
+Before writing anything, list every assumption you're making. Don't silently fill in ambiguity — the spec's entire purpose is to surface misunderstandings before code gets written.
+
+```
+ASSUMPTIONS I'M MAKING:
+1. [e.g., This extends the existing billing module, not a new one]
+2. [e.g., Auth uses the withAuth wrapper from lib/auth]
+3. [e.g., We're adding a new table, not modifying the existing one]
+4. [e.g., This is internal-only, no public API surface]
+→ Correct me now or I'll proceed with these.
+```
+
+Use `AskUserQuestion` to present these. Keep it one message — the user corrects what's wrong, confirms what's right, and you move on. Only the assumptions that are wrong cost time. The ones that are right cost nothing to list.
+
+Then transition to research.
 
 ## Research (ground the spec in evidence)
 
@@ -109,6 +126,16 @@ The steps a user takes. Happy path and sad path (errors, empty states, slow conn
 ### Acceptance criteria
 - [ ] [concrete, verifiable criteria]
 
+When requirements are vague, reframe them into measurable conditions before writing criteria:
+```
+Requirement: "Make the dashboard faster"
+→ Dashboard LCP < 2.5s on 4G connection
+→ Initial data load < 500ms
+→ No layout shift during load (CLS < 0.1)
+Are these the right targets?
+```
+This turns fuzzy goals into things you can actually verify. Confirm the reframed criteria with the user before proceeding.
+
 ### Edge cases & risks
 The prioritized list — what actually matters. For each:
 - What could go wrong
@@ -137,32 +164,27 @@ What this feature explicitly does NOT include.
 
 ## Stress-test (Principle #7)
 
-After writing the spec, spawn a sub-agent to stress-test it with fresh eyes. Pass the context bundle directly so it never re-reads files you already have.
+After writing the spec, spawn a sub-agent to stress-test it with fresh eyes. Pass the context directly -- don't make it re-discover what you already know. Use the Agent tool with a prompt that includes:
 
-**The context bundle — exactly these four things, nothing else:**
+1. The full spec content (inline, not a file path to read)
+2. The CLAUDE.md engineering principles (inline the relevant sections)
+3. Key file paths and code snippets the spec references
+4. The project root path
 
-1. **The spec** — full content, inline. Not a file path.
-2. **Engineering principles** — the numbered principles list and the Do/Don't sections from CLAUDE.md. Not the entire file — just the sections the stress test checks against.
-3. **Codebase context** — the findings from your research agents (file paths, code snippets, patterns). This is what the stress test would otherwise spend time re-exploring. Include what the codebase fit agent and edge cases agent returned — that's the non-duplicable context.
-4. **Project root path** — so the stress test can spot-check if something looks off, but shouldn't need to explore broadly.
-
-**Do not include:** full CLAUDE.md (redundant — only principles matter), the exploration conversation (process noise), or anything the stress test can derive from the spec itself.
-
-Use the Agent tool with this prompt structure:
+Example prompt structure:
 
 "You are stress-testing this spec with fresh eyes. You did not write it. Your job is to catch issues now while they're cheap to fix.
 
-## Spec
-[full spec content]
+Here is the spec:
+[paste full spec content]
 
-## Engineering principles
-[numbered principles + Do/Don't sections from CLAUDE.md]
+Here are the project's engineering principles:
+[paste relevant CLAUDE.md sections]
 
-## Codebase context
-[research agent findings: file paths, relevant code snippets, patterns, constraints]
+Here are the key files and patterns referenced:
+[paste file paths + relevant code snippets you already found during research]
 
-## Project root
-[path]
+The project root is [path]. You may explore the codebase further if needed, but the context above should cover most of what you need.
 
 Challenge the spec through these lenses (skip what's clearly fine):
 - Simplicity: is there a simpler approach? Could concepts, dependencies, or indirection be cut?
@@ -186,7 +208,7 @@ YOUR OUTPUT (return this as your response):
 3. End with what the spec got right (one or two lines).
 If you found nothing meaningful: 'spec is solid, no concerns' is valid."
 
-Wait for its findings.
+The sub-agent reads the spec cold -- no knowledge of how it was written. But it doesn't waste time re-reading files the parent already has. Wait for its findings.
 
 **Then present to the user:**
 1. The spec
@@ -195,7 +217,41 @@ Wait for its findings.
 
 Wait for approval or adjustments. Do not write code.
 
-Once approved, save to `specs/[feature-name].md` (kebab-case, create the directory if needed). This file is the contract between planning and execution.
+Once approved, break the spec into tasks before saving.
+
+## Task breakdown
+
+Break the approved spec into discrete, buildable tasks. Each task should be completable in a single focused session.
+
+```
+- [ ] Task: [description]
+  - Acceptance: [what must be true when done]
+  - Verify: [how to confirm — test command, build, browser check]
+  - Files: [which files will be created or modified]
+```
+
+**Slice vertically, not horizontally.** Each task should deliver a working, testable path through the feature — not a horizontal layer.
+
+Bad: Task 1 = all database tables, Task 2 = all API endpoints, Task 3 = all UI components, Task 4 = connect everything.
+Good: Task 1 = user can create account (schema + API + UI), Task 2 = user can log in, Task 3 = user can create a task.
+
+Vertical slices keep the feature working and testable at every step. Horizontal layers leave you with nothing testable until the last task.
+
+**When to break a task down further:**
+- You can't describe acceptance criteria in 3 or fewer bullets
+- It touches 2+ independent subsystems (e.g., auth and billing)
+- You wrote "and" in the task title — that's two tasks
+- It would take more than one focused session
+
+Guidelines:
+- Order tasks by dependency, then by risk — build foundations first, but put high-risk tasks early. Fail fast before investing in the easy parts
+- Each task should touch a small number of files (aim for ~5 or fewer)
+- Every task has a verify step — no task is "done" without proof
+- For small features, 2-3 tasks is fine. Don't over-decompose
+
+This task list becomes what `/eng-build` reads. The clearer it is, the less judgment the builder needs to apply.
+
+Append the task list to the spec, then save to `specs/[feature-name].md` (kebab-case, create the directory if needed). This file is the contract between planning and execution.
 
 ## Decompose for parallelism (Principle #11)
 
