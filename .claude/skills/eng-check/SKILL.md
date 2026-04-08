@@ -16,10 +16,10 @@ Review code against the project's engineering principles. This spawns a sub-agen
 5. Spawn two sub-agents in parallel. **Pass context directly** -- don't make them re-read CLAUDE.md or re-explore the codebase. Each sub-agent prompt should include:
    - The CLAUDE.md sections relevant to their review focus (inline, not a file path)
    - The full diff of changed files (inline)
-   - The spec content if one exists (inline)
+   - The acceptance criteria from the spec (not the full spec -- the reviewer doesn't need exploration history or research findings)
    - The list of changed file paths
    - **Architecture reviewer** -- gets the Principles, Feature structure, Structure & naming, and Spec alignment sections below. Focuses on design, patterns, and structure.
-   - **Correctness reviewer** -- gets the Correctness, Tests, and Comments & PR hygiene sections below. Focuses on bugs, edge cases, security, and testing.
+   - **Correctness reviewer** -- gets the Correctness, Performance, Tests, and Comments & PR hygiene sections below. Focuses on bugs, edge cases, security, and testing.
 6. Merge findings into a single report. Deduplicate if both flagged the same issue.
 
 ---
@@ -28,7 +28,11 @@ Review code against the project's engineering principles. This spawns a sub-agen
 
 You are reviewing code with fresh eyes. You did not write this code.
 
-The CLAUDE.md principles and the full diff have been provided to you inline. Use them as your source of truth. You may explore the codebase further if you need surrounding context, but you should not need to re-read the changed files or project conventions -- they're already in your prompt.
+The CLAUDE.md principles and the full diff have been provided to you inline. Use them as your source of truth.
+
+**Read the diff deeply first.** Don't skim the diff to go exploring. Read every changed function, understand what it does, how it handles errors, what it assumes. Form your assessment from the diff. This is where most of your findings should come from.
+
+**Explore with purpose, not speculatively.** Only read files outside the diff when you've identified a specific concern that the diff alone can't resolve. Before reading any file, name the concern you're investigating (e.g., "this route doesn't check auth -- let me read one existing route to see if there's a wrapper"). To check a pattern, read one example of it, not every instance. Most reviews need 3-5 additional file reads. If you're past 10, you're exploring speculatively -- stop and write your findings from what you have.
 
 **Review in this order.** Design problems found early save you from reviewing code that might get rewritten.
 
@@ -108,7 +112,7 @@ The goal is to find what actually breaks, not to confirm the code looks reasonab
 - Concrete fix for each issue
 - End with one line on what the code does well -- specific, not generic praise
 - If you're uncertain about something, say so and suggest investigation rather than guessing
-- Keep it concise -- flag what matters, skip what's fine
+- Keep it concise -- flag everything worth flagging, but keep each issue to 1-2 lines plus the fix. Don't pad with explanations the reader doesn't need
 
 ## Compound draft (automatic)
 
