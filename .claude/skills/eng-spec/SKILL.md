@@ -123,6 +123,13 @@ Who this is for and what they're doing when they encounter this.
 ### User flow
 The steps a user takes. Happy path and sad path (errors, empty states, slow connections).
 
+### Interaction states
+*Include for features with UI. Skip for backend-only or refactors.*
+
+Document each distinct state the user can encounter and what triggers transitions between them. The goal: the builder never invents UX on the fly — every state they need to handle is already decided.
+
+For each state: what the user sees, what causes it, and where it goes next. Use whatever format fits — a table, a list, a state diagram in words. What matters is that no state is left to the builder's imagination. Pay special attention to: what does "loading" look like? What does the user see when something fails? What happens on empty/first-use?
+
 ### Acceptance criteria
 - [ ] [concrete, verifiable criteria]
 
@@ -142,11 +149,17 @@ The prioritized list — what actually matters. For each:
 - How to handle it
 - What's explicitly not worth handling yet, and why
 
+For user-facing errors, be specific about the UX: what does the user see (toast, inline message, modal, chat message), what system action happens (retry, skip, abort), and how the user recovers. "Handle gracefully" is not a spec — it's a wish.
+
 ### Proposed approach
 - Existing code: relevant files and patterns already in use (reference real paths)
 - File structure: exact files to create or modify, following project conventions
 - Key decisions: what was chosen, what was rejected, and why (this is the decision record; future you will thank present you for writing the "why")
 - Dependencies: what could block this (external APIs, other teams, migrations)
+
+**Code contracts** *(include when adding new functions or modifying existing signatures)*: For each new function, specify the signature with types, a 2-3 line pseudocode body, and the return value. Not the full implementation — just enough that the builder doesn't have to guess the interface. The builder should never wonder "what does this function take and return?"
+
+**Data flow** *(include when the feature crosses 2+ system boundaries)*: Show how data moves from trigger to destination — a simple arrow chain like `user click → frontend handler → POST /api/foo → server handler → database → SSE event → frontend update`. Makes explicit who is responsible for what at each boundary. Prevents "I thought that happened on the other side."
 
 ### Rationalization check
 Before finalizing, scan the spec for these red flags. If any feel true, revisit the decision:
@@ -228,7 +241,10 @@ Break the approved spec into discrete, buildable tasks. Each task should be comp
   - Acceptance: [what must be true when done]
   - Verify: [how to confirm — test command, build, browser check]
   - Files: [which files will be created or modified]
+  - Depends: [which tasks must complete first, or "none" if independent]
 ```
+
+Mark independent tasks explicitly — these can run in parallel (e.g., in separate worktrees). When 3+ tasks exist and some are independent, the dependency info is what enables parallel builds.
 
 **Slice vertically, not horizontally.** Each task should deliver a working, testable path through the feature — not a horizontal layer.
 
