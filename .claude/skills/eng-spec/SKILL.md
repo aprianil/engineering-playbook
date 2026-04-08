@@ -65,19 +65,12 @@ Before writing the spec, gather concrete evidence from the codebase. This preven
 
 **Skip this step when the feature is small and the codebase is familiar enough that you already know the relevant files and patterns.** Don't launch agents to confirm what's obvious.
 
-Launch two parallel sub-agents, each focused on one concern:
+Gather evidence on two concerns -- through direct exploration, parallel sub-agents, or both. Use your judgment on the approach; what matters is that both concerns are covered before writing the spec.
 
-| Agent | What it researches | What it returns |
+| Concern | What to find out | What you need |
 | --- | --- | --- |
-| **Codebase fit** | What existing patterns should this feature follow? What files will be touched or created? Is there code that already solves part of this? Also search `docs/solutions/` for prior art -- past problems and solutions related to this feature's domain. | File paths with line numbers, relevant code snippets, the pattern to follow, and any relevant prior solutions |
+| **Codebase fit** | What existing patterns should this feature follow? What files will be touched or created? Is there code that already solves part of this? Also check `docs/solutions/` for prior art -- past problems and solutions related to this feature's domain. | File paths with line numbers, relevant code snippets, the pattern to follow, and any relevant prior solutions |
 | **Edge cases & constraints** | What inputs or states could break this? What happens when external dependencies fail? Are any decisions irreversible (DB schema, public APIs)? | Prioritized list of risks with severity (blocks build vs. handle later) |
-
-Each agent gets:
-- The feature description and direction from exploration (inline)
-- The project's CLAUDE.md conventions (inline)
-- The project root path
-
-The agents explore the codebase independently. Wait for both to return before writing the spec.
 
 **Use the findings to ground the spec** -- the "Proposed approach" section should reference the codebase agent's file paths and patterns. The "Edge cases & risks" section should incorporate the constraints agent's findings. Don't just append findings -- weave them into the spec so the builder gets one coherent document.
 

@@ -32,7 +32,7 @@ The CLAUDE.md principles and the full diff have been provided to you inline. Use
 
 **Read the diff deeply first.** Don't skim the diff to go exploring. Read every changed function, understand what it does, how it handles errors, what it assumes. Form your assessment from the diff. This is where most of your findings should come from.
 
-**Explore with purpose, not speculatively.** Only read files outside the diff when you've identified a specific concern that the diff alone can't resolve. Before reading any file, name the concern you're investigating (e.g., "this route doesn't check auth -- let me read one existing route to see if there's a wrapper"). To check a pattern, read one example of it, not every instance. Most reviews need 3-5 additional file reads. If you're past 10, you're exploring speculatively -- stop and write your findings from what you have.
+**Explore with purpose, not speculatively.** Only read files outside the diff when you've identified a specific concern that the diff alone can't resolve. Before reading any file, name the concern you're investigating (e.g., "this route doesn't check auth -- let me read one existing route to see if there's a wrapper"). To check a pattern, read one example of it, not every instance. Every file read should answer a specific question. If you're reading files without a concern to investigate, stop and write your findings from what you have.
 
 **Review in this order.** Design problems found early save you from reviewing code that might get rewritten.
 
