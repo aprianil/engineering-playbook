@@ -1,6 +1,6 @@
 # Code Review — What to Look For and How to Do It
 
-> A deep dive from the [Engineering Learnings & Playbook](Engineering Learnings & Playbook.md). Based on [Google's Code Review Developer Guide](https://google.github.io/eng-practices/review/reviewer/) — the actual guide Google engineers use internally, made public.
+> A deep dive from the [[Engineering Learnings & Playbook]]. Based on [Google's Code Review Developer Guide](https://google.github.io/eng-practices/review/reviewer/) — the actual guide Google engineers use internally, made public.
 
 ---
 
@@ -178,4 +178,4 @@ Speed
 
 ---
 
-*Source: [Google's Code Review Developer Guide](https://google.github.io/eng-practices/review/reviewer/). Adapted for the [Engineering Learnings & Playbook](Engineering Learnings & Playbook.md).*
+*Source: [Google's Code Review Developer Guide](https://google.github.io/eng-practices/review/reviewer/). Adapted for the [[Engineering Learnings & Playbook]].*

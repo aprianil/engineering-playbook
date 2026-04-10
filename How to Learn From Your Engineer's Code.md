@@ -5,7 +5,7 @@
 ---
 
 > [!info]- Context for AI (Claude Code)
-> This note is part of the [Engineering Learnings & Playbook](Engineering Learnings & Playbook.md) system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook — don't duplicate what's already there.
+> This note is part of the [[Engineering Learnings & Playbook]] system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook — don't duplicate what's already there.
 
 ---
 
@@ -109,7 +109,7 @@ If you have access to review their PRs (even just reading, not formally reviewin
 2. Read it fully — description, diff, tests
 3. Write down one thing you learned or one pattern you noticed
 4. If something is unclear, ask about it
-5. Log it in your [Engineering Learnings & Playbook](Engineering Learnings & Playbook.md) Learnings Log
+5. Log it in your [[Engineering Learnings & Playbook]] Learnings Log
 ```
 
 This takes 15-20 minutes a week and compounds fast.

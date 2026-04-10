@@ -20,21 +20,19 @@ Trust the spec. The planning session already explored the codebase, identified r
 - If scope changes (features cut or added), reflect it in the spec.
 - Reference the spec section in PRs — link back to what each PR implements.
 
-**When to stop and re-spec.** If you find yourself making decisions the spec should have made — choosing between architectural approaches, rewriting multiple acceptance criteria, or building something the spec doesn't describe — stop. A build session shouldn't become a planning session. Flag to the user: "the spec has a gap in [area], should I update it or do we need to re-spec?" Small scope adjustments where the architecture holds are fine to update inline. Fundamental changes need a fresh planning pass.
-
 **Your goal:**
 Build the feature described in the spec. The acceptance criteria are your definition of done. The project's CLAUDE.md conventions are your constraints. You have access to the codebase, tools, and everything you need — figure out the best way to get there.
 
 Before writing code, give the user a brief summary of what you're about to build and flag anything that looks outdated or unclear. Wait for the go-ahead.
 
-After that, execute. Follow the task list in the spec. Each task is a vertical slice — a complete path through the feature (e.g., schema + API + UI for one flow), not a horizontal layer. This keeps the feature testable and working at every step. When tasks are marked independent (no dependencies on each other), they can be built in parallel (e.g., in separate worktrees). Respect dependency order for the rest.
+After that, execute. Follow the task list in the spec. Each task is a vertical slice — a complete path through the feature (e.g., schema + API + UI for one flow), not a horizontal layer. This keeps the feature testable and working at every step.
 
-**Checkpoint at natural boundaries** -- after completing a vertical slice, or when multiple tasks connect. Stop and verify:
+**Checkpoint after every 2-3 tasks.** Stop and verify:
 - Tests pass
 - Application builds without errors
 - Core user flow works end-to-end (if applicable)
 
-Don't push through many tasks hoping they all work together at the end. Catch breakage early while the cause is obvious. Briefly state progress at each checkpoint.
+Don't push through 5 tasks hoping they all work together at the end. Catch breakage early while the cause is obvious. Briefly state progress at each checkpoint.
 
 **When something breaks unexpectedly:** If you hit an error that isn't a simple typo or missing import and you can't resolve it in one attempt, shift into the eng-debug methodology: stop, preserve the error evidence, reproduce, localize, understand the root cause, fix it, and write a guard test. Don't guess randomly or suppress the error. Complete the debug loop before resuming the build. If the root cause was non-obvious, flag it for `/eng-compound` after the PR merges.
 

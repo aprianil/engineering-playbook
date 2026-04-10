@@ -65,12 +65,19 @@ Before writing the spec, gather concrete evidence from the codebase. This preven
 
 **Skip this step when the feature is small and the codebase is familiar enough that you already know the relevant files and patterns.** Don't launch agents to confirm what's obvious.
 
-Gather evidence on two concerns -- through direct exploration, parallel sub-agents, or both. Use your judgment on the approach; what matters is that both concerns are covered before writing the spec.
+Launch two parallel sub-agents, each focused on one concern:
 
-| Concern | What to find out | What you need |
+| Agent | What it researches | What it returns |
 | --- | --- | --- |
-| **Codebase fit** | What existing patterns should this feature follow? What files will be touched or created? Is there code that already solves part of this? Also check `docs/solutions/` for prior art -- past problems and solutions related to this feature's domain. | File paths with line numbers, relevant code snippets, the pattern to follow, and any relevant prior solutions |
+| **Codebase fit** | What existing patterns should this feature follow? What files will be touched or created? Is there code that already solves part of this? Also search `docs/solutions/` for prior art -- past problems and solutions related to this feature's domain. | File paths with line numbers, relevant code snippets, the pattern to follow, and any relevant prior solutions |
 | **Edge cases & constraints** | What inputs or states could break this? What happens when external dependencies fail? Are any decisions irreversible (DB schema, public APIs)? | Prioritized list of risks with severity (blocks build vs. handle later) |
+
+Each agent gets:
+- The feature description and direction from exploration (inline)
+- The project's CLAUDE.md conventions (inline)
+- The project root path
+
+The agents explore the codebase independently. Wait for both to return before writing the spec.
 
 **Use the findings to ground the spec** -- the "Proposed approach" section should reference the codebase agent's file paths and patterns. The "Edge cases & risks" section should incorporate the constraints agent's findings. Don't just append findings -- weave them into the spec so the builder gets one coherent document.
 
@@ -116,13 +123,6 @@ Who this is for and what they're doing when they encounter this.
 ### User flow
 The steps a user takes. Happy path and sad path (errors, empty states, slow connections).
 
-### Interaction states
-*Include for features with UI. Skip for backend-only or refactors.*
-
-Document each distinct state the user can encounter and what triggers transitions between them. The goal: the builder never invents UX on the fly — every state they need to handle is already decided.
-
-For each state: what the user sees, what causes it, and where it goes next. Use whatever format fits — a table, a list, a state diagram in words. What matters is that no state is left to the builder's imagination. Pay special attention to: what does "loading" look like? What does the user see when something fails? What happens on empty/first-use?
-
 ### Acceptance criteria
 - [ ] [concrete, verifiable criteria]
 
@@ -142,17 +142,11 @@ The prioritized list — what actually matters. For each:
 - How to handle it
 - What's explicitly not worth handling yet, and why
 
-For user-facing errors, be specific about the UX: what does the user see (toast, inline message, modal, chat message), what system action happens (retry, skip, abort), and how the user recovers. "Handle gracefully" is not a spec — it's a wish.
-
 ### Proposed approach
 - Existing code: relevant files and patterns already in use (reference real paths)
 - File structure: exact files to create or modify, following project conventions
 - Key decisions: what was chosen, what was rejected, and why (this is the decision record; future you will thank present you for writing the "why")
 - Dependencies: what could block this (external APIs, other teams, migrations)
-
-**Code contracts** *(include when adding new functions or modifying existing signatures)*: For each new function, specify the signature with types, a 2-3 line pseudocode body, and the return value. Not the full implementation — just enough that the builder doesn't have to guess the interface. The builder should never wonder "what does this function take and return?"
-
-**Data flow** *(include when the feature crosses 2+ system boundaries)*: Show how data moves from trigger to destination — a simple arrow chain like `user click → frontend handler → POST /api/foo → server handler → database → SSE event → frontend update`. Makes explicit who is responsible for what at each boundary. Prevents "I thought that happened on the other side."
 
 ### Rationalization check
 Before finalizing, scan the spec for these red flags. If any feel true, revisit the decision:
@@ -170,9 +164,53 @@ What this feature explicitly does NOT include.
 
 ## Stress-test (Principle #7)
 
-After writing the spec, spawn a sub-agent to challenge it with fresh eyes. The sub-agent follows the `/eng-stress-test` methodology — pass it the spec content, relevant CLAUDE.md principles, key file paths from research, and the project root so it doesn't waste time re-discovering what you already know. It reads the spec cold with no knowledge of how it was written.
+After writing the spec, spawn a sub-agent to stress-test it with fresh eyes. Pass the context directly -- don't make it re-discover what you already know. Use the Agent tool with a prompt that includes:
 
-Wait for its findings, then present to the user:
+1. The full spec content (inline, not a file path to read)
+2. The CLAUDE.md engineering principles (inline the relevant sections)
+3. Key file paths and code snippets the spec references
+4. The project root path
+
+Example prompt structure:
+
+"You are stress-testing this spec with fresh eyes. You did not write it. Your job is to catch issues now while they're cheap to fix.
+
+Here is the spec:
+[paste full spec content]
+
+Here are the project's engineering principles:
+[paste relevant CLAUDE.md sections]
+
+Here are the key files and patterns referenced:
+[paste file paths + relevant code snippets you already found during research]
+
+The project root is [path]. You may explore the codebase further if needed, but the context above should cover most of what you need.
+
+Challenge the spec through these lenses (skip what's clearly fine):
+- Simplicity: is there a simpler approach? Could concepts, dependencies, or indirection be cut?
+- YAGNI: is anything built for an imaginary future requirement?
+- Abstractions: are abstractions designed upfront that should be discovered later?
+- Quality: are assumptions treated as verified facts? Are constraints described but not enforced? Is anything deferred that would be cheaper to get right now than to fix later?
+- Trade-offs: are shortcuts documented with a concrete plan to revisit?
+- Reversibility: are any decisions hard to reverse (DB schema, public APIs, migrations)? Flag these. Are reversible decisions being over-planned?
+- Compounding: does this invest in things that compound, or front-load one-time concerns?
+- Verification: does the spec define how to verify the feature works?
+- Ownership: is anything so complex the builder won't understand why it's structured that way?
+- Edge cases: what would hurt users or corrupt data if missed? Concurrency issues? Security gaps?
+
+Do NOT generate generic checklists. Only raise concerns specific to this feature. Do NOT suggest complexity for hypothetical scenarios.
+
+Prioritize ruthlessly -- handle what would hurt users, force a rewrite, or create security/data issues. Dismiss what's not worth the complexity.
+
+YOUR OUTPUT (return this as your response):
+1. One-line verdict: 'ready to build' / 'address these first' / 'rethink approach'
+2. Prioritized list (3-7 items). Each item: the concern (one line), why it matters, suggested fix or question to resolve.
+3. End with what the spec got right (one or two lines).
+If you found nothing meaningful: 'spec is solid, no concerns' is valid."
+
+The sub-agent reads the spec cold -- no knowledge of how it was written. But it doesn't waste time re-reading files the parent already has. Wait for its findings.
+
+**Then present to the user:**
 1. The spec
 2. The stress-test findings
 3. Your recommendation on which findings to address
@@ -190,10 +228,7 @@ Break the approved spec into discrete, buildable tasks. Each task should be comp
   - Acceptance: [what must be true when done]
   - Verify: [how to confirm — test command, build, browser check]
   - Files: [which files will be created or modified]
-  - Depends: [which tasks must complete first, or "none" if independent]
 ```
-
-Mark independent tasks explicitly — these can run in parallel (e.g., in separate worktrees). When 3+ tasks exist and some are independent, the dependency info is what enables parallel builds.
 
 **Slice vertically, not horizontally.** Each task should deliver a working, testable path through the feature — not a horizontal layer.
 

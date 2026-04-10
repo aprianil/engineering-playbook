@@ -5,7 +5,7 @@
 ---
 
 > [!info]- Context for AI (Claude Code)
-> This note is part of the [Engineering Learnings & Playbook](Engineering Learnings & Playbook.md) system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook — don't duplicate what's already there.
+> This note is part of the [[Engineering Learnings & Playbook]] system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook — don't duplicate what's already there.
 
 ---
 
@@ -156,7 +156,7 @@ You don't need to have all the answers. You need to bring the questions that sha
 "What's the maintenance cost of this approach?"
 ```
 
-These questions don't require deep technical knowledge. They require product thinking and the [Engineering Learnings & Playbook](Engineering Learnings & Playbook.md) mindset.
+These questions don't require deep technical knowledge. They require product thinking and the [[Engineering Learnings & Playbook]] mindset.
 
 ### What to Do When You Don't Understand
 

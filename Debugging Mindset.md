@@ -5,7 +5,7 @@
 ---
 
 > [!info]- Context for AI (Claude Code)
-> This note is part of the [Engineering Learnings & Playbook](Engineering Learnings & Playbook.md) system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook — don't duplicate what's already there.
+> This note is part of the [[Engineering Learnings & Playbook]] system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook — don't duplicate what's already there.
 
 ---
 
@@ -63,24 +63,35 @@ Ask yourself:
 
 **The binary search technique:** If you don't know where the bug is, check the middle of the flow. Is the data correct at that point? If yes, the bug is later. If no, the bug is earlier. Cut in half again. Keep going.
 
-### Step 4: Form a Hypothesis
+### Step 4: Form Hypotheses (Plural)
 
-Before changing any code, state what you think is happening.
+Before changing any code, state what you think is happening. Not one guess — three to five.
 
 ```
-"I think [this function] is receiving [this value] instead of
-[expected value] because [reason]."
+"I think this could be:
+(A) [function X] is receiving [wrong value] because [reason]
+(B) [state Y] isn't updating because [reason]
+(C) [API Z] is returning stale data because [reason]
+..."
 ```
 
-Then verify it. Add a console.log or a breakpoint at the exact spot. Check if your hypothesis is correct.
+One hypothesis feels efficient but is usually a trap. The first plausible cause is often wrong, and if you commit to it you'll spend an hour proving yourself right instead of finding the real bug. Listing 3-5 keeps you honest — you're now comparing explanations instead of defending one.
 
-If it is — you've found the bug. Fix it.
-If it isn't — that's still progress. You've eliminated one possibility. Form a new hypothesis.
+Then test them. Add console.logs or breakpoints that can confirm or reject several at once — one well-placed log answers multiple questions if you pick the spot carefully.
+
+For each hypothesis, mark it CONFIRMED, REJECTED, or INCONCLUSIVE based on what the logs show.
+
+- CONFIRMED → you've found the bug. Fix it.
+- REJECTED → progress. Eliminate and move on.
+- All rejected → you need new hypotheses. Look at a different layer or a different assumption you hadn't questioned yet.
+
+Don't fall in love with your first guess.
 
 ### Step 5: Fix and Verify
 
 ```
 - Make the smallest change that fixes the bug
+- Revert any speculative guards or defensive code you added while testing rejected hypotheses — debugging shouldn't leave the code more defensive than it started
 - Verify the bug is gone (reproduce steps from Step 1)
 - Check that you didn't break anything else
 - Understand WHY the fix works — not just that it works
@@ -177,7 +188,7 @@ Every bug is a lesson. After fixing, ask:
 - What would I do differently to prevent this next time?
 ```
 
-Log the interesting ones in your [Engineering Learnings & Playbook](Engineering Learnings & Playbook.md) Learnings Log. Bugs you've fixed once and understood deeply rarely catch you again.
+Log the interesting ones in your [[Engineering Learnings & Playbook]] Learnings Log. Bugs you've fixed once and understood deeply rarely catch you again.
 
 ---
 

@@ -28,6 +28,7 @@ This is a living document — I'm still early in this journey. It grows as I lea
 - **[Anatomy of a Well-Structured Feature.md](<Anatomy of a Well-Structured Feature.md>)** — seven timeless patterns for how a feature should be structured across layers
 - **[Building Engineering Taste.md](<Building Engineering Taste.md>)** — reading path for developing the eye — from code quality vocabulary to systems thinking
 - **[Open Source Maintainership.md](<Open Source Maintainership.md>)** — building trust, community design, release mechanics, saying no — for a product person's first open source project
+- **[Designing Frontends for Performance.md](<Designing Frontends for Performance.md>)** — three decisions that determine ~90% of frontend performance — rendering location, data arrival, bundle size
 
 **Skills (Claude Code slash commands):**
 

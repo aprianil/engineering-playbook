@@ -30,6 +30,8 @@ Don't skip this. Errors you "remember" drift from errors that actually happened.
 
 Make the failure repeatable. Run the failing test, hit the broken endpoint, trigger the UI bug. If you can't reproduce it, you can't verify a fix.
 
+Never propose a fix from code inspection alone. You need to see the failure happen, then see it stop. Code-only reasoning is where agents hallucinate confident wrong answers.
+
 - If the error is intermittent, identify the conditions that make it more likely (concurrency, specific input, timing)
 - Reduce to the smallest reproduction case you can
 
@@ -46,7 +48,10 @@ Narrow down where the failure originates. Work from the error backward, not from
 
 This is the step people skip. You found where it breaks, now understand *why*.
 
-- Is this a logic error, a wrong assumption about an API, a race condition, a stale dependency?
+- Generate 3-5 specific hypotheses before investigating any single one. Breadth prevents tunnel vision — the first plausible cause is often wrong.
+- Test them in parallel when possible. One well-placed set of debug logs can confirm or reject several hypotheses in one reproduction run.
+- Wrap temporary debug logs in `// #region debug log` / `// #endregion` markers (or the language equivalent). Cleanup becomes a grep-and-delete instead of a hunt.
+- Common shapes to consider: logic error, wrong API assumption, race condition, stale dependency, environment drift.
 - Would this have broken before your changes, or did your changes introduce it?
 - Are there other places in the code with the same assumption that haven't broken yet?
 
@@ -58,6 +63,7 @@ Fix the actual problem, not the symptom. If a function returns null when it shou
 
 - Keep the fix minimal. Don't refactor surrounding code while debugging.
 - If the fix requires a design change that's bigger than the current task, flag it to the user and apply a minimal correct fix for now.
+- If you added speculative code or guards while testing hypotheses that turned out to be wrong, revert them. Only changes backed by runtime evidence should survive. Debugging shouldn't leave the code more defensive than it started.
 
 ### 6. Guard against recurrence
 
@@ -102,3 +108,4 @@ If yes, flag it to the user: "This was non-obvious. Worth running `/eng-compound
 - Don't expand scope. You're here to fix this bug, not improve the surrounding code.
 - Don't skip the guard step because "it's obvious." If it were obvious, you wouldn't have needed to debug it.
 - Don't debug for more than 20 minutes without updating the user on where you are and what you've tried.
+- Don't use `setTimeout`, `sleep`, or artificial delays as a fix. They paper over race conditions without solving them. Use proper events, lifecycles, or reactivity — see the Race Conditions deep dive in the playbook.

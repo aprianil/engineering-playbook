@@ -24,7 +24,7 @@ Before the reading list, ground yourself in what you're developing taste *for*. 
 4. **Correct** — Does it actually do what it claims, including edge cases?
 5. **Appropriate** — Is the level of effort proportional to the importance of the problem?
 
-That last one is the trade-off muscle from your [Engineering Learnings & Playbook](Engineering Learnings & Playbook.md). The first four are what the resources below teach you to see.
+That last one is the trade-off muscle from your [[Engineering Learnings & Playbook]]. The first four are what the resources below teach you to see.
 
 ---
 
@@ -111,7 +111,7 @@ Reading builds vocabulary. Building builds judgment. You need both, but building
 
 After each resource:
 - Apply it to code you're working on. Can you spot the patterns?
-- Log what clicked in your [Engineering Learnings & Playbook](Engineering Learnings & Playbook.md) learnings log
+- Log what clicked in your [[Engineering Learnings & Playbook]] learnings log
 - When you review AI-generated code, try to articulate *why* something feels off using the vocabulary you're building
 
 The goal: get to a point where you can look at a piece of code and say not just "this feels wrong" but *why* it's wrong and *what would be better* — the same way you already do with design.
