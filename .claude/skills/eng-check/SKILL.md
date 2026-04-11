@@ -1,7 +1,7 @@
 ---
 name: eng-check
-description: Review code against engineering principles. Spawns a fresh sub-agent so the reviewer has no build-session bias.
-disable-model-invocation: true
+description: Review code against engineering principles before shipping. Use when asked to review code, audit a diff, check a change against project conventions, or determine if something is ready to ship. Spawns architecture and correctness sub-agents in parallel so the reviewer has no build-session bias.
+disable-model-invocation: false
 allowed-tools: Read, Glob, Grep, Bash, Agent
 ---
 

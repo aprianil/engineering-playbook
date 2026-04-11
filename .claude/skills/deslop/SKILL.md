@@ -1,7 +1,7 @@
 ---
 name: deslop
-description: Remove AI-generated code slop and simplify for clarity. Spawns a fresh sub-agent so the reviewer has no build-session bias.
-disable-model-invocation: true
+description: Remove AI-generated code slop and simplify for clarity. Use after generating new code, before a code review, or when asked to clean up unnecessary comments, defensive checks that can't fire, `as any` casts, or single-use abstractions. Spawns a fresh sub-agent for unbiased cleanup.
+disable-model-invocation: false
 allowed-tools: Read, Edit, Glob, Grep, Bash, Agent
 ---
 

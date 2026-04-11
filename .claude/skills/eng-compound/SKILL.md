@@ -1,7 +1,7 @@
 ---
 name: eng-compound
-description: Capture non-obvious solutions so the team never solves the same problem twice. Automatically triggered via drafts from eng-check, or run standalone.
-disable-model-invocation: true
+description: Capture non-obvious solutions so they compound. Use when something was learned the hard way: a tricky bug fix, an undocumented API quirk, a confusing error that took time to understand, a surprise during a build, or a workaround worth remembering. Writes the learning into the project's knowledge base so future sessions don't pay the same cost.
+disable-model-invocation: false
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 argument-hint: [optional: description of what was learned]
 ---
