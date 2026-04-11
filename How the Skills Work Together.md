@@ -98,6 +98,8 @@ The feature follows the project's structure conventions -- thin routes, business
 
 While building, the skill holds judgment questions in mind -- am I discovering this abstraction or forcing it? What breaks if this fails? Can someone understand this without opening multiple files? These aren't steps, they're a lens. If something feels off, it pauses and flags.
 
+If something actually breaks during the build -- not a typo, but an unexpected failure -- the skill shifts into `/eng-debug` methodology: reproduce with runtime evidence, form 3-5 hypotheses instead of committing to the first plausible cause, fix the root cause, and guard with a test. Then it resumes the build where it left off. Debugging inside a build session shouldn't become a separate track.
+
 After building, the skill prompts reflection -- but only if something surprised you. What trade-off did we make? What would we do differently? If something non-obvious was learned -- an API quirk, a debugging insight, a pattern that wasn't googleable -- the skill suggests running `/eng-compound` to capture it so the team never pays the same cost again.
 
 **Principles in play:** simplicity (6 focused files), documented trade-offs (in the spec), verified against acceptance criteria.
@@ -186,6 +188,7 @@ Ship PR              Merge and deploy
 Most skills fit the cycle above, but these can also be used independently:
 
 - **`/eng-stress-test`** -- auto-triggered by `/eng-spec`, but you can also run it standalone on any spec or plan. Useful when you've written a spec by hand or want to re-challenge one after changes.
+- **`/eng-debug`** -- auto-triggered from `/eng-build` on unexpected failures, but you can also run it standalone on any bug. Runs the debug loop (reproduce with runtime evidence, form 3-5 hypotheses, fix the root cause, guard with a test) and hands off non-obvious findings to `/eng-compound` after the PR merges.
 - **`/deslop`** -- works on any branch with changes, not just after `/eng-build`. Good for cleaning up code from any session.
 - **`/eng-compound`** -- primarily auto-triggered: `/eng-check` writes drafts when it spots something non-obvious, and a SessionStart hook quietly reminds you they exist. But you can also run it standalone after debugging sessions or production incidents. Captured solutions feed back into `/eng-spec`'s research phase. Stale drafts (30+ days) are auto-cleaned.
 
