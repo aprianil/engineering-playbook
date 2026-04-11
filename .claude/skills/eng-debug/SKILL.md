@@ -1,7 +1,7 @@
 ---
 name: eng-debug
-description: Systematic debugging when something breaks unexpectedly. Can be invoked directly or auto-triggered from eng-build.
-disable-model-invocation: true
+description: Systematic debugging methodology for unexpected failures. Use when investigating a bug, reproducing an error, a failing test, or when a build breaks in a way that needs investigation. Forms 3-5 hypotheses, isolates the root cause with runtime evidence, and writes a guard test.
+disable-model-invocation: false
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion
 argument-hint: [optional: error message or description of what broke]
 ---
