@@ -65,12 +65,15 @@ Before writing the spec, gather concrete evidence from the codebase. This preven
 
 **Skip this step when the feature is small and the codebase is familiar enough that you already know the relevant files and patterns.** Don't launch agents to confirm what's obvious.
 
-Gather evidence on two concerns -- through direct exploration, parallel sub-agents, or both. Use your judgment on the approach; what matters is that both concerns are covered before writing the spec.
+**When the feature involves external technologies** (APIs, libraries, frameworks, services), verify current state from official sources before writing the spec. Use `WebSearch` and `WebFetch` to check official documentation for: current stable versions, current API signatures and capabilities, deprecations or breaking changes, and recommended patterns. Training data goes stale. Official docs don't. Never spec against assumed API behavior when you can verify it in 30 seconds.
+
+Gather evidence on up to three concerns -- through direct exploration, parallel sub-agents, or both. Use your judgment on the approach; what matters is that all relevant concerns are covered before writing the spec.
 
 | Concern | What to find out | What you need |
 | --- | --- | --- |
 | **Codebase fit** | What existing patterns should this feature follow? What files will be touched or created? Is there code that already solves part of this? Also check `docs/solutions/` for prior art -- past problems and solutions related to this feature's domain. | File paths with line numbers, relevant code snippets, the pattern to follow, and any relevant prior solutions |
 | **Edge cases & constraints** | What inputs or states could break this? What happens when external dependencies fail? Are any decisions irreversible (DB schema, public APIs)? | Prioritized list of risks with severity (blocks build vs. handle later) |
+| **External tech** *(only when the feature touches external dependencies)* | What's the current stable version? Have APIs changed? Are there deprecations or new recommended patterns? What does the official docs say vs. what training data assumes? | Verified versions, confirmed API signatures, links to relevant docs, and any gaps between assumed and actual behavior |
 
 **Use the findings to ground the spec** -- the "Proposed approach" section should reference the codebase agent's file paths and patterns. The "Edge cases & risks" section should incorporate the constraints agent's findings. Don't just append findings -- weave them into the spec so the builder gets one coherent document.
 
@@ -147,7 +150,7 @@ For user-facing errors, be specific about the UX: what does the user see (toast,
 ### Proposed approach
 - Existing code: relevant files and patterns already in use (reference real paths)
 - File structure: exact files to create or modify, following project conventions
-- Key decisions: what was chosen, what was rejected, and why (this is the decision record; future you will thank present you for writing the "why")
+- Key decisions: what was chosen, what was rejected, and why (this is the decision record; future you will thank present you for writing the "why"). Label each decision **Type 1** (hard to reverse: schemas, public APIs, protocol choices, file formats that others will consume) or **Type 2** (reversible: naming, tool cardinality, internal ordering, anything a grep-and-edit fixes in an hour). Type 1 deserves extra scrutiny in the rationalization check; Type 2 can change during build without pulling the builder back to the spec table
 - Dependencies: what could block this (external APIs, other teams, migrations)
 
 **Code contracts** *(include when adding new functions or modifying existing signatures)*: For each new function, specify the signature with types, a 2-3 line pseudocode body, and the return value. Not the full implementation — just enough that the builder doesn't have to guess the interface. The builder should never wonder "what does this function take and return?"
@@ -217,6 +220,8 @@ Guidelines:
 This task list becomes what `/eng-build` reads. The clearer it is, the less judgment the builder needs to apply.
 
 Append the task list to the spec, then save to `specs/[feature-name].md` (kebab-case, create the directory if needed). This file is the contract between planning and execution.
+
+**Lock the spec once saved.** Resist re-opening every time a new article or idea arrives — refinement loops that don't close cause spec drift, and specs you can't stop editing are specs no one builds from. Define a lock point in the Out-of-scope section as `re-spec trigger: [criterion]`. Candidates: "first task has been built," "non-AI reviewer has signed off," "no external input has changed the spec across N consecutive reads." Pick one per spec. Once locked, spec changes happen as targeted edits during build with commit messages that explain what evidence triggered the change — not as re-opened planning sessions.
 
 ## Decompose for parallelism (Principle #11)
 

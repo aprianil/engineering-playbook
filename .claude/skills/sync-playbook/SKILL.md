@@ -80,3 +80,43 @@ Examples:
 - `eng-debug: plural hypotheses, revert rejected code, ban sleep fixes`
 - `cleanup: remove stale nested skill dirs`
 - `sync playbook and deep dives from vault` (for routine syncs with no deliberate skill changes)
+
+### 7. Propagate canonical skills to consumer projects
+
+The GitHub repo is now up to date, but any project that keeps a project-local `.claude/skills/<skill>/` copy is still running the old version — project-local overrides user-level at invocation time, so a stale project-local copy silently ships stale behavior the next time the user runs that skill in that project. Push the updated canonical version back down into each consumer project.
+
+```bash
+PROJECTS=(
+  "/Users/apri/Developer/engineering-playbook"
+  "/Users/apri/Developer/open-visibility"
+  "/Users/apri/companio-agent"
+)
+
+for PROJECT in "${PROJECTS[@]}"; do
+  TARGET="$PROJECT/.claude/skills"
+  [ -d "$TARGET" ] || continue
+  echo "Propagating to $PROJECT"
+  for SKILL in "$TARGET"/*/; do
+    SKILL_NAME=$(basename "$SKILL")
+    SOURCE="$HOME/.claude/skills/$SKILL_NAME"
+    if [ -d "$SOURCE" ]; then
+      rsync -a --delete "$SOURCE/" "$SKILL/"
+    fi
+  done
+done
+```
+
+What this does:
+- Only overwrites skills that already exist in both user-level AND project-local. Skills that only exist project-local are left alone (deliberate project-specific customizations are preserved by not being in user-level).
+- Skills added to user-level but absent from a project are NOT auto-added — adopting a new skill into a project is a deliberate decision, not a side effect of sync.
+- The `--delete` flag keeps each skill's internal files (SKILL.md + scripts/ + resources/) exactly matching the canonical source.
+
+Add new projects to the `PROJECTS` array as they're created. If a project no longer exists, the `[ -d "$TARGET" ] || continue` guard skips it silently rather than failing the sync.
+
+After this step, every known project has the same skill code that was just pushed to the GitHub repo. No manual `cp` dance per project.
+
+**Note on `Developer/engineering-playbook`:** this is the local checkout of the GitHub repo you just pushed to. After step 7, its working tree matches `origin/main` (what you pushed), but its local HEAD is still one commit behind. Fast-forward it:
+
+```bash
+git -C /Users/apri/Developer/engineering-playbook pull --ff-only
+```
