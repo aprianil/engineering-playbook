@@ -391,6 +391,8 @@ These are the checklists that build judgment over time. Come back to these every
 - Is this route thin? Does the logic live in lib/ where it's reusable?
 - Is the user waiting for work they don't care about? (webhooks, analytics → background)
 - What happens when this input is empty/null/unexpected?
+- Does every changed line trace to the task? Don't "improve" adjacent code, comments, or formatting that aren't part of the request
+- Am I only cleaning up orphans my changes created, or am I touching pre-existing dead code nobody asked about?
 - What else does this change touch? What breaks if it fails?
 - Am I handling the sad path, not just the happy path?
 ```
@@ -449,6 +451,7 @@ Reference this when building or reviewing code. If something looks like the righ
 | Related code lives together, unrelated code is separated | Utility functions scattered across random files |
 | Dependencies flow one direction — features don't import from each other | Feature A imports from Feature B which imports from Feature C — tangled web |
 | Small, focused functions that do one thing | 200-line functions with nested if/else chains |
+| Changes are surgical -- only what the task requires. Orphaned imports/vars from your changes cleaned up | Drive-by "improvements" to adjacent code, reformatting untouched lines, cleaning up pre-existing dead code nobody asked about |
 | API routes are thin — validate and delegate to business logic in `lib/` | All logic crammed into the route file (validation, database calls, side effects) |
 
 ### Error Handling & Logging

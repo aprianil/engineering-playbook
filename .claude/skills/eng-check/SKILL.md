@@ -101,7 +101,7 @@ The goal is to find what actually breaks, not to confirm the code looks reasonab
 **Comments & PR hygiene:**
 - Comments explain why, not what
 - TODOs reference a ticket or have a name
-- PR is small and focused (<500 lines, <10 files, one responsibility)
+- PR is small and focused (target median ~100 lines, p90 <500, <10 files, one responsibility). Larger PRs OK only for migrations or generated code, and should be called out explicitly
 
 **Calibration:** Approve once the code improves overall code health -- even if it isn't perfect. The bar is: is this better than what we had before? Too strict and nothing ships. Too lenient and quality degrades one compromise at a time.
 
