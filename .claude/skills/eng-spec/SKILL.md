@@ -28,6 +28,12 @@ Vague or exploratory indicators — explore first:
 
 When the idea is still forming, be a thinking partner — not an interviewer. Challenge assumptions, propose alternatives, surface risks. Use `AskUserQuestion` to keep the conversation focused — one question at a time, with concrete options when possible.
 
+**Walk the decision tree, not a flat list.** Earlier decisions constrain later ones — resolve them in order, so each question builds on the last answer and narrows scope. Don't dump a batch of open questions at the end; interrogate to shared understanding, branch by branch.
+
+**Lead every question with your recommended answer**, grounded in a specific CLAUDE.md principle, a file or pattern you found, or a prior `docs/solutions/` entry (Principle #10 — load context before suggesting). The user agrees, redirects, or corrects — that's much faster than generating from scratch. Recommendations from vibes don't count; if you can't cite what's driving the recommendation, explore until you can.
+
+**Explore before asking.** If the question is answerable by reading the codebase, an existing spec, or `docs/solutions/`, read it first. Only ask the user about what the code can't tell you: product intent, priorities, trade-offs that depend on business context.
+
 Probe through these lenses (skip what's already clear):
 - What's the real problem? Is this the right framing, or a proxy for something more important?
 - Who cares about this? What are they doing when they hit it?

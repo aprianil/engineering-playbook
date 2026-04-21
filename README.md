@@ -47,6 +47,7 @@ Or copy the `.claude/skills/` folder manually. Once in your project, the skills 
 | Plan | [`/eng-stress-test`](.claude/skills/eng-stress-test/SKILL.md) | Stress-test any spec or plan with fresh eyes. Auto-triggered by `/eng-spec`, or run standalone. |
 | Build | [`/eng-build`](.claude/skills/eng-build/SKILL.md) | Build a feature from an approved spec. Auto-triggers `/eng-debug` when something breaks unexpectedly. |
 | Build | [`/eng-debug`](.claude/skills/eng-debug/SKILL.md) | Systematic debugging: reproduce, localize, root cause, fix, guard test. Auto-triggered from `/eng-build` or run standalone. Hands off non-obvious findings to `/eng-compound`. |
+| Build | [`/web-animation-design`](.claude/skills/web-animation-design/SKILL.md) | Design and implement web animations that feel natural — easing, timing, springs, transitions, accessibility. Triggers on motion-related work. |
 | Review | [`/deslop`](.claude/skills/deslop/SKILL.md) | Remove AI-generated slop: unnecessary comments, defensive checks, `any` casts. Run before `/eng-check`. |
 | Review | [`/eng-check`](.claude/skills/eng-check/SKILL.md) | Check code against engineering principles. Last gate before shipping. |
 | Learn | [`/eng-compound`](.claude/skills/eng-compound/SKILL.md) | Capture non-obvious solutions so the team never solves the same problem twice. Feeds back into `/eng-spec`'s research phase. |
