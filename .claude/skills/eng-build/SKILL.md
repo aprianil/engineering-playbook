@@ -32,7 +32,9 @@ After that, execute. Follow the task list in the spec. Each task is a vertical s
 **Checkpoint at natural boundaries** -- after completing a vertical slice, or when multiple tasks connect. Stop and verify:
 - Tests pass
 - Application builds without errors
-- Core user flow works end-to-end (if applicable)
+- Core user flow works end-to-end
+
+For UI or user-facing tasks, "works" means it works *in a real browser* — not "the build compiled" or "the tests are green." Drive the feature with the Playwright MCP tools (`mcp__playwright__browser_navigate`, `_click`, `_fill_form`, `_snapshot`, `_console_messages`, `_network_requests`) and click through as a user would. Types and tests prove code correctness; browsers prove feature correctness — and they surface a whole class of bugs the compiler can't see (hydration mismatches, runtime console errors, failed network calls, broken nav, stale cache). Make sure the dev server is running first (check `package.json` scripts — commonly `npm run dev`); after server-side changes (API routes, middleware, server components, env vars, config), re-navigate to force a fresh fetch before re-verifying, otherwise stale RSC/middleware responses will make a correct change look broken.
 
 Don't push through many tasks hoping they all work together at the end. Catch breakage early while the cause is obvious. Briefly state progress at each checkpoint.
 
@@ -60,6 +62,8 @@ Be honest about what's done and what isn't. Present the result referencing the s
 
 **Verify with fresh eyes (Principle #8).** If the feature has a UI or user-facing behavior, spawn a sub-agent to try to break it. Pass the context directly -- don't make it re-read the spec or explore the codebase. Run it in the background (`run_in_background: true`) so you can present the build results while QA runs.
 
+Confirm the dev server is running before spawning the sub-agent — it can't test what isn't serving. If it isn't, start it (e.g. `npm run dev`) via a backgrounded Bash call first. The sub-agent uses the Playwright MCP browser tools to drive the app as a real user would — no direct API hits, no internal-only routes, no reasoning from the source code.
+
 The sub-agent prompt should include:
 
 1. The acceptance criteria (inline, not a file path)
@@ -70,6 +74,8 @@ The sub-agent prompt should include:
 Example prompt structure:
 
 "You are a QA tester with fresh eyes. You did not build this feature.
+
+Drive the browser directly with the Playwright MCP tools — `mcp__playwright__browser_navigate` to load pages, `_snapshot` to see what's on screen, `_click` / `_fill_form` / `_type` / `_select_option` / `_press_key` to interact, `_console_messages` to catch runtime errors, `_network_requests` to spot failed API calls, `_take_screenshot` when the user-visible rendering matters. Do NOT write Playwright test files or spawn a test runner — drive the live browser, observe, and report.
 
 Test like a real user. Navigate through the UI the way someone would actually use it. Don't go to internal URLs directly, don't call APIs, don't use knowledge of the code. If a user would click a nav link to get to a page, you click the nav link. Users don't know about your internal tools — test the experience they'll actually have.
 
@@ -86,9 +92,9 @@ Here is what was built:
 Edge cases to watch for:
 [paste edge cases from spec]
 
-Your job is to verify the feature works and try to break it. Test the happy path first, then try edge cases: empty inputs, rapid clicks, unexpected values, browser back button, refresh mid-flow.
+Your job is to verify the feature works and try to break it. Test the happy path first, then try edge cases: empty inputs, rapid clicks, unexpected values, browser back button, refresh mid-flow. Check `browser_console_messages` for runtime errors and `browser_network_requests` for failed or 4xx/5xx calls — a UI can render fine while logging errors or silently failing.
 
-Report what works, what breaks, and what feels off. Be specific -- include what you did and what happened."
+Report what works, what breaks, and what feels off. Be specific -- include what you did, what you saw on screen, and any console/network errors. Include screenshots when the visual rendering is the point of the bug."
 
 If the sub-agent finds issues, fix them before marking as done. Skip this step for backend-only changes or when there's no running app to test against.
 
