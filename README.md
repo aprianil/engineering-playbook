@@ -50,7 +50,6 @@ Or copy the `.claude/skills/` folder manually. Once in your project, the skills 
 | Review | [`/deslop`](.claude/skills/deslop/SKILL.md) | Remove AI-generated slop: unnecessary comments, defensive checks, `any` casts. Run before `/eng-check`. |
 | Review | [`/eng-check`](.claude/skills/eng-check/SKILL.md) | Check code against engineering principles. Last gate before shipping. |
 | Learn | [`/eng-compound`](.claude/skills/eng-compound/SKILL.md) | Capture non-obvious solutions so the team never solves the same problem twice. Feeds back into `/eng-spec`'s research phase. |
-| Design | [`/web-animation-design`](.claude/skills/web-animation-design/SKILL.md) | Design and implement web animations that feel natural — easing, duration, spring physics, accessibility. Auto-triggers on animation questions. |
 
 **See it in action:** [How the Skills Work Together](<How the Skills Work Together.md>) — a full walkthrough from vague idea to shipped code, showing how each skill and principle connects.
 

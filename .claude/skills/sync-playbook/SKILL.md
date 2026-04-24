@@ -35,10 +35,14 @@ Copy the playbook file and every deep dive `.md` into `/tmp/engineering-playbook
 ### 3. Copy skills with rsync
 
 ```bash
-rsync -a --delete ~/.claude/skills/ /tmp/engineering-playbook/.claude/skills/
+rsync -a --delete \
+  --exclude='web-animation-design' \
+  ~/.claude/skills/ /tmp/engineering-playbook/.claude/skills/
 ```
 
 The trailing slash on the source is mandatory. It copies the *contents* of `~/.claude/skills/`, not the directory itself. `--delete` removes any skill files in the repo that no longer exist in the canonical source.
+
+**The repo ships engineering-process skills only.** Domain skills (`web-animation-design`, future `<domain>-design` / `<stack>-patterns` skills) live in `~/.claude/skills/` for the user's own invocation but don't belong in the public playbook, which is scoped to the engineering learning arc (plan → build → review → learn). Add any new non-engineering skill to the `--exclude` list above. If the excludes list grows past ~3 entries, flip to an allowlist instead of a blocklist.
 
 Do not use `cp -r ~/.claude/skills/<skill> .claude/skills/<skill>`. That pattern creates nested directories like `.claude/skills/eng-build/eng-build/` and was the source of a previous bug that required a cleanup commit to remove.
 
