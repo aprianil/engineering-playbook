@@ -245,3 +245,36 @@ After approval, check whether the work can be split into independent pieces that
 - The parent spec stays as the decision document. Add a build status section listing all split specs with their dependencies and status
 
 Save build specs as `specs/[parent-name]-[letter]-[short-name].md`.
+
+## Build sequence + branch topology (conditional — only when the slice makes sense)
+
+When a spec decomposes into multiple build specs that will run in parallel, the specs need explicit branch topology + build sequence guidance. When it doesn't, a single branch name is enough — don't over-apply.
+
+**When to include a full topology section:**
+- Two or more build specs that can genuinely run concurrently (parallel tracks from the "Decompose for parallelism" step above).
+- Any build that will run alongside another in-progress build on the same repo.
+
+**When to include just a branch-name callout (skip topology section):**
+- Single-track spec (one build, sequential).
+- Follow-on cleanup PR after the main build merges (it runs alone).
+- Doc-only or purely additive change that piggybacks on an existing branch.
+
+**When in doubt, skip the topology section.** A single-track spec with a full topology template is noise — the reader has to figure out it doesn't apply. Only write it when a reader would genuinely need the isolation + sequence instructions.
+
+**Stay tool-agnostic.** Builders pick their own isolation mechanism (`git worktree`, `conductor.build`, an IDE feature, a separate clone). The spec cares that the isolation happens, not how. Don't prescribe `git worktree add` command templates — they're noise for everyone not using the git CLI directly.
+
+**Where it lives:** short `## Branch + separate working tree` block near the top of each build spec (right after the title, before `## Context`), plus a full `## Build sequence + branch topology` section in the parent spec. Build specs point back to the parent for the topology + coordination rules.
+
+**What a full parent-spec section includes:**
+- Branch topology diagram (integration branch + child branches + cleanup branches), showing merge direction.
+- Build sequence (what ships first, what runs in parallel, what merges last, what triggers cleanup).
+- Coordination rules that hold regardless of mechanism: `PORT=NNNN` overrides if multiple builds may run dev servers; rebase-before-PR when one build merges before another opens its PR; never build two specs in the same checkout.
+- Rationale for requiring isolation: shared pre-commit/tsc/lint hooks race on concurrent in-flight state across trees — even with disjoint file scopes, isolation must be at the filesystem level, not the hook level. Cite the project's own memory / solutions note if one exists.
+
+**What a minimal child-spec block includes (when the parent has the full section):**
+- Branch name for this build.
+- One-line note on whether isolation is required (parallel build) or recommended (sequential build), pointing back to the parent section for the topology.
+- PR target branch.
+
+**What a single-track spec's branch block includes:**
+- Just the branch name + PR target. No topology content. ~2 lines.
