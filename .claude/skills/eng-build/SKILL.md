@@ -13,6 +13,10 @@ Build a feature from an approved spec file. This is an execution session — the
 - Ask the user which spec to build from. Look in the `specs/` directory for available specs, or accept a file path.
 - Read the spec file completely.
 
+**Precondition check (stress-test gate).** Verify the spec contains a `## Stress-test verdict` heading (`grep -q '^## Stress-test verdict' <spec-path>`). If absent, stop and tell the user: "spec missing `## Stress-test verdict` — run `/eng-stress-test <spec-path>` first, or add the heading manually if this spec predates the rule (pre-merge specs are grandfathered)." Then exit.
+
+Specs created before this rule are grandfathered — print a one-line note ("grandfathered: pre-stress-test-gate spec") and proceed.
+
 Trust the spec. The planning session already explored the codebase, identified relevant files, and made architectural decisions. If something in the spec seems outdated or wrong, flag it to the user — don't go off-script.
 
 **Keep the spec alive.** The spec is a living document, not a frozen artifact. When things change during the build:

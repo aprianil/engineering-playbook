@@ -1,8 +1,8 @@
 ---
 name: eng-stress-test
-description: Stress-test a spec or plan with fresh eyes. Challenges assumptions, surfaces risks, catches overengineering.
-disable-model-invocation: true
-allowed-tools: Read, Glob, Grep
+description: Stress-test a spec or plan with fresh eyes. Challenges assumptions, surfaces risks, catches overengineering. Mandatory before /eng-build can start — appends a verdict heading to the spec that /eng-build checks for.
+disable-model-invocation: false
+allowed-tools: Read, Glob, Grep, Write, Bash
 argument-hint: [spec-file]
 ---
 
@@ -77,6 +77,18 @@ This skill runs in one of two modes depending on what context the caller provide
 - Would a developer building from this spec need to ask follow-up questions? Where?
 - Security — does user input reach the database or UI without validation? Are new routes missing auth? Could secrets leak?
 
+*First-of-kind detection*
+
+Some patterns deserve extra scrutiny on first introduction because they're hard to retrofit. Grep to determine whether the spec is the first to introduce any of:
+- A new agent skill (`skills/<name>/`) — verify SKILL.md frontmatter, role/tools/output contract, layering boundary
+- A new agent tool (`tool({ ... })`) — verify load-bearing description, `rationale: z.string()` in inputSchema, naming convention
+- A migration with a new pattern (`RETURNS TABLE`, RLS on a new table, partial unique index, NOT NULL backfill)
+- A cron / scheduled workflow — verify cadence, overlap idempotency, failure alert
+- A webhook handler — verify signature verification *before* body read
+- A new MCP tool surface — verify inline spec-fetch, context-gap-shaped inputs, per-org rate limits
+
+If first-of-kind, raise it in the verdict — even well-handled patterns deserve a "first-of-kind, extra eyes" flag so a reviewer reads the section with that frame.
+
 **Prioritize ruthlessly.** Not every edge case is worth handling. Apply the same judgment as the playbook's trade-off muscle: handle what would hurt users, force a rewrite, or create security/data issues. Explicitly dismiss what's not worth the complexity — "this is a Type 2 concern, skip for now" is a valid call.
 
 **What NOT to do:**
@@ -87,13 +99,16 @@ This skill runs in one of two modes depending on what context the caller provide
 
 **Output:**
 
-One-line verdict: **ready to build** / **address these first** / **rethink approach**
+Append (or replace) a `## Stress-test verdict` section at the end of the spec with:
 
-Prioritized list (3-7 items for most specs). Each item:
-- The concern (one line)
-- Why it matters (what breaks or what's expensive to fix later)
-- A specific question that would resolve it (not a fix -- your job is to challenge, not to prescribe solutions)
+- One-line verdict on its own line: **ready to build** / **address these first** / **rethink approach**
+- Prioritized list (3-7 items for most specs). Each item:
+  - The concern (one line)
+  - Why it matters (what breaks or what's expensive to fix later)
+  - A specific question that would resolve it (not a fix — your job is to challenge, not to prescribe solutions)
+- End with what the spec got right — one or two lines. Prevents the stress-test from being pure criticism
+- Stress-test run timestamp + sub-agent context (fast/cold mode)
 
-End with what the spec got right — one or two lines. Prevents the stress-test from being pure criticism.
+If you found nothing meaningful: "spec is solid, no concerns" is a valid verdict body.
 
-If you found nothing meaningful: "spec is solid, no concerns" is a valid output.
+The verdict heading is what `/eng-build` checks for as its precondition — no separate receipt file.
