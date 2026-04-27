@@ -85,9 +85,25 @@ Gather evidence on up to three concerns -- through direct exploration, parallel 
 
 ## Spec writing
 
-**Before writing, check scope.** If the feature touches multiple independent subsystems, suggest separate specs. Each spec should produce independently working, testable software. A bloated spec that tries to do everything leads to a bloated build.
+### Decide spec topology
 
-**Then map the file structure first.** Lock which files get created, modified, or tested before writing the rest of the spec. This forces decomposition decisions early — when they're cheap to change — and gives the builder a clear map. The codebase fit research should inform this directly -- follow the patterns it found.
+Before drafting, decide: is this a **solo spec** (one buildable feature, one PR) or a **parent + N sub-specs** (multi-slice feature, parent locks shared decisions, sub-specs ship as small parallel PRs)? This decides whether the build comes back as one mega-PR or as N parallel slices — get it right before any prose.
+
+**Default to solo.** Most features fit one spec. Don't manufacture decomposition where none is needed.
+
+**Choose parent + sub-specs when any of:**
+- The feature crosses 2+ independent subsystems (a new agent skill + a UI surface + a shared infra primitive).
+- The dependency graph has independent tracks (some work can run concurrently with no file overlap).
+- A solo spec would produce a PR over ~500 lines / ~10 files (project's PR-size guideline; large PRs review-loop forever — see `feedback_upstream_spec_over_review.md`).
+- Different layers have meaningfully different builders, stress-test concerns, or release cadences.
+
+If unsure, sketch the file-structure map first (next step), then check: does it cluster into 2+ groups with no shared files? If yes, split.
+
+**Vertical slices, never horizontal layers.** When splitting, each sub-spec ships *one thin capability end-to-end* (DB → API → UI for one flow). Layer-PRs (one for migrations, one for routes, one for UI) re-sequentialize the build and keep nothing testable until the last merge. Vertical slices keep every PR independently shippable. Same rule as task slicing within a single spec, hoisted to spec level.
+
+### Map the file structure first
+
+Lock which files get created, modified, or tested before writing prose. This forces decomposition decisions early — when they're cheap — and gives the builder a clear map. The codebase fit research should inform this directly. For multi-slice features the file map is also the **file-claim manifest**: each file belongs to exactly one sub-spec, declared at parent so collisions are caught at parent-write time, not sub-spec write time. See `## Multi-slice flow` for enforcement.
 
 **What you need (ask only what's still missing after exploration):**
 - What problem does this solve? (one sentence)
@@ -109,6 +125,33 @@ Scale the spec to the task. Small feature → skip sections that don't apply. Ne
 - Can this be decomposed into independent pieces that can be built in parallel? (Principle #11)
 
 **The spec format:**
+
+Each spec opens with YAML frontmatter (the machine-readable contract `/eng-spec` and `/eng-build` read) followed by the markdown body. Frontmatter shape:
+
+```yaml
+---
+title: "<human-readable>"
+status: specced            # specced | building | built
+session: solo              # solo | parent | <slice-id>
+summary: <2–4 sentence what + why>
+depends_on: [<other features this build needs already shipped>]
+references: [<paths the spec leans on>]
+
+# Parent only:
+build_specs: [specs/<feature>/<feature>-<slice-id>-<short>.md, ...]
+
+# Sub-spec only:
+slice_of: <parent feature name, no .md>
+slice_id: <a | b | c | kebab-name>
+slice_depends_on: [<sibling slice IDs that must merge first; empty = parallel-from-start>]
+files_claimed:
+  - <path or glob — exclusive to this slice>
+---
+```
+
+Frontmatter is load-bearing. `/eng-build <sub-spec>` reads `slice_depends_on:` and refuses to start until those slices merge. `/eng-spec` reads sibling `files_claimed:` lists and refuses to save on overlap. Don't let the frontmatter drift from the body.
+
+Then the markdown body:
 
 ```
 ## Feature: [name]
@@ -233,19 +276,39 @@ Append the task list to the spec, then save to `specs/[feature-name].md` (kebab-
 
 **Lock the spec once saved.** Resist re-opening every time a new article or idea arrives — refinement loops that don't close cause spec drift, and specs you can't stop editing are specs no one builds from. Define a lock point in the Out-of-scope section as `re-spec trigger: [criterion]`. Candidates: "first task has been built," "non-AI reviewer has signed off," "no external input has changed the spec across N consecutive reads." Pick one per spec. Once locked, spec changes happen as targeted edits during build with commit messages that explain what evidence triggered the change — not as re-opened planning sessions.
 
-## Decompose for parallelism (Principle #11)
+For multi-slice features the lock cascades: parent locks before any sub-spec is written, and unlocks only when a sub-spec discovers something the parent got wrong (signal, not noise — better caught now than after sub-spec N+1 was written on the wrong contract). Each sub-spec locks per its own re-spec trigger.
 
-After approval, check whether the work can be split into independent pieces that can be built in parallel. Not every spec needs splitting — small features ship as one spec.
+## Multi-slice flow (when topology is parent + sub-specs)
 
-**When to split:** the spec has a dependency graph where some work can happen concurrently. Look for files with no dependencies on each other, or groups of work that only connect at defined interfaces.
+The session(s) produce one parent.md and N sub-spec files, in a fixed order. Skip this section when topology is solo.
 
-**How to split:**
-- Map the dependency graph. The shape varies — it might be "foundation → parallel tracks → integration" or "three parallel tracks from the start" or "two tracks that merge halfway." Let the work dictate the shape
-- Write all build specs sequentially in the main conversation. Each spec benefits from decisions made in the previous ones. Do not farm out spec writing to parallel agents — they lose the accumulated context and the specs drift from each other
-- Each build spec runs the full `/eng-spec` process — same spec format, research, acceptance criteria, edge cases, stress-test. Not a task list carved from the parent, but a standalone spec
-- Each build spec states what's being built alongside it — not for coordination, but so the builder understands the boundaries. What they own, what's off-limits, and what they can expect to exist when the tracks merge
-- No file overlap between specs
-- Each build spec gets its own stress-test (parallel sub-agents are fine here — stress-testing benefits from fresh eyes)
-- The parent spec stays as the decision document. Add a build status section listing all split specs with their dependencies and status
+**1. Parent first.** Write the parent fully — context, what, who, user flow, acceptance criteria spread across slices, file-structure map, **shared code contracts** (types and key function signatures used by 2+ slices — defined once at parent, sub-specs reference, never restate), key cross-cutting decisions (D1, D2, …), build sequence + branch topology, sub-spec roster (per slice: scope claim + `files_claimed` reservation + `slice_depends_on`), migration-number reservations.
 
-Save build specs as `specs/[parent-name]-[letter]-[short-name].md`.
+**2. Stress-test parent.** Parent's stress-test focuses on decomposition correctness (right slice boundaries? shared contracts complete enough that sub-specs need no parent edits? DAG actually parallel?) and architectural soundness. `/eng-stress-test <parent-spec>` appends the verdict heading.
+
+**3. Lock parent.** Same lock rules as solo specs (re-spec trigger in Out of scope). Parent unlocks only when a sub-spec discovers something the parent got wrong.
+
+**4. Sub-specs sequentially.** One sub-spec at a time, in dependency order (`slice_depends_on:` topological). Each sub-spec runs the full `/eng-spec` flow on its own scope: research → assumptions → spec format (acceptance, edge cases, code contracts specific to this slice) → save → stress-test → task breakdown. Sub-specs reference parent's shared contracts; they do not restate them.
+
+**5. File-claim conflict check.** After each sub-spec saves, verify no path in its `files_claimed:` appears in any sibling sub-spec's `files_claimed:`. Implementation: read every sibling's frontmatter, gather `files_claimed:` lists into one set, fail loudly on duplicate. Overlap is a slice problem, not a manifest problem — refactor sub-specs (move the contested file, or merge two slices that genuinely share state) to eliminate it. Don't paper over with a comment.
+
+### Continuous vs resumed
+
+Both timings are valid; pick whichever fits the work.
+
+- **Continuous (default).** Same session writes parent + all sub-specs. Decisions compound in conversation, prefix cache stays warm, no re-priming. Right when one operator runs the whole feature in one sitting. Opus 4.7 (1M context) holds parent + ~5 sub-specs comfortably.
+- **Resumed.** Session 1 ends after parent locks. Later sessions invoked as `/eng-spec <parent-spec-path>` — read parent, ask which slice, write one sub-spec, exit. Right when sub-specs span multiple days, multiple operators, or are parallelized across worktrees. Parent must be self-sufficient as input — that's enforced by parent's roster + shared contracts, both of which the continuous path also requires, so no extra work to support resumed.
+
+### Naming + filesystem
+
+- Parent: `specs/<feature>/<feature>.md` — subdirectory per multi-slice feature (Phase 2 pattern: `specs/phase-2/phase-2-prompt-discovery.md`).
+- Sub-spec: `specs/<feature>/<feature>-<slice-id>-<short-name>.md`.
+- `<slice-id>`: letters when sequenced (`a`, `b`, `c` — order conveys build order); kebab-name when parallel-from-start (`shared-cache`, `cards-ux`).
+- Solo specs stay at `specs/<feature>.md` — no subdirectory until split.
+
+### Build flow integration
+
+- `/eng-build <sub-spec-path>` reads `slice_depends_on:` and refuses to start if any listed slice is not yet merged into the integration branch (or main, if there is no integration branch for the feature).
+- Parallel sub-spec builds **must** live in separate worktrees — shared lint/tsc hooks race on in-flight state even when file scopes are disjoint. See project memory `feedback_parallel_subagents.md`.
+- Each sub-spec PR targets the integration branch (e.g., `phase-3-visibility-tracker`); the integration branch merges to main only after all sub-specs are green.
+- Migration numbers are reserved at parent-write time (parent declares "migrations 026–028 reserved by 3a, 029 by 3b, …"); sub-specs use only what parent assigned them. Reservation does not depend on merge order.
