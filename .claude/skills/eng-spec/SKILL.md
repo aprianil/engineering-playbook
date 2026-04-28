@@ -101,6 +101,19 @@ If unsure, sketch the file-structure map first (next step), then check: does it 
 
 **Vertical slices, never horizontal layers.** When splitting, each sub-spec ships *one thin capability end-to-end* (DB → API → UI for one flow). Layer-PRs (one for migrations, one for routes, one for UI) re-sequentialize the build and keep nothing testable until the last merge. Vertical slices keep every PR independently shippable. Same rule as task slicing within a single spec, hoisted to spec level.
 
+### UX exploration (when the spec creates new UI)
+
+Skip for backend-only, refactor, infra, migration, or doc-only specs. Skip for modifications to existing UI surfaces — the live app already is the sandbox; verify in the browser at build time.
+
+For specs that create a **new** user-facing UI surface (new screen, new flow, new component category, new content surface), sandbox-first is the only path. Prose framings describe UX; sandboxes demonstrate it. Whole categories of UX failure (wrong density, wrong empty state, fake-feeling streaming, ambiguous primary action) only surface when you click through.
+
+Convert topology to multi-slice: parent + an `<feature>-exploration` sub-spec + an `<feature>-build` sub-spec, with `slice_depends_on: [exploration]` on the build slice.
+
+- **Exploration sub-spec** ships a sandbox under the project's dev/exploration area (per CLAUDE.md), builds 2-3 framings against real fixtures (not lorem-ipsum), produces a short winners doc capturing the chosen framing + rejected alternatives + why.
+- **Build sub-spec** consumes the winners doc and inlines the chosen framing as `### Interaction states` in the spec body.
+
+This rule overrides the topology default — a spec that would otherwise be solo becomes multi-slice when it creates new UI. The cost (one sandbox cycle) is paid upstream where UX decisions are still cheap.
+
 ### Map the file structure first
 
 Lock which files get created, modified, or tested before writing prose. This forces decomposition decisions early — when they're cheap — and gives the builder a clear map. The codebase fit research should inform this directly. For multi-slice features the file map is also the **file-claim manifest**: each file belongs to exactly one sub-spec, declared at parent so collisions are caught at parent-write time, not sub-spec write time. See `## Multi-slice flow` for enforcement.
