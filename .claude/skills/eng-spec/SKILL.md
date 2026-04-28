@@ -278,6 +278,8 @@ Append the task list to the spec, then save to `specs/[feature-name].md` (kebab-
 
 For multi-slice features the lock cascades: parent locks before any sub-spec is written, and unlocks only when a sub-spec discovers something the parent got wrong (signal, not noise — better caught now than after sub-spec N+1 was written on the wrong contract). Each sub-spec locks per its own re-spec trigger.
 
+**Promote cross-phase Type 1 decisions at lock time.** If the project maintains a living cross-phase decision log (e.g., `specs/eng-spec-overview.md` — check CLAUDE.md for the project's convention), scan the spec's Type 1 decisions before declaring lock. For any that affect later phases — schema changes, contract picks, protocol decisions, architectural commitments — confirm with the user and promote them to the log now. Lock-time catches what post-build promotion forgets: decisions are fresh, the spec hasn't shipped, the canonical text is still in flux. Type 2 (reversible) decisions stay inline only; not worth the log.
+
 ## Multi-slice flow (when topology is parent + sub-specs)
 
 The session(s) produce one parent.md and N sub-spec files, in a fixed order. Skip this section when topology is solo.
