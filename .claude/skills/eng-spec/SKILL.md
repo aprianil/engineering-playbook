@@ -2,7 +2,7 @@
 name: eng-spec
 description: Write a feature spec before building anything. Planning session — no code gets written.
 disable-model-invocation: false
-allowed-tools: Read, Glob, Grep, Write, Bash, Agent, AskUserQuestion, EnterPlanMode, ExitPlanMode
+allowed-tools: Read, Glob, Grep, Write, Bash, Agent, Skill, AskUserQuestion, EnterPlanMode, ExitPlanMode
 argument-hint: [feature-name]
 ---
 
@@ -233,18 +233,20 @@ Before finalizing, scan the spec for these red flags. If any feel true, revisit 
 What this feature explicitly does NOT include.
 ```
 
-## Stress-test (Principle #7) — mandatory
+## Stress-test (Principle #7) — mandatory auto-trigger
 
-`/eng-build` refuses to start on a spec that lacks a `## Stress-test verdict` heading. Stress-test is a mandatory **post-save gate** — see Task breakdown below for ordering.
+`/eng-build` refuses to start on a spec that lacks a `## Stress-test verdict` heading. Stress-test is a mandatory **post-save gate** — auto-fired by this skill, not a step the user can skip or run manually.
 
-Invoke `/eng-stress-test <spec-path>` after Task breakdown writes the spec. It reads the spec cold (or in fast mode if you pass context inline), walks the engineering principles + first-of-kind patterns, then appends a `## Stress-test verdict` section to the spec (one-line verdict + prioritized concerns + what's solid).
+**Mechanism.** The moment the spec file is saved (`Write` returns success), call the `Skill` tool with `skill: eng-stress-test` and `args: <spec-path>`. Don't stop, don't ask, don't summarize first. Auto-trigger is the contract — manual invocation by the user is a regression. Same trigger fires for parent specs, each sub-spec, and any re-run after a material spec edit.
+
+`/eng-stress-test` reads the spec cold (or in fast mode if you pass context inline), walks the engineering principles + first-of-kind patterns, then appends a `## Stress-test verdict` section to the spec (one-line verdict + prioritized concerns + what's solid).
 
 When it returns, present to the user:
 1. The spec (with the verdict section)
 2. The stress-test concerns
 3. Your recommendation on which findings to address
 
-Wait for approval or adjustments. If findings get folded back into the spec, re-run `/eng-stress-test` to refresh the verdict.
+Wait for approval or adjustments. If findings get folded back into the spec, re-fire `/eng-stress-test` (same Skill-tool call) to refresh the verdict.
 
 Do not write code until approved.
 
@@ -285,7 +287,7 @@ This task list becomes what `/eng-build` reads. The clearer it is, the less judg
 
 Append the task list to the spec, then save to `specs/[feature-name].md` (kebab-case, create the directory if needed). This file is the contract between planning and execution.
 
-**Then run the stress-test gate.** With the spec saved, invoke `/eng-stress-test <spec-path>` per the Stress-test section above. The skill appends the verdict section — required by `/eng-build`.
+**Then auto-fire the stress-test gate.** The moment the spec is saved, call the `Skill` tool with `skill: eng-stress-test` and `args: <spec-path>`. Do not pause to confirm — the trigger is part of the save contract, not a separate step. The skill appends the verdict section — required by `/eng-build`.
 
 **Lock the spec once saved.** Resist re-opening every time a new article or idea arrives — refinement loops that don't close cause spec drift, and specs you can't stop editing are specs no one builds from. Define a lock point in the Out-of-scope section as `re-spec trigger: [criterion]`. Candidates: "first task has been built," "non-AI reviewer has signed off," "no external input has changed the spec across N consecutive reads." Pick one per spec. Once locked, spec changes happen as targeted edits during build with commit messages that explain what evidence triggered the change — not as re-opened planning sessions.
 
