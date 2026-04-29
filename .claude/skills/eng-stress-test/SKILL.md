@@ -89,6 +89,19 @@ Some patterns deserve extra scrutiny on first introduction because they're hard 
 
 If first-of-kind, raise it in the verdict — even well-handled patterns deserve a "first-of-kind, extra eyes" flag so a reviewer reads the section with that frame.
 
+*I/O contract on capability functions (verdict-blocking)*
+
+If the spec introduces new exported functions on the capability path (anything an external caller or another agent might invoke — orchestrators, public read/write entrypoints, agent tools), the spec must name their input + output contract inline. The contract format is project-specific — Zod schemas, Pydantic models, serde structs, OpenAPI shapes, dataclasses, etc. — but the spec must declare it. Check the project's CLAUDE.md / AGENTS.md for the project's contract convention.
+
+A "TypeScript interface" or "we'll add validation at the boundary later" is not a contract. Verdict-blocking failure modes:
+- Spec introduces a new exported orchestrator (e.g. `runFoo`, `loadBar`, `processQux`) without naming its input + output schema/type contract.
+- Spec leaves the contract format ambiguous when the project has an established convention (e.g. project uses Zod everywhere, spec just says "typed inputs").
+- Spec defers contract definition to "during build" on a capability function — input/output shapes are Type-1 decisions and cheaper to lock at spec-time.
+
+Skip for pure infrastructure: caches, auth wrappers, deterministic helpers consumed only inside the same library. The check applies to functions that produce *user-facing* or *agent-facing* capability — anything that crosses a layer boundary.
+
+If the spec fails this gate, verdict = `address these first`. Without a named I/O contract the spec is incomplete; building from it produces functions that need a reshape PR later.
+
 **Prioritize ruthlessly.** Not every edge case is worth handling. Apply the same judgment as the playbook's trade-off muscle: handle what would hurt users, force a rewrite, or create security/data issues. Explicitly dismiss what's not worth the complexity — "this is a Type 2 concern, skip for now" is a valid call.
 
 **What NOT to do:**

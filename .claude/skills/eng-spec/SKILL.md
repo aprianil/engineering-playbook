@@ -14,25 +14,32 @@ Turn a loose feature description into a spec that anyone — human or AI — can
 
 **Assess whether the idea is ready to spec.**
 
-Clear requirements indicators — skip to spec writing:
+Clear requirements indicators — Phase 0 may be brief, but still verify shared understanding before proceeding:
 - User provides specific acceptance criteria or behavior
 - References existing patterns to follow
 - Describes exact expected behavior with constrained scope
 
-Vague or exploratory indicators — explore first:
+Vague or exploratory indicators — full grill:
 - "I want something like...", "what if we...", "I'm thinking about..."
 - Multiple possible directions, unclear scope
 - User seems unsure about what they actually want
 
-## Exploration mode
+## Phase 0: Reach shared design concept
 
-When the idea is still forming, be a thinking partner — not an interviewer. Challenge assumptions, propose alternatives, surface risks. Use `AskUserQuestion` to keep the conversation focused — one question at a time, with concrete options when possible.
+The goal of this phase is **shared understanding** — not a saved file, not a plan asset. The design concept (Frederick Brooks's term for the invisible theory of what you're building) lives in the conversation between you and the user. It is not yet an artifact.
 
-**Walk the decision tree, not a flat list.** Earlier decisions constrain later ones — resolve them in order, so each question builds on the last answer and narrows scope. Don't dump a batch of open questions at the end; interrogate to shared understanding, branch by branch.
+**Hard rules for this phase:**
+- Do not call `Write`. Nothing gets saved.
+- Do not call `EnterPlanMode`. Plan mode wants to produce a plan for approval; you don't yet know what to plan.
+- You exit this phase when the *user* could explain the design to a teammate without referring back to this conversation. Not when you understand it — when they do.
 
-**Lead every question with your recommended answer**, grounded in a specific CLAUDE.md principle, a file or pattern you found, or a prior `docs/solutions/` entry (Principle #10 — load context before suggesting). The user agrees, redirects, or corrects — that's much faster than generating from scratch. Recommendations from vibes don't count; if you can't cite what's driving the recommendation, explore until you can.
+**Interview relentlessly.** Walk down each branch of the design tree, resolving dependencies between decisions one by one. Earlier decisions constrain later ones — name the dependency before each question so the structure of what's being decided is visible to the user ("B depends on A — let me lock A first").
+
+**Lead every question with your recommended answer** (Principle #10 — load context before suggesting), grounded in a specific CLAUDE.md principle, a file or pattern you found, or a prior `docs/solutions/` entry. The user agrees, redirects, or corrects — that's much faster than generating from scratch. Recommendations from vibes don't count; if you can't cite what's driving the recommendation, explore until you can.
 
 **Explore before asking.** If the question is answerable by reading the codebase, an existing spec, or `docs/solutions/`, read it first. Only ask the user about what the code can't tell you: product intent, priorities, trade-offs that depend on business context.
+
+**One question at a time.** Use `AskUserQuestion` with concrete options. Don't dump batches; the dependency structure breaks when questions are parallel.
 
 Probe through these lenses (skip what's already clear):
 - What's the real problem? Is this the right framing, or a proxy for something more important?
@@ -42,11 +49,14 @@ Probe through these lenses (skip what's already clear):
 - Is there a simpler version that delivers most of the value?
 - What would success look like?
 
-When the exploration involves trade-offs, architectural choices, or multiple valid approaches — use `EnterPlanMode` to think it through properly. Write out the options, pros/cons, and your recommendation. Exit plan mode when you have a clear direction.
+When evaluating multiple approaches that need research (comparing APIs, libraries, architectural patterns), spawn parallel sub-agents to explore each option independently. Each sub-agent gets one option — read docs, check feasibility, identify trade-offs. The parent compares findings and recommends.
 
-When evaluating multiple approaches that need research (e.g., comparing APIs, libraries, or architectural patterns), spawn parallel sub-agents to explore each option independently. Each sub-agent gets one option to research — read docs, check feasibility, identify trade-offs. The parent compares findings and recommends. This is faster and each sub-agent goes deeper than sequential exploration.
+**Exit criteria — all three must hold:**
+1. Scope is bounded — you both know what's in and what's out.
+2. Major branches of the design tree are resolved — no live question of the form "but what about X?"
+3. The user can answer follow-up questions without scrolling back through the chat. Test this by asking one — if they hesitate or scroll, keep grilling.
 
-**Exit exploration when:** the problem is clear, the scope is bounded, and you could write acceptance criteria. Then transition to surfacing assumptions.
+Then transition to surfacing assumptions.
 
 ## Surface assumptions
 
