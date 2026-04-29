@@ -117,10 +117,23 @@ Skip for backend-only, refactor, infra, migration, or doc-only specs. Skip for m
 
 For specs that create a **new** user-facing UI surface (new screen, new flow, new component category, new content surface), sandbox-first is the only path. Prose framings describe UX; sandboxes demonstrate it. Whole categories of UX failure (wrong density, wrong empty state, fake-feeling streaming, ambiguous primary action) only surface when you click through.
 
+The purpose of this phase is **shared understanding of how it feels** — the UX equivalent of Phase 0. The prototype is the medium prose can't replace; the goal is not picking a framing, the goal is the user knowing what they're getting because they've clicked it.
+
 Convert topology to multi-slice: parent + an `<feature>-exploration` sub-spec + an `<feature>-build` sub-spec, with `slice_depends_on: [exploration]` on the build slice.
 
-- **Exploration sub-spec** ships a sandbox under the project's dev/exploration area (per CLAUDE.md), builds 2-3 framings against real fixtures (not lorem-ipsum), produces a short winners doc capturing the chosen framing + rejected alternatives + why.
-- **Build sub-spec** consumes the winners doc and inlines the chosen framing as `### Interaction states` in the spec body.
+**Exploration sub-spec workflow:**
+1. Build 2-3 framings against real fixtures in the project's dev/exploration area (per CLAUDE.md).
+2. The user clicks through each framing themselves. They form their own opinion on which wins, not just receive your recommendation.
+3. Polish pass on the chosen winner — density, motion, hover states, optical alignment, micro-interactions. This is where `make-interfaces-feel-better` and `web-animation-design` earn their keep. One pass, then lock.
+4. Write the winners doc — chosen framing, rejected alternatives, and why.
+
+**Build sub-spec** links to the prototype as the canonical source for interaction states; prose describes only what the prototype can't show (state machines, side effects, error semantics, server-side behavior). No re-describing the UX — the prototype is already the spec.
+
+**Real fixtures means real fixtures.** Domain text from the actual product, realistic volumes (50 items, not 3), every state the build will hit: empty, error, slow network, very-long content, very-short content, partial loads. Lorem ipsum and 3-item lists hide whole categories of failure.
+
+**Exit criteria — both must hold:**
+1. The winners doc captures the chosen framing, rejected alternatives, and why.
+2. The user can articulate why the chosen framing wins without re-reading the doc. Not when you've made the case — when they've formed the opinion.
 
 This rule overrides the topology default — a spec that would otherwise be solo becomes multi-slice when it creates new UI. The cost (one sandbox cycle) is paid upstream where UX decisions are still cheap.
 

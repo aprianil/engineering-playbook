@@ -123,6 +123,7 @@ Decisive merge call on an open PR. Codex finds something on every commit indefin
    - `gh api repos/<owner>/<repo>/pulls/<n>/comments --paginate` — all inline review comments (per-line findings).
    - `gh pr view <n> --json reviews` — review-level entries (round summaries).
    - `gh pr view <n> --json comments` — issue-level conversation, including author scope-out declarations and `@codex review` pings.
+   - `gh api repos/<owner>/<repo>/issues/<n>/reactions` — reactions on the PR body. Codex (`chatgpt-codex-connector[bot]`) leaves a `+1` reaction here when a review found zero issues, instead of posting an empty review comment. Without fetching reactions, the gate sits in `waiting` indefinitely on clean reviews.
 3. Read AGENTS.md and CLAUDE.md from the repo root. Pull the **Severity calibration**, **Convergence across review rounds**, **PR-scope honoring**, and **P0/P1 — blast-radius rules** sections from AGENTS.md verbatim. These are the rubric the sub-agent applies.
 4. **Parse fix commits.** For each commit on the PR branch, regex-match the subject against the project convention:
    `fix\(([^)]+)\): T[0-9]+ PR review round (\d+) P([0-2]) #(\d+) — (.+)`
@@ -132,7 +133,7 @@ Decisive merge call on an open PR. Codex finds something on every commit indefin
    - Look up whether a fix commit addresses this finding via the `fix_map`. Author convention is `round N P1 #M` where M is the 1-indexed position of the finding within round N's comments. Use submission timestamp ordering within a round.
    - If a fix commit exists with a SHA that postdates the finding's review submission time, treat as **addressed**. Otherwise **open**.
 6. **Identify scope-outs.** Parse the PR body for `## Out of scope`, `## Deferred`, or `## Follow-up issues` headings. List items under those headings, including any linked issue references (`#123`) or file-path/feature mentions. Findings matching scope-outs are **suppressed**.
-7. **Determine waiting state.** Compare the latest commit SHA on the branch to the latest commit SHA reviewed by Codex. If the latest commit is unreviewed AND was pushed less than 30 minutes ago, status is `waiting` (Codex hasn't had a chance yet). If older than 30 minutes and still unreviewed, surface that as a separate concern (Codex may have stalled; flag for user, but proceed with classification).
+7. **Determine waiting state.** A Codex "review signal" on the latest commit is any of: (a) an inline comment from `chatgpt-codex-connector[bot]` postdating the latest commit, (b) a formal review submission from Codex postdating the latest commit, or (c) a `+1` reaction from `chatgpt-codex-connector[bot]` on the PR body postdating the latest commit (Codex's "zero findings" shorthand — no inline comments, no formal review, just a thumbs-up on the body). If none of (a)/(b)/(c) is present AND the latest commit was pushed less than 30 minutes ago, status is `waiting` (Codex hasn't had a chance yet). If older than 30 minutes and still no signal, surface that as a separate concern (Codex may have stalled; flag for user, but proceed with classification). When the only signal is (c), record it as "Codex review: 👍 reaction (no findings)" — there are no inline comments to classify.
 8. Spawn one merge-gate sub-agent. **Pass everything inline** — don't make it re-fetch:
    - The CLAUDE.md product/engineering principles relevant to severity (Principles #1, #4, #8, #9; product principle #1 "data collection never flexes" for data-corruption framing).
    - The AGENTS.md severity rubric and convergence rules (verbatim, sections from step 3).
@@ -155,7 +156,7 @@ You are the deciding merge gate for an open PR. Your job is to return a decisive
 - The list of **open findings** (Codex inline comments without a corresponding fix commit).
 - The list of **addressed findings** (Codex inline comments mapped to fix commits) — informational, do not re-evaluate.
 - The PR's `## Out of scope` / `## Deferred` declarations — items there are out of scope for this verdict.
-- The waiting-state signal.
+- The waiting-state signal, including which Codex review channel produced the signal: inline comments, formal review, or `+1` reaction on the PR body. A `+1` reaction with no inline comments = "Codex reviewed and found zero issues" — there are no findings to classify and the verdict is `ship`.
 
 **Your task:**
 
@@ -187,7 +188,7 @@ VERDICT: <one-line summary, e.g., "All P1s addressed; 2 P2 architectural items s
 
 PR: #<n> · <title> · <additions>/<deletions> across <changedFiles> files
 Latest commit: <sha-short> "<subject>" (<time>)
-Latest Codex review: <reviewed-sha-short> (<time>) · <delta minutes since latest commit>
+Latest Codex review: <reviewed-sha-short> (<time>) · <delta minutes since latest commit> | OR | 👍 reaction on PR body (<time>) — zero findings | OR | none yet
 <Devin review line if present>
 
 ## Open findings
