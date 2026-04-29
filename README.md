@@ -43,8 +43,8 @@ Or copy the `.claude/skills/` folder manually. Once in your project, the skills 
 | Phase | Skill | What it does |
 |---|---|---|
 | Setup | [`/eng-init`](.claude/skills/eng-init/SKILL.md) | Scaffold a CLAUDE.md with playbook principles baked in. Run once per project. |
-| Plan | [`/eng-spec`](.claude/skills/eng-spec/SKILL.md) | Explore a vague idea or write a spec for a clear one. Researches the codebase with parallel agents, then stress-tests the spec before presenting. No code. |
-| Plan | [`/eng-stress-test`](.claude/skills/eng-stress-test/SKILL.md) | Stress-test any spec or plan with fresh eyes. Auto-triggered by `/eng-spec`, or run standalone. |
+| Plan | [`/eng-spec`](.claude/skills/eng-spec/SKILL.md) | Walks the design tree with you to shared understanding, researches the codebase with parallel agents, then writes a stress-tested spec broken into tasks. No code. |
+| Plan | [`/eng-stress-test`](.claude/skills/eng-stress-test/SKILL.md) | Adversarial review of a spec with fresh eyes. Challenges assumptions, surfaces risks, blocks specs missing I/O contracts on capability functions. Auto-triggered by `/eng-spec`, or run standalone. |
 | Build | [`/eng-build`](.claude/skills/eng-build/SKILL.md) | Build a feature from an approved spec. Auto-triggers `/eng-debug` when something breaks unexpectedly. |
 | Build | [`/eng-debug`](.claude/skills/eng-debug/SKILL.md) | Systematic debugging: reproduce, localize, root cause, fix, guard test. Auto-triggered from `/eng-build` or run standalone. Hands off non-obvious findings to `/eng-compound`. |
 | Review | [`/deslop`](.claude/skills/deslop/SKILL.md) | Remove AI-generated slop: unnecessary comments, defensive checks, `any` casts. Run before `/eng-check`. |
