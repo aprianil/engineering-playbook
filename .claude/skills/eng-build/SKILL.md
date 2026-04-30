@@ -15,9 +15,12 @@ Build a feature from an approved spec file. This is an execution session — the
 
 **Precondition checks.** Two gates run before any code gets written:
 
-1. **Stress-test verdict.** Verify the spec contains a `## Stress-test verdict` heading (`grep -q '^## Stress-test verdict' <spec-path>`). If absent, stop and tell the user: "spec missing `## Stress-test verdict` — run `/eng-stress-test <spec-path>` first, or add the heading manually if this spec predates the rule (pre-merge specs are grandfathered)." Then exit.
+1. **Stress-test verdict.** Verify the spec contains a `## Stress-test verdict` heading AND its body starts with `**ready to build**` (the line immediately after the heading, ignoring blank lines). Two grep checks: `grep -q '^## Stress-test verdict' <spec-path>` for the heading, then read the heading's first non-blank body line and confirm it matches `**ready to build**`.
 
-   Specs created before this rule are grandfathered — print a one-line note ("grandfathered: pre-stress-test-gate spec") and proceed.
+   - If the heading is absent, stop and tell the user: "spec missing `## Stress-test verdict` — run `/eng-stress-test <spec-path>` first, or add the heading manually if this spec predates the rule (pre-merge specs are grandfathered)." Then exit.
+   - If the heading exists but the verdict is `address these first` or `rethink approach`, stop and tell the user: "spec verdict is still <verdict> — concerns must be folded into the spec body and `/eng-stress-test <spec-path>` re-fired until verdict is `ready to build`. The build session refuses transient verdicts because resolved-but-still-listed concerns confuse execution." Then exit.
+
+   Specs created before this rule are grandfathered — if the heading exists but the body has neither shape (legacy free-form verdict), print a one-line note ("grandfathered: pre-stress-test-gate spec") and proceed.
 
 2. **Slice dependencies (sub-specs only).** If the spec has `slice_of:` in its frontmatter, read its `slice_depends_on:` list. For each listed slice ID, find the sibling sub-spec in the same directory (filename matches `*-<id>-*.md` or starts with `<feature>-<id>`) and verify its frontmatter shows `status: built`. If any prerequisite is unbuilt, stop and tell the user: "sub-spec depends on unbuilt slices: [<ids>]. Build those first, then resume." Then exit.
 

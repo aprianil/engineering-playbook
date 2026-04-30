@@ -256,22 +256,27 @@ Before finalizing, scan the spec for these red flags. If any feel true, revisit 
 What this feature explicitly does NOT include.
 ```
 
-## Stress-test (Principle #7) — mandatory auto-trigger
+## Stress-test (Principle #7) — mandatory auto-trigger, iterate until clean
 
-`/eng-build` refuses to start on a spec that lacks a `## Stress-test verdict` heading. Stress-test is a mandatory **post-save gate** — auto-fired by this skill, not a step the user can skip or run manually.
+`/eng-build` refuses to start on a spec whose `## Stress-test verdict` heading is anything other than `ready to build`. Stress-test is a mandatory **post-save gate** — auto-fired by this skill, not a step the user can skip or run manually. The build session sees only the spec's terminal state; concerns surfaced during iteration are transient and get replaced as you resolve them.
 
 **Mechanism.** The moment the spec file is saved (`Write` returns success), call the `Skill` tool with `skill: eng-stress-test` and `args: <spec-path>`. Don't stop, don't ask, don't summarize first. Auto-trigger is the contract — manual invocation by the user is a regression. Same trigger fires for parent specs, each sub-spec, and any re-run after a material spec edit.
 
-`/eng-stress-test` reads the spec cold (or in fast mode if you pass context inline), walks the engineering principles + first-of-kind patterns, then appends a `## Stress-test verdict` section to the spec (one-line verdict + prioritized concerns + what's solid).
+`/eng-stress-test` reads the spec cold (or in fast mode if you pass context inline), walks the engineering principles + first-of-kind patterns, then **replaces** the spec's `## Stress-test verdict` section. The replaced block is one of two shapes:
 
-When it returns, present to the user:
-1. The spec (with the verdict section)
-2. The stress-test concerns
-3. Your recommendation on which findings to address
+- **Clean verdict** — verdict is `ready to build`, followed by a short "What's load-bearing in this spec" paragraph. The spec is finalized.
+- **Working verdict** — verdict is `address these first` or `rethink approach`, followed by 3–7 prioritized concerns. **This is transient.** The build session must never see this.
 
-Wait for approval or adjustments. If findings get folded back into the spec, re-fire `/eng-stress-test` (same Skill-tool call) to refresh the verdict.
+**Iterate until clean.** When the stress-test returns a working verdict:
+1. Present the concerns to the user with your recommendation on which findings to address (group by P0/P1/P2 if useful).
+2. Wait for the user's call. They may agree to fix all, dismiss some as low-value, or push back on framing — make the call together.
+3. **Fold the resolutions into the spec body.** Update the relevant sections — What, User flow, Acceptance criteria, Edge cases, Key decisions, Tasks. Don't leave a "concerns we addressed" trail in the spec; the resolution is the new body text. The spec should read like the concerns never existed once the body is updated.
+4. Re-fire `/eng-stress-test` (same Skill-tool call). This **replaces** the working verdict with either a fresh working verdict (concerns remain) or the clean verdict (resolved).
+5. Repeat from step 1 until the verdict is `ready to build`.
 
-Do not write code until approved.
+When the verdict is clean, move on to task breakdown + spec lock. The spec's terminal state has exactly one verdict heading: the clean one. The iteration history doesn't survive — that's the point.
+
+Do not write code until the verdict is clean and the user has approved.
 
 ## Task breakdown
 
