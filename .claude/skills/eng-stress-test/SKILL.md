@@ -110,33 +110,9 @@ If the spec fails this gate, verdict = `address these first`. Without a named I/
 - Don't challenge things that are clearly appropriate for the task size.
 - Don't repeat what the spec already addresses well.
 
-**Output:**
+**Output.** Replace any existing `## Stress-test verdict` section. Two shapes:
 
-Always **replace** any existing `## Stress-test verdict` section at the end of the spec — never append, never accumulate. The spec's terminal state should show one clean verdict, not a debate transcript across multiple stress-test rounds.
+- **Clean** — `**ready to build**` + a short "What's load-bearing in this spec" paragraph (the bits that wouldn't be obvious from re-reading the spec). Timestamp + mode.
+- **Concerns** — `**address these first**` or `**rethink approach**` + 3–7 prioritized items (concern · why it matters · a question that resolves it). Timestamp + mode.
 
-The verdict block has two shapes depending on what you found:
-
-**Clean verdict (the spec is ready).** When you have no blocking or addressable concerns:
-
-- One-line verdict on its own line: **ready to build**
-- A short paragraph titled **What's load-bearing in this spec** — the 3-6 sentences a future reader needs to understand the load-bearing decisions, invariants, and trade-offs the spec is built on. Not a recap of the spec; the part that wouldn't be obvious from re-reading it.
-- Stress-test run timestamp + mode (fast / cold)
-
-That's the entire output. Skip the concerns list, skip the "what's right" recap — there are no concerns, and the load-bearing summary already covers what's right.
-
-**Working verdict (concerns surfaced — transient state).** When you have concerns that should be addressed:
-
-- One-line verdict: **address these first** or **rethink approach**
-- Prioritized list (3-7 items for most specs). Each item:
-  - The concern (one line)
-  - Why it matters (what breaks or what's expensive to fix later)
-  - A specific question that would resolve it (not a fix — your job is to challenge, not to prescribe solutions)
-- Stress-test run timestamp + mode (fast / cold)
-
-Skip "what the spec got right" in working verdicts. The point of a working verdict is the concerns; positive framing dilutes the signal.
-
-**The working verdict is transient.** The parent skill (`/eng-spec`) is required to iterate: surface concerns to the user, fold resolutions into the spec body, re-fire `/eng-stress-test`. Each re-fire **replaces** the previous verdict block. When concerns are resolved, the next run produces a clean verdict and the working verdict's contents disappear — the spec's terminal state is the clean verdict only. `/eng-build` reads only the final state; it never sees the iteration history.
-
-If you found nothing meaningful on the first run: produce the clean verdict directly.
-
-The verdict heading is what `/eng-build` checks for as its precondition — no separate receipt file. `/eng-build` rejects any verdict shape other than `ready to build`.
+Concerns are transient — the parent skill iterates until clean. Don't carry concern history into a clean verdict.

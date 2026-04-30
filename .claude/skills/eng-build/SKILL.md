@@ -13,20 +13,12 @@ Build a feature from an approved spec file. This is an execution session — the
 - Ask the user which spec to build from. Look in the `specs/` directory for available specs, or accept a file path.
 - Read the spec file completely.
 
-**Precondition checks.** Two gates run before any code gets written:
+**Preconditions.** Pass silently — only speak to halt or ask.
 
-1. **Stress-test verdict.** Verify the spec contains a `## Stress-test verdict` heading AND its body starts with `**ready to build**` (the line immediately after the heading, ignoring blank lines). Two grep checks: `grep -q '^## Stress-test verdict' <spec-path>` for the heading, then read the heading's first non-blank body line and confirm it matches `**ready to build**`.
+1. Spec has `## Stress-test verdict` followed by `**ready to build**`. If absent, halt: "run `/eng-stress-test <spec-path>` first." If verdict is `address these first` / `rethink approach`, halt: "verdict is `<verdict>` — fold concerns into the spec body and re-fire `/eng-stress-test`." Pre-rule specs without the heading: skip silently.
+2. Sub-specs only (frontmatter has `slice_of:`): every entry in `slice_depends_on:` must be `status: built` in its sibling sub-spec. If not, halt: "depends on unbuilt slices: [<ids>]."
 
-   - If the heading is absent, stop and tell the user: "spec missing `## Stress-test verdict` — run `/eng-stress-test <spec-path>` first, or add the heading manually if this spec predates the rule (pre-merge specs are grandfathered)." Then exit.
-   - If the heading exists but the verdict is `address these first` or `rethink approach`, stop and tell the user: "spec verdict is still <verdict> — concerns must be folded into the spec body and `/eng-stress-test <spec-path>` re-fired until verdict is `ready to build`. The build session refuses transient verdicts because resolved-but-still-listed concerns confuse execution." Then exit.
-
-   Specs created before this rule are grandfathered — if the heading exists but the body has neither shape (legacy free-form verdict), print a one-line note ("grandfathered: pre-stress-test-gate spec") and proceed.
-
-2. **Slice dependencies (sub-specs only).** If the spec has `slice_of:` in its frontmatter, read its `slice_depends_on:` list. For each listed slice ID, find the sibling sub-spec in the same directory (filename matches `*-<id>-*.md` or starts with `<feature>-<id>`) and verify its frontmatter shows `status: built`. If any prerequisite is unbuilt, stop and tell the user: "sub-spec depends on unbuilt slices: [<ids>]. Build those first, then resume." Then exit.
-
-   No `slice_of:` = solo or parent spec, skip the slice-deps check. Empty `slice_depends_on:` = parallel-from-start, also skip.
-
-Trust the spec. The planning session already explored the codebase, identified relevant files, and made architectural decisions. If something in the spec seems outdated or wrong, flag it to the user — don't go off-script.
+Trust the spec. If something seems outdated or wrong, flag it; otherwise start.
 
 **Keep the spec alive.** The spec is a living document, not a frozen artifact. When things change during the build:
 - If the approach shifts (different data model, different API shape), update the spec first, then implement. A spec that doesn't match the code actively misleads the next person.

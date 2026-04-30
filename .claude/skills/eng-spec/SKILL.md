@@ -325,26 +325,7 @@ For multi-slice features the lock cascades: parent locks before any sub-spec is 
 
 ## Drafting the next-session handoff
 
-When the user asks for a continuation message to start a fresh session against this spec, write it to focus the next agent on *what to build*, not on *how this spec was made*. The next agent reads the spec for context — the handoff message is operational only.
-
-The next agent has zero session memory. Its attention is finite. Anything in the handoff that isn't an instruction it must act on becomes background noise that competes with the spec for focus. Session residue (recap, justification, history) creates exactly that noise: the agent reads it, has to decide whether it matters, and now thinks about the iteration history instead of the work. The fix is to not put it there.
-
-**Include:**
-- The skill invocation and spec path (`/eng-build <spec-path>`)
-- Branch state (which branch to check out — branches don't live in spec frontmatter)
-- Operational tree state the spec doesn't carry — uncommitted unrelated files, in-flight work that should be left alone, environment quirks the next agent will hit
-
-**Exclude:**
-- What the spec does. The spec says what it does.
-- Why the spec was written this way. The spec's Context section says why.
-- Stress-test concerns, even resolved ones. Resolved means gone, not "gone but worth mentioning."
-- "TL;DR for orientation" / "what to know" / any meta framing. The spec is the orientation.
-- Post-build workflow recap (lint/build/test → eng-check → PR → Codex → merge). That's the build skill's job, not the message's.
-- "Already created", "we just did X", "based on our discussion". No session back-references.
-
-**The bar.** A handoff message read cold by a fresh agent should tell it exactly what command to run, on what branch, with what tree caveats — and nothing else. If a sentence describes a past action ("we wrote a spec," "we resolved the X failure mode"), delete it. The spec describes the work; the message points at it.
-
-Three short lines is usually enough. If the handoff message is longer than the operational state actually requires, it's carrying session residue.
+When the user asks for a continuation message, output operational state only — skill invocation, branch, tree caveats. The spec carries the rest. Three lines is usually enough.
 
 ## Multi-slice flow (when topology is parent + sub-specs)
 
