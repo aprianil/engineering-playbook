@@ -15,7 +15,7 @@ Build a feature from an approved spec file. This is an execution session — the
 
 **Preconditions.** Pass silently — only speak to halt or ask.
 
-1. Spec has `## Stress-test verdict` followed by `**ready to build**`. If absent, halt: "run `/eng-stress-test <spec-path>` first." If verdict is `address these first` / `rethink approach`, halt: "verdict is `<verdict>` — fold concerns into the spec body and re-fire `/eng-stress-test`." Pre-rule specs without the heading: skip silently.
+1. Spec has `## Stress-test verdict` followed by `**ready to build**`. If absent, halt: "spec missing clean verdict — re-run `/eng-spec <spec-path>` to iterate the draft to clean and re-save." If verdict is `address these first` / `rethink approach` (legacy specs only — new specs never reach disk in that state), halt: "verdict is `<verdict>` — re-run `/eng-spec <spec-path>` to iterate to clean." Pre-rule specs without the heading: skip silently.
 2. Sub-specs only (frontmatter has `slice_of:`): every entry in `slice_depends_on:` must be `status: built` in its sibling sub-spec. If not, halt: "depends on unbuilt slices: [<ids>]."
 
 Trust the spec. If something seems outdated or wrong, flag it; otherwise start.

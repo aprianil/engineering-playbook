@@ -256,25 +256,25 @@ Before finalizing, scan the spec for these red flags. If any feel true, revisit 
 What this feature explicitly does NOT include.
 ```
 
-## Stress-test (Principle #7) — mandatory auto-trigger, iterate until clean
+## Stress-test (Principle #7) — mandatory pre-save gate, iterate until clean
 
-`/eng-build` refuses to start on a spec whose `## Stress-test verdict` heading is anything other than `ready to build`. Stress-test is a mandatory **post-save gate** — auto-fired by this skill, not a step the user can skip or run manually. The build session sees only the spec's terminal state; concerns surfaced during iteration are transient and get replaced as you resolve them.
+`/eng-build` refuses to start on a spec whose `## Stress-test verdict` heading is anything other than `ready to build`. Stress-test is a mandatory **pre-save gate** — the spec hits disk only after the verdict is clean, with the clean verdict embedded in the same `Write`. Concerns surfaced during iteration live in conversation and never touch the file; the build session sees only the terminal state.
 
-**Mechanism.** The moment the spec file is saved (`Write` returns success), call the `Skill` tool with `skill: eng-stress-test` and `args: <spec-path>`. Don't stop, don't ask, don't summarize first. Auto-trigger is the contract — manual invocation by the user is a regression. Same trigger fires for parent specs, each sub-spec, and any re-run after a material spec edit.
+**Mechanism.** Once the spec body and task breakdown are drafted in conversation, call the `Skill` tool with `skill: eng-stress-test` and pass the draft inline as fast-mode context (the full spec text, the engineering principles you're checking against, the codebase paths/snippets you grounded the spec in). Do not save the spec yet. Don't stop, don't ask, don't summarize first — auto-trigger is the contract. Same trigger fires for parent drafts, each sub-spec draft, and any re-run after a material draft edit.
 
-`/eng-stress-test` reads the spec cold (or in fast mode if you pass context inline), walks the engineering principles + first-of-kind patterns, then **replaces** the spec's `## Stress-test verdict` section. The replaced block is one of two shapes:
+`/eng-stress-test` walks the engineering principles + first-of-kind patterns and returns the verdict as a chat response. It does **not** modify any file. The response is one of two shapes:
 
-- **Clean verdict** — verdict is `ready to build`, followed by a short "What's load-bearing in this spec" paragraph. The spec is finalized.
-- **Working verdict** — verdict is `address these first` or `rethink approach`, followed by 3–7 prioritized concerns. **This is transient.** The build session must never see this.
+- **Clean verdict** — verdict is `ready to build`, followed by a short "What's load-bearing in this spec" paragraph.
+- **Working verdict** — verdict is `address these first` or `rethink approach`, followed by 3–7 prioritized concerns. **This is transient and stays in conversation only.**
 
 **Iterate until clean.** When the stress-test returns a working verdict:
 1. Present the concerns to the user with your recommendation on which findings to address (group by P0/P1/P2 if useful).
 2. Wait for the user's call. They may agree to fix all, dismiss some as low-value, or push back on framing — make the call together.
-3. **Fold the resolutions into the spec body.** Update the relevant sections — What, User flow, Acceptance criteria, Edge cases, Key decisions, Tasks. Don't leave a "concerns we addressed" trail in the spec; the resolution is the new body text. The spec should read like the concerns never existed once the body is updated.
-4. Re-fire `/eng-stress-test` (same Skill-tool call). This **replaces** the working verdict with either a fresh working verdict (concerns remain) or the clean verdict (resolved).
+3. **Update the in-conversation draft.** Edit the relevant sections — What, User flow, Acceptance criteria, Edge cases, Key decisions, Tasks. The draft has no disk presence yet, so there is no file to patch — just the working draft you're iterating on.
+4. Re-fire `/eng-stress-test` with the updated draft inline. New verdict comes back in chat.
 5. Repeat from step 1 until the verdict is `ready to build`.
 
-When the verdict is clean, move on to task breakdown + spec lock. The spec's terminal state has exactly one verdict heading: the clean one. The iteration history doesn't survive — that's the point.
+When the verdict is clean, save the spec to disk for the first time — body + task list + clean verdict heading + load-bearing paragraph in a single `Write` call. Then move to spec lock. The spec's terminal state on disk has exactly one verdict heading: the clean one. The iteration history never touches the file — that's the point.
 
 Do not write code until the verdict is clean and the user has approved.
 
@@ -313,9 +313,9 @@ Guidelines:
 
 This task list becomes what `/eng-build` reads. The clearer it is, the less judgment the builder needs to apply.
 
-Append the task list to the spec, then save to `specs/[feature-name].md` (kebab-case, create the directory if needed). This file is the contract between planning and execution.
+Add the task list to the in-conversation draft. The draft is now complete — body + tasks. Do not save to disk yet.
 
-**Then auto-fire the stress-test gate.** The moment the spec is saved, call the `Skill` tool with `skill: eng-stress-test` and `args: <spec-path>`. Do not pause to confirm — the trigger is part of the save contract, not a separate step. The skill appends the verdict section — required by `/eng-build`.
+**Then fire the stress-test gate.** Call the `Skill` tool with `skill: eng-stress-test` and pass the full draft inline (fast mode). Do not pause to confirm — the trigger is part of the contract. Iterate per the Stress-test section above; only after the verdict is clean, save the complete spec to `specs/[feature-name].md` (kebab-case, create the directory if needed) in one `Write` call with the clean verdict heading embedded. This file is the contract between planning and execution.
 
 **Lock the spec once saved.** Resist re-opening every time a new article or idea arrives — refinement loops that don't close cause spec drift, and specs you can't stop editing are specs no one builds from. Define a lock point in the Out-of-scope section as `re-spec trigger: [criterion]`. Candidates: "first task has been built," "non-AI reviewer has signed off," "no external input has changed the spec across N consecutive reads." Pick one per spec. Once locked, spec changes happen as targeted edits during build with commit messages that explain what evidence triggered the change — not as re-opened planning sessions.
 
@@ -333,11 +333,11 @@ The session(s) produce one parent.md and N sub-spec files, in a fixed order. Ski
 
 **1. Parent first.** Write the parent fully — context, what, who, user flow, acceptance criteria spread across slices, file-structure map, **shared code contracts** (types and key function signatures used by 2+ slices — defined once at parent, sub-specs reference, never restate), key cross-cutting decisions (D1, D2, …), build sequence + branch topology, sub-spec roster (per slice: scope claim + `files_claimed` reservation + `slice_depends_on`), migration-number reservations.
 
-**2. Stress-test parent.** Parent's stress-test focuses on decomposition correctness (right slice boundaries? shared contracts complete enough that sub-specs need no parent edits? DAG actually parallel?) and architectural soundness. `/eng-stress-test <parent-spec>` appends the verdict heading.
+**2. Stress-test parent draft.** Parent's stress-test focuses on decomposition correctness (right slice boundaries? shared contracts complete enough that sub-specs need no parent edits? DAG actually parallel?) and architectural soundness. Run `/eng-stress-test` against the parent draft inline (fast mode); iterate per the Stress-test section. Save the parent only after verdict is clean, with the clean verdict embedded.
 
 **3. Lock parent.** Same lock rules as solo specs (re-spec trigger in Out of scope). Parent unlocks only when a sub-spec discovers something the parent got wrong.
 
-**4. Sub-specs sequentially.** One sub-spec at a time, in dependency order (`slice_depends_on:` topological). Each sub-spec runs the full `/eng-spec` flow on its own scope: research → assumptions → spec format (acceptance, edge cases, code contracts specific to this slice) → save → stress-test → task breakdown. Sub-specs reference parent's shared contracts; they do not restate them.
+**4. Sub-specs sequentially.** One sub-spec at a time, in dependency order (`slice_depends_on:` topological). Each sub-spec runs the full `/eng-spec` flow on its own scope: research → assumptions → spec format (acceptance, edge cases, code contracts specific to this slice) → task breakdown → stress-test until clean → save. Sub-specs reference parent's shared contracts; they do not restate them.
 
 **5. File-claim conflict check.** After each sub-spec saves, verify no path in its `files_claimed:` appears in any sibling sub-spec's `files_claimed:`. Implementation: read every sibling's frontmatter, gather `files_claimed:` lists into one set, fail loudly on duplicate. Overlap is a slice problem, not a manifest problem — refactor sub-specs (move the contested file, or merge two slices that genuinely share state) to eliminate it. Don't paper over with a comment.
 

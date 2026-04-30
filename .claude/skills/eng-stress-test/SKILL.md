@@ -1,8 +1,8 @@
 ---
 name: eng-stress-test
-description: Stress-test a spec or plan with fresh eyes. Challenges assumptions, surfaces risks, catches overengineering. Mandatory before /eng-build can start — replaces the spec's verdict heading on each run; iterate until verdict is `ready to build`.
+description: Stress-test a spec or plan with fresh eyes. Challenges assumptions, surfaces risks, catches overengineering. Mandatory before /eng-build can start — returns the verdict as a chat response; eng-spec embeds the clean verdict in the spec on save.
 disable-model-invocation: false
-allowed-tools: Read, Glob, Grep, Write, Bash
+allowed-tools: Read, Glob, Grep, Bash
 argument-hint: [spec-file]
 ---
 
@@ -110,9 +110,9 @@ If the spec fails this gate, verdict = `address these first`. Without a named I/
 - Don't challenge things that are clearly appropriate for the task size.
 - Don't repeat what the spec already addresses well.
 
-**Output.** Replace any existing `## Stress-test verdict` section. Two shapes:
+**Output.** Return the verdict as a chat response. Never write to the spec file — eng-spec owns the spec, this skill only evaluates. Two shapes:
 
 - **Clean** — `**ready to build**` + a short "What's load-bearing in this spec" paragraph (the bits that wouldn't be obvious from re-reading the spec). Timestamp + mode.
 - **Concerns** — `**address these first**` or `**rethink approach**` + 3–7 prioritized items (concern · why it matters · a question that resolves it). Timestamp + mode.
 
-Concerns are transient — the parent skill iterates until clean. Don't carry concern history into a clean verdict.
+Concerns are transient — the caller iterates the draft in conversation until clean. The spec hits disk only once, with the clean verdict embedded.
