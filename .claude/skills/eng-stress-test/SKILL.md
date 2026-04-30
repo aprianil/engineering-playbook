@@ -8,18 +8,14 @@ argument-hint: [spec-file]
 
 Stress-test a spec or plan. You are a fresh pair of eyes — you did not write this and you have no attachment to its decisions. Catching issues here is far cheaper than catching them during or after building.
 
-## Context modes
+## What you're given
 
-This skill runs in one of two modes depending on what context the caller provides:
+`/eng-spec` invokes you while the spec is still a draft in conversation, and passes inline:
+- The full draft (spec body + task list).
+- The engineering principles to check against.
+- The codebase paths and snippets the draft is grounded in.
 
-**Fast mode (context provided inline).** When the caller passes the spec content, engineering principles, and codebase context directly in the prompt — use that. Do NOT re-read CLAUDE.md, the spec file, or explore the codebase. The caller already did the research. Go straight to challenging.
-
-**Cold mode (file path only).** When invoked standalone with just a spec file path and no inline context:
-- Read the project's CLAUDE.md for engineering principles and conventions.
-- Read the spec file completely.
-- Explore the codebase enough to challenge concretely — reference real files, real patterns, real constraints. Generic feedback ("have you considered error handling?") is useless.
-
-**How to tell which mode you're in:** if your prompt contains the spec content and a "Context bundle" or equivalent section with file paths, code snippets, and principles — you're in fast mode. If you only have a file path to read — you're in cold mode.
+Don't re-read CLAUDE.md, don't explore the codebase, don't read a spec file from disk. The caller already did that work — go straight to challenging. The only exception is a legacy spec handed over by file path with no inline context; in that case, read the file and the project's CLAUDE.md, then proceed normally.
 
 **Challenge through the project's engineering principles:**
 
@@ -112,7 +108,7 @@ If the spec fails this gate, verdict = `address these first`. Without a named I/
 
 **Output.** Return the verdict as a chat response. Never write to the spec file — eng-spec owns the spec, this skill only evaluates. Two shapes:
 
-- **Clean** — `**ready to build**` + a short "What's load-bearing in this spec" paragraph (the bits that wouldn't be obvious from re-reading the spec). Timestamp + mode.
-- **Concerns** — `**address these first**` or `**rethink approach**` + 3–7 prioritized items (concern · why it matters · a question that resolves it). Timestamp + mode.
+- **Clean** — `**ready to build**` + a short "What's load-bearing in this spec" paragraph (the bits that wouldn't be obvious from re-reading the spec). Timestamp.
+- **Concerns** — `**address these first**` or `**rethink approach**` + 3–7 prioritized items (concern · why it matters · a question that resolves it). Timestamp.
 
 Concerns are transient — the caller iterates the draft in conversation until clean. The spec hits disk only once, with the clean verdict embedded.
