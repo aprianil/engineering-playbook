@@ -17,96 +17,81 @@ Stress-test a spec or plan. You are a fresh pair of eyes — you did not write t
 
 Don't re-read CLAUDE.md, don't explore the codebase, don't read a spec file from disk. The caller already did that work — go straight to challenging. The only exception is a legacy spec handed over by file path with no inline context; in that case, read the file and the project's CLAUDE.md, then proceed normally.
 
-**Challenge through the project's engineering principles:**
+## High-yield checks — lead with these
 
-*Simplicity (Principle #1) — simple = readable, changeable, few things to think about*
-- Is there a simpler approach that solves the same problem?
-- Could anything be cut — not lines of code, but concepts, dependencies, or indirection?
-- Can someone new read this and understand it without a guided tour?
+These five catch most real issues. Run them before the principle pass.
 
-*YAGNI (Principle #2)*
-- Is anything being built for an imaginary future requirement?
-- Is the spec adding complexity for scenarios that may never happen?
+**1. Acceptance ↔ approach traceability.** For each acceptance criterion, point to where in the file structure and approach it gets implemented. Criteria with no clear home = gap in the plan. Files or components in the approach that don't map to any criterion = scope creep. Either is verdict-affecting.
 
-*Abstractions (Principle #3)*
-- Are abstractions being designed upfront that should be discovered later?
-- Is duplication being forced into a shared pattern prematurely?
+**2. Type 1 (irreversible) decisions.** Database schemas, public API contracts, data migrations, file formats other systems consume. Are they explicit and locked, or hidden inside "we'll figure it out"? Type 1 decisions deferred to build are the most expensive thing a spec can do — flag every one that isn't pinned down.
 
-*Quality (Principle #4) — never trade quality for speed*
-- Are assumptions treated as verified facts? (API response shapes from docs but not tested, constraints described but not enforced, "we'll figure it out during build" on decisions that are cheaper to get right now)
-- If shortcuts are proposed, are they scope cuts or quality cuts? Scope cuts are fine if documented. Quality cuts compound.
-- Are any trade-offs being ignored or hidden?
+**3. I/O contract on capability functions (verdict-blocking).** If the spec introduces new exported functions on the capability path — anything an external caller, agent, or orchestrator might invoke — the spec must name input + output contract inline using the project's convention (Zod, Pydantic, serde, OpenAPI, dataclass; check CLAUDE.md / AGENTS.md). What passes:
 
-*Reversibility (Principle #5) — Type 1 = hard to undo, Type 2 = easy to undo*
-- Are any decisions hard to reverse? (Database schema, public API contracts, data migrations) Flag these explicitly.
-- Are reversible decisions being over-planned? "Can I undo this next week?" If yes, move fast.
+```
+runFoo(input: FooInput) → FooResult
+  FooInput  = Zod schema { jobId: string, mode: 'sync' | 'async', payload: JobPayload }
+  FooResult = Zod schema { status: 'ok', data: ResultData } | { status: 'error', code: ErrorCode, message: string }
+```
 
-*Compounding (Principle #6)*
-- Is the spec investing in things that compound, or front-loading one-time concerns?
+What fails (verdict = `address these first`):
+- "TypeScript interface" or "we'll add validation at the boundary later" — not a contract.
+- Project has a Zod-everywhere convention; spec just says "typed inputs" — ambiguous.
+- Contract definition deferred to "during build" — input/output shapes are Type 1; cheaper to lock now.
 
-*Verification (Principle #8) — every change needs a way to prove it works*
-- Does the spec define how to verify the feature works? Tests, build checks, browser validation?
-- Are there behaviors that would be hard to test or verify? Flag them.
+Skip for pure infra (caches, auth wrappers, deterministic helpers consumed inside the same library). The check applies to functions producing user-facing or agent-facing capability — anything crossing a layer boundary.
 
-*Ownership (Principle #9) — if you can't explain it, you can't maintain it*
-- Is anything in the proposed approach so complex that the person building it won't understand why it's structured that way?
-- Would this require deep framework knowledge that the team doesn't have?
-
-*What good vs bad looks like*
-- Does the proposed structure match the project's "good" column — thin routes, shared schemas, auth wrappers, feature-name mirroring, side effects after response, structured errors, wiring files with zero logic?
-- Are there patterns from the "bad" column sneaking in?
-
-*Spec coverage — can you trace each acceptance criterion to the proposed approach?*
-- For each acceptance criterion, can you point to where in the file structure and approach it gets implemented?
-- Are there criteria with no clear home? That's a gap in the plan.
-- Are there files or components in the approach that don't map to any criterion? That's scope creep.
-
-*Rationalization red flags*
-- Scan for common rationalizations that hide bad decisions:
-  - "We can always refactor later" / "It's just a prototype" / "We might need this someday" / "It's only a small addition" / "Everyone does it this way" / "We don't have time to do it right" / "It's too late to change"
-- If the spec uses any of these (explicitly or implicitly), call it out. These aren't reasons, they're avoidance patterns.
-
-*Edge cases that matter*
+**4. Edge cases that matter.**
 - What would hurt users or corrupt data if missed?
-- What happens when external dependencies fail?
-- Are there concurrency issues — race conditions, double submits, stale data?
-- Would a developer building from this spec need to ask follow-up questions? Where?
-- Security — does user input reach the database or UI without validation? Are new routes missing auth? Could secrets leak?
+- What happens when external dependencies fail (API down, partial migration, malformed LLM JSON, duplicate webhook delivery)?
+- Concurrency — race conditions, double submits, stale data?
+- Would a builder need to ask follow-up questions? Where?
+- Security — user input reaching DB/UI without validation, new routes missing auth, secrets leaking?
 
-*First-of-kind detection*
+Specs that handle the happy path and mumble through failure are the specs that ship bugs.
 
-Some patterns deserve extra scrutiny on first introduction because they're hard to retrofit. Grep to determine whether the spec is the first to introduce any of:
-- A new agent skill (`skills/<name>/`) — verify SKILL.md frontmatter, role/tools/output contract, layering boundary
-- A new agent tool (`tool({ ... })`) — verify load-bearing description, `rationale: z.string()` in inputSchema, naming convention
-- A migration with a new pattern (`RETURNS TABLE`, RLS on a new table, partial unique index, NOT NULL backfill)
-- A cron / scheduled workflow — verify cadence, overlap idempotency, failure alert
-- A webhook handler — verify signature verification *before* body read
-- A new MCP tool surface — verify inline spec-fetch, context-gap-shaped inputs, per-org rate limits
+**5. First-of-kind patterns.** Some patterns are hard to retrofit, so first introduction deserves extra scrutiny. Grep to determine whether the spec is the first to introduce any of these — and check the named failure mode against the spec:
 
-If first-of-kind, raise it in the verdict — even well-handled patterns deserve a "first-of-kind, extra eyes" flag so a reviewer reads the section with that frame.
+- New agent skill (`skills/<name>/`) — layering boundary gets wrong on first try; verify SKILL.md frontmatter, role/tools/output contract.
+- New agent tool (`tool({ ... })`) — `rationale: z.string()` gets dropped, load-bearing description gets skipped, naming convention drifts.
+- Migration with a new pattern (`RETURNS TABLE`, RLS on a new table, partial unique index, NOT NULL backfill) — first one sets the precedent.
+- Cron / scheduled workflow — overlap idempotency and failure alerting get skipped.
+- Webhook handler — signature verification *before* body read gets reversed.
+- New MCP tool surface — inline spec-fetch, context-gap-shaped inputs, per-org rate limits get omitted.
 
-*I/O contract on capability functions (verdict-blocking)*
+Even well-handled first-of-kind patterns deserve a flag in the verdict so a reviewer reads the section with that frame.
 
-If the spec introduces new exported functions on the capability path (anything an external caller or another agent might invoke — orchestrators, public read/write entrypoints, agent tools), the spec must name their input + output contract inline. The contract format is project-specific — Zod schemas, Pydantic models, serde structs, OpenAPI shapes, dataclasses, etc. — but the spec must declare it. Check the project's CLAUDE.md / AGENTS.md for the project's contract convention.
+## Principle pass — faster
 
-A "TypeScript interface" or "we'll add validation at the boundary later" is not a contract. Verdict-blocking failure modes:
-- Spec introduces a new exported orchestrator (e.g. `runFoo`, `loadBar`, `processQux`) without naming its input + output schema/type contract.
-- Spec leaves the contract format ambiguous when the project has an established convention (e.g. project uses Zod everywhere, spec just says "typed inputs").
-- Spec defers contract definition to "during build" on a capability function — input/output shapes are Type-1 decisions and cheaper to lock at spec-time.
+Run after the high-yield checks. Most specs do fine here; raise only specific concerns, not generic ones.
 
-Skip for pure infrastructure: caches, auth wrappers, deterministic helpers consumed only inside the same library. The check applies to functions that produce *user-facing* or *agent-facing* capability — anything that crosses a layer boundary.
+- **Simplicity (#1).** Simpler approach? Anything cuttable — concepts, dependencies, indirection — not lines? Can someone new read this without a tour?
+- **YAGNI (#2).** Building for an imaginary future requirement? Adding complexity for scenarios that may never happen?
+- **Abstractions (#3).** Abstractions designed upfront that should be discovered later? Premature shared patterns?
+- **Quality (#4).** Are assumptions treated as verified facts (API shapes "from docs," constraints described but not enforced)? If shortcuts are proposed, are they *scope cuts* (fine, document them) or *quality cuts* (compound — call out)? Trade-offs hidden?
+- **Reversibility — Type 2 side (#5).** Are reversible decisions over-planned? Naming, tool cardinality, internal ordering — if it's grep-and-edit-fixable in an hour, push to move fast.
+- **Compounding (#6).** Investing in things that compound, or front-loading one-time concerns?
+- **Verification (#8).** How will the feature be proven to work — tests, build checks, browser validation? Anything hard to test? Flag it.
+- **Ownership (#9).** Anything so complex the builder won't understand why it's structured that way? Deep framework knowledge the team doesn't have?
+- **Project shape.** Match the project's "good" column (thin routes, shared schemas, auth wrappers, feature-name mirroring, side effects after response, structured errors, wiring files with zero logic)? Anything from the "bad" column sneaking in?
 
-If the spec fails this gate, verdict = `address these first`. Without a named I/O contract the spec is incomplete; building from it produces functions that need a reshape PR later.
+## Rationalization red flags
 
-**Prioritize ruthlessly.** Not every edge case is worth handling. Apply the same judgment as the playbook's trade-off muscle: handle what would hurt users, force a rewrite, or create security/data issues. Explicitly dismiss what's not worth the complexity — "this is a Type 2 concern, skip for now" is a valid call.
+Scan for phrases that hide unmade decisions:
+- "We can always refactor later" / "It's just a prototype" / "We might need this someday" / "It's only a small addition" / "Everyone does it this way" / "We don't have time to do it right" / "It's too late to change."
 
-**What NOT to do:**
-- Don't generate generic checklists. Only raise concerns specific to this feature.
-- Don't suggest adding complexity for hypothetical scenarios. That violates the principles you're checking against.
-- Don't challenge things that are clearly appropriate for the task size.
-- Don't repeat what the spec already addresses well.
+If you spot any (explicit or implicit), the verdict is not clean. Restate the rationalization as a real decision: what's being chosen, what's being given up. The phrase is a placeholder for an unmade decision — name the decision.
 
-**Output.** Return the verdict as a chat response. Never write to the spec file — eng-spec owns the spec, this skill only evaluates. Two shapes:
+## Anti-rubber-stamp
+
+If the spec passes on first read with no concerns at all, re-read once more — first-pass clean is suspicious unless the spec is genuinely small. The default working verdict is faster to write than a default clean verdict; bias toward `address these first` on judgment-call findings. Passing too readily is worse than one extra round of iteration.
+
+## Specificity requirement
+
+Every concern must cite a specific section, line, claim, or file in this spec. Concerns that could apply to any spec are noise — delete them before sending the verdict. Don't repeat what the spec already addresses well; don't suggest adding complexity for hypothetical scenarios; don't challenge things that are clearly appropriate for the task size.
+
+## Output
+
+Return the verdict as a chat response. Never write to the spec file — eng-spec owns the spec, this skill only evaluates. Two shapes:
 
 - **Clean** — `**ready to build**` + a short "What's load-bearing in this spec" paragraph (the bits that wouldn't be obvious from re-reading the spec). Timestamp.
 - **Concerns** — `**address these first**` or `**rethink approach**` + 3–7 prioritized items (concern · why it matters · a question that resolves it). Timestamp.

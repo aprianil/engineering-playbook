@@ -28,18 +28,18 @@ Vague or exploratory indicators — full grill:
 
 The goal of this phase is **shared understanding** — not a saved file, not a plan asset. The design concept (Frederick Brooks's term for the invisible theory of what you're building) lives in the conversation between you and the user. It is not yet an artifact.
 
-**Hard rules for this phase:**
-- Do not call `Write`. Nothing gets saved.
-- Do not call `EnterPlanMode`. Plan mode wants to produce a plan for approval; you don't yet know what to plan.
-- You exit this phase when the *user* could explain the design to a teammate without referring back to this conversation. Not when you understand it — when they do.
+**Hard rules:**
+- Do not call `Write`. Nothing gets saved this phase.
+- Do not call `EnterPlanMode`. Plan mode produces a plan for approval; you don't yet know what to plan.
+- Exit only when the *user* could explain the design to a teammate without scrolling back. Not when you understand it — when they do.
 
-**Interview relentlessly.** Walk down each branch of the design tree, resolving dependencies between decisions one by one. Earlier decisions constrain later ones — name the dependency before each question so the structure of what's being decided is visible to the user ("B depends on A — let me lock A first").
+**If the user pushes to skip Phase 0** ("just write it, I know what I want"), ask one tripwire question: *"In one sentence — who is this for, and what does success look like?"* Hesitation, a paragraph, or a re-frame means Phase 0 still needs to happen. Don't skip on confidence alone.
 
-**Lead every question with your recommended answer** (Principle #10 — load context before suggesting), grounded in a specific CLAUDE.md principle, a file or pattern you found, or a prior `docs/solutions/` entry. The user agrees, redirects, or corrects — that's much faster than generating from scratch. Recommendations from vibes don't count; if you can't cite what's driving the recommendation, explore until you can.
+**Walk the design tree.** Resolve dependencies one decision at a time. Earlier decisions constrain later ones — name the dependency before each question so the structure is visible ("B depends on A — let me lock A first"). One question at a time, via `AskUserQuestion` with concrete options. Batches break the dependency structure.
 
-**Explore before asking.** If the question is answerable by reading the codebase, an existing spec, or `docs/solutions/`, read it first. Only ask the user about what the code can't tell you: product intent, priorities, trade-offs that depend on business context.
+**Lead every question with your recommended answer** (Principle #10 — load context before suggesting), grounded in a specific CLAUDE.md principle, a file or pattern you found, or a prior `docs/solutions/` entry. The user agrees, redirects, or corrects — much faster than generating from scratch. Recommendations from vibes don't count; if you can't cite what's driving the recommendation, explore until you can.
 
-**One question at a time.** Use `AskUserQuestion` with concrete options. Don't dump batches; the dependency structure breaks when questions are parallel.
+**Explore before asking.** If the question is answerable by reading the codebase, an existing spec, or `docs/solutions/`, read it first. Only ask the user about what code can't tell you: product intent, priorities, trade-offs that depend on business context.
 
 Probe through these lenses (skip what's already clear):
 - What's the real problem? Is this the right framing, or a proxy for something more important?
@@ -54,13 +54,13 @@ When evaluating multiple approaches that need research (comparing APIs, librarie
 **Exit criteria — all three must hold:**
 1. Scope is bounded — you both know what's in and what's out.
 2. Major branches of the design tree are resolved — no live question of the form "but what about X?"
-3. The user can answer follow-up questions without scrolling back through the chat. Test this by asking one — if they hesitate or scroll, keep grilling.
+3. The user can answer follow-up questions without scrolling. **Verify by asking one they haven't already been told.** If they hesitate or scroll, keep grilling. Don't proceed on "I think we're good."
 
 Then transition to surfacing assumptions.
 
 ## Surface assumptions
 
-Before writing anything, list every assumption you're making. Don't silently fill in ambiguity — the spec's entire purpose is to surface misunderstandings before code gets written.
+Skipping this finds misalignments at build time, where they cost 10x. Before writing anything, list every assumption you're making — out loud. The assumptions that are right cost nothing to list; only the wrong ones cost time. Don't silently fill in ambiguity.
 
 ```
 ASSUMPTIONS I'M MAKING:
@@ -80,6 +80,8 @@ Then transition to research.
 Before writing the spec, gather concrete evidence from the codebase. This prevents the spec from being written on vibes -- the proposed approach should reference real files, real patterns, and real constraints.
 
 **Skip this step when the feature is small and the codebase is familiar enough that you already know the relevant files and patterns.** Don't launch agents to confirm what's obvious.
+
+**Self-deception tripwire.** If you find yourself naming a library version, API signature, file path, function name, or pattern *from memory* rather than from a fetch or grep, stop and verify. Spec-from-vibes is the most common failure mode and the hardest to catch in review — the spec reads as confident even when the underlying claim is unchecked.
 
 **When the feature involves external technologies** (APIs, libraries, frameworks, services), verify current state from official sources before writing the spec. Use `WebSearch` and `WebFetch` to check official documentation for: current stable versions, current API signatures and capabilities, deprecations or breaking changes, and recommended patterns. Training data goes stale. Official docs don't. Never spec against assumed API behavior when you can verify it in 30 seconds.
 
@@ -149,16 +151,13 @@ Lock which files get created, modified, or tested before writing prose. This for
 
 Scale the spec to the task. Small feature → skip sections that don't apply. New initiative → full context.
 
-**Apply the project's engineering principles throughout:**
-- Is this the simplest approach? Readable, changeable, few things to think about? (Principle #1)
-- Are we building for a real requirement or an imaginary one? (Principle #2 — YAGNI)
-- Are we designing abstractions upfront, or discovering them? (Principle #3)
-- If we're taking shortcuts, do they have a concrete plan to revisit? (Principle #4)
-- Are any decisions here irreversible (database schema, public APIs)? Those deserve extra scrutiny. Reversible ones — just decide. (Principle #5)
-- Does what we're adding compound over time, or is it a one-time need? (Principle #6)
-- How will we verify this works? What tests, checks, or browser validation should the spec require? (Principle #8)
-- Will the user understand why the code is structured this way after building? Flag anything that needs explanation in the spec. (Principle #9)
-- Can this be decomposed into independent pieces that can be built in parallel? (Principle #11)
+**Apply the project's engineering principles while writing — the stress-test will catch what slips, but design-time awareness is cheaper:**
+- Is this the simplest approach that solves the problem? (#1)
+- Are we building for a real requirement or an imaginary one? (#2)
+- Are any decisions irreversible — schema, public APIs, file formats? Those deserve extra scrutiny. (#5)
+- How will we verify this works — tests, build checks, browser? (#8)
+- Will the builder understand why the code is structured this way? (#9)
+- Can this decompose into independent parallel pieces? (#11)
 
 **The spec format:**
 
@@ -214,6 +213,8 @@ For each state: what the user sees, what causes it, and where it goes next. Use 
 ### Acceptance criteria
 - [ ] [concrete, verifiable criteria]
 
+**The vague-criterion test.** If a criterion contains words like *graceful*, *properly*, *as expected*, *fast*, *clean*, *intuitive* — it is not yet a criterion. Reframe to a measurable condition or delete it. This is the single highest-leverage check in the spec; vague acceptance is what lets a feature ship "done" while still being broken.
+
 When requirements are vague, reframe them into measurable conditions before writing criteria:
 ```
 Requirement: "Make the dashboard faster"
@@ -238,19 +239,12 @@ For user-facing errors, be specific about the UX: what does the user see (toast,
 - Key decisions: what was chosen, what was rejected, and why (this is the decision record; future you will thank present you for writing the "why"). Label each decision **Type 1** (hard to reverse: schemas, public APIs, protocol choices, file formats that others will consume) or **Type 2** (reversible: naming, tool cardinality, internal ordering, anything a grep-and-edit fixes in an hour). Type 1 deserves extra scrutiny in the rationalization check; Type 2 can change during build without pulling the builder back to the spec table
 - Dependencies: what could block this (external APIs, other teams, migrations)
 
-**Code contracts** *(include when adding new functions or modifying existing signatures)*: For each new function, specify the signature with types, a 2-3 line pseudocode body, and the return value. Not the full implementation — just enough that the builder doesn't have to guess the interface. The builder should never wonder "what does this function take and return?"
+**Code contracts** *(required when the spec introduces new exported functions on the capability path — anything an external caller, agent, or orchestrator might invoke)*: Specify the signature with named input + output types using the project's contract convention (Zod, Pydantic, serde, OpenAPI — check CLAUDE.md), plus a 2–3 line pseudocode body. The stress-test gate is verdict-blocking on this — a "TypeScript interface" or "we'll add validation later" doesn't count. Write the contract now; deferring to build is a Type 1 decision, and that's what reshape PRs are made of.
 
 **Data flow** *(include when the feature crosses 2+ system boundaries)*: Show how data moves from trigger to destination — a simple arrow chain like `user click → frontend handler → POST /api/foo → server handler → database → SSE event → frontend update`. Makes explicit who is responsible for what at each boundary. Prevents "I thought that happened on the other side."
 
 ### Rationalization check
-Before finalizing, scan the spec for these red flags. If any feel true, revisit the decision:
-- "We can always refactor later" (translation: we won't)
-- "It's just a prototype" (prototypes ship)
-- "We might need this someday" (YAGNI)
-- "It's only a small addition" (small additions compound into big complexity)
-- "Everyone does it this way" (appeal to popularity, not evidence)
-- "We don't have time to do it right" (you don't have time to do it twice)
-- "It's too late to change" (sunk cost; if the direction is wrong, changing now is cheaper than later)
+The stress-test gate runs the full rationalization scan with explicit action. Self-check before firing it: scan the draft for "we can always refactor later," "it's just a prototype," "we might need this someday," "everyone does it this way," "no time to do it right." Each phrase is a placeholder for an unmade decision — name the decision now, or expect the gate to flag it.
 
 ### Out of scope
 What this feature explicitly does NOT include.
@@ -273,6 +267,8 @@ Once the spec body and task breakdown are drafted in conversation, call the `Ski
 3. **Update the in-conversation draft.** Edit the relevant sections — What, User flow, Acceptance criteria, Edge cases, Key decisions, Tasks. The draft has no disk presence yet, so there is no file to patch — just the working draft you're iterating on.
 4. Re-fire `/eng-stress-test` with the updated draft inline. New verdict comes back in chat.
 5. Repeat from step 1 until the verdict is `ready to build`.
+
+**Two-round tripwire.** If the same concerns reappear across two stress-test rounds, the spec has a structural problem, not a wording problem. Stop iterating; redo the design. Polishing prose around an unsound design produces a clean verdict on a spec that still ships bugs.
 
 When the verdict is clean, save the spec to disk for the first time — body + task list + clean verdict heading + load-bearing paragraph in a single `Write` call. Then move to spec lock. The spec's terminal state on disk has exactly one verdict heading: the clean one. The iteration history never touches the file — that's the point.
 
@@ -315,17 +311,13 @@ This task list becomes what `/eng-build` reads. The clearer it is, the less judg
 
 Add the task list to the in-conversation draft. The draft is now complete — body + tasks. Do not save to disk yet.
 
-**Then fire the stress-test gate.** Call the `Skill` tool with `skill: eng-stress-test` and pass the full draft inline along with the engineering principles and grounding context. Iterate per the Stress-test section above. Only after the verdict is clean, save the complete spec to `specs/[feature-name].md` (kebab-case, create the directory if needed) in one `Write` call with the clean verdict heading embedded. This file is the contract between planning and execution.
+**Fire the stress-test gate per the Stress-test section above.** Only after the verdict is clean, save the complete spec to `specs/[feature-name].md` (kebab-case, create the directory if needed) in one `Write` call with the clean verdict heading embedded. This file is the contract between planning and execution.
 
-**Lock the spec once saved.** Resist re-opening every time a new article or idea arrives — refinement loops that don't close cause spec drift, and specs you can't stop editing are specs no one builds from. Define a lock point in the Out-of-scope section as `re-spec trigger: [criterion]`. Candidates: "first task has been built," "non-AI reviewer has signed off," "no external input has changed the spec across N consecutive reads." Pick one per spec. Once locked, spec changes happen as targeted edits during build with commit messages that explain what evidence triggered the change — not as re-opened planning sessions.
+**Lock the spec once saved. Specs you can't stop editing are specs no one builds from.** Refinement loops that don't close cause spec drift; resist re-opening every time a new article or idea arrives. Define a lock point in the Out-of-scope section as `re-spec trigger: [criterion]`. Candidates: "first task has been built," "non-AI reviewer has signed off," "no external input has changed the spec across N consecutive reads." Pick one per spec. Once locked, spec changes happen as targeted edits during build with commit messages explaining what evidence triggered the change — not as re-opened planning sessions.
 
 For multi-slice features the lock cascades: parent locks before any sub-spec is written, and unlocks only when a sub-spec discovers something the parent got wrong (signal, not noise — better caught now than after sub-spec N+1 was written on the wrong contract). Each sub-spec locks per its own re-spec trigger.
 
 **Promote cross-phase Type 1 decisions at lock time.** If the project maintains a living cross-phase decision log (e.g., `specs/eng-spec-overview.md` — check CLAUDE.md for the project's convention), scan the spec's Type 1 decisions before declaring lock. For any that affect later phases — schema changes, contract picks, protocol decisions, architectural commitments — confirm with the user and promote them to the log now. Lock-time catches what post-build promotion forgets: decisions are fresh, the spec hasn't shipped, the canonical text is still in flux. Type 2 (reversible) decisions stay inline only; not worth the log.
-
-## Drafting the next-session handoff
-
-When the user asks for a continuation message, output operational state only — skill invocation, branch, tree caveats. The spec carries the rest. Three lines is usually enough.
 
 ## Multi-slice flow (when topology is parent + sub-specs)
 
@@ -346,7 +338,7 @@ The session(s) produce one parent.md and N sub-spec files, in a fixed order. Ski
 Both timings are valid; pick whichever fits the work.
 
 - **Continuous (default).** Same session writes parent + all sub-specs. Decisions compound in conversation, prefix cache stays warm, no re-priming. Right when one operator runs the whole feature in one sitting. Opus 4.7 (1M context) holds parent + ~5 sub-specs comfortably.
-- **Resumed.** Session 1 ends after parent locks. Later sessions invoked as `/eng-spec <parent-spec-path>` — read parent, ask which slice, write one sub-spec, exit. Right when sub-specs span multiple days, multiple operators, or are parallelized across worktrees. Parent must be self-sufficient as input — that's enforced by parent's roster + shared contracts, both of which the continuous path also requires, so no extra work to support resumed.
+- **Resumed.** Session 1 ends after parent locks. Later sessions invoked as `/eng-spec <parent-spec-path>` — read parent, ask which slice, write one sub-spec, exit. Right when sub-specs span multiple days, multiple operators, or are parallelized across worktrees. Parent must be self-sufficient as input — that's enforced by parent's roster + shared contracts, both of which the continuous path also requires, so no extra work to support resumed. **Handoff messages between sessions:** output operational state only — skill invocation, branch, tree caveats. The spec carries the rest. Three lines is usually enough.
 
 ### Naming + filesystem
 
