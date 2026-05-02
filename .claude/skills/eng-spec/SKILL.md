@@ -51,10 +51,20 @@ Probe through these lenses (skip what's already clear):
 
 When evaluating multiple approaches that need research (comparing APIs, libraries, architectural patterns), spawn parallel sub-agents to explore each option independently. Each sub-agent gets one option — read docs, check feasibility, identify trade-offs. The parent compares findings and recommends.
 
-**Exit criteria — all three must hold:**
+**Temporal shape (for user-facing surfaces).** Resolve the four perception milestones as a design-tree node before exiting:
+
+- **Promise paint** (T=0): what does the user see the moment they trigger this? Shell, header, status copy that confirms the system heard them.
+- **First-evidence paint**: what's the first piece of real content, and at what T?
+- **First-actionable paint**: what's the earliest moment the user can act on partial results? What's gated on full load that doesn't have to be?
+- **Full paint**: when is everything done?
+
+This resolves *before* the data architecture is decided. Temporal shape constrains what data architecture is feasible (streaming events, cache layers, parallelism, partial state). Data architecture does not constrain temporal shape. The reverse ordering is the most common cause of "shipped, then re-architected for speed" rework: a feature that's correct end-to-end but blocks the user at stage boundaries because no one specced what the user sees in the first second.
+
+**Exit criteria — all must hold (the fourth applies only to user-facing surfaces):**
 1. Scope is bounded — you both know what's in and what's out.
 2. Major branches of the design tree are resolved — no live question of the form "but what about X?"
 3. The user can answer follow-up questions without scrolling. **Verify by asking one they haven't already been told.** If they hesitate or scroll, keep grilling. Don't proceed on "I think we're good."
+4. **Temporal shape resolved (user-facing surfaces only).** All four perception milestones have concrete answers, and the user can name what's gated on partial vs full state.
 
 Then transition to surfacing assumptions.
 
@@ -201,7 +211,7 @@ One-line description of what this feature does.
 Who this is for and what they're doing when they encounter this.
 
 ### User flow
-The steps a user takes. Happy path and sad path (errors, empty states, slow connections).
+The steps a user takes. Happy path and sad path (errors, empty states, slow connections). For user-facing surfaces, annotate the four perception milestones (promise paint, first-evidence, first-actionable, full) with concrete T-values, and call out which actions gate on partial vs full state. Each milestone names what the user sees and what they can do at that moment.
 
 ### Interaction states
 *Include for features with UI. Skip for backend-only or refactors.*
