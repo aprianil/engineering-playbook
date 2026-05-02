@@ -239,19 +239,55 @@ Always create this hook regardless of stack. Write `.claude/hooks/check-compound
 ```bash
 #!/bin/bash
 # Check for unprocessed compound drafts from eng-check.
-# Outputs a quiet note if drafts exist -- doesn't interrupt the session.
-# Auto-cleans drafts older than 30 days.
+# - When gh is available: drafts whose PR is merged exit 2 to prompt /eng-compound;
+#   drafts whose PR is open get a quiet note.
+# - When gh is unavailable: quiet note for all drafts.
+# - Drafts older than 30 days are auto-cleaned.
 
 DRAFTS_DIR="docs/solutions/.drafts"
+[ -d "$DRAFTS_DIR" ] || exit 0
 
-if [ -d "$DRAFTS_DIR" ]; then
-  find "$DRAFTS_DIR" -name "*.md" -type f -mtime +30 -delete 2>/dev/null
-  DRAFT_COUNT=$(find "$DRAFTS_DIR" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
-  if [ "$DRAFT_COUNT" -gt 0 ]; then
-    echo "Note: $DRAFT_COUNT compound draft(s) in docs/solutions/.drafts/ from past reviews. Run /eng-compound when you're ready."
+find "$DRAFTS_DIR" -name "*.md" -type f -mtime +30 -delete 2>/dev/null
+
+DRAFT_COUNT=$(find "$DRAFTS_DIR" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+[ "$DRAFT_COUNT" -gt 0 ] || exit 0
+
+if ! command -v gh >/dev/null 2>&1; then
+  echo "Note: $DRAFT_COUNT compound draft(s) in docs/solutions/.drafts/. Run /eng-compound when their PRs merge."
+  exit 0
+fi
+
+MERGED_LIST=""
+MERGED_COUNT=0
+PENDING_COUNT=0
+
+for DRAFT in "$DRAFTS_DIR"/*.md; do
+  [ -f "$DRAFT" ] || continue
+  PR=$(awk -F': ' '/^pr:/ {gsub(/[" ]/, "", $2); print $2; exit}' "$DRAFT")
+  if [ -n "$PR" ]; then
+    STATE=$(gh pr view "$PR" --json state -q .state 2>/dev/null)
+    if [ "$STATE" = "MERGED" ]; then
+      MERGED_COUNT=$((MERGED_COUNT+1))
+      MERGED_LIST="$MERGED_LIST  - $(basename "$DRAFT") (PR #$PR)\n"
+      continue
+    fi
   fi
+  PENDING_COUNT=$((PENDING_COUNT+1))
+done
+
+if [ "$MERGED_COUNT" -gt 0 ]; then
+  echo "Compound draft(s) ready — PR(s) merged:" >&2
+  printf "$MERGED_LIST" >&2
+  echo "Run /eng-compound to enrich and promote." >&2
+  exit 2
+fi
+
+if [ "$PENDING_COUNT" -gt 0 ]; then
+  echo "Note: $PENDING_COUNT compound draft(s) awaiting PR merge."
 fi
 ```
+
+The `exit 2` path on merged drafts surfaces stderr to the session as a directive Claude acts on — closing the loop from PR-merge to compound-capture without waiting for the user to remember.
 
 Adapt the other hook scripts to the specific tools detected in the project. Keep them simple — check if the tool exists, run it, exit 2 on failure.
 

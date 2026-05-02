@@ -18,17 +18,16 @@ Build a feature from an approved spec file. This is an execution session — the
 1. Spec has `## Stress-test verdict` followed by `**ready to build**`. If absent, halt: "spec missing clean verdict — re-run `/eng-spec <spec-path>` to iterate the draft to clean and re-save." If verdict is `address these first` / `rethink approach` (legacy specs only — new specs never reach disk in that state), halt: "verdict is `<verdict>` — re-run `/eng-spec <spec-path>` to iterate to clean." Pre-rule specs without the heading: skip silently.
 2. Sub-specs only (frontmatter has `slice_of:`): every entry in `slice_depends_on:` must be `status: built` in its sibling sub-spec. If not, halt: "depends on unbuilt slices: [<ids>]."
 
-Trust the spec. If something seems outdated or wrong, flag it; otherwise start.
+Trust the spec. The stress-test gate signed off on it; second-guessing now is what re-opens planning sessions, and that's exactly what /eng-spec's lock rule prevents. If something seems outdated or wrong, flag it; otherwise start.
 
 **Keep the spec alive.** The spec is a living document, not a frozen artifact. When things change during the build:
 - If the approach shifts (different data model, different API shape), update the spec first, then implement. A spec that doesn't match the code actively misleads the next person.
 - If scope changes (features cut or added), reflect it in the spec.
 - Reference the spec section in PRs — link back to what each PR implements.
 
-**When to stop and re-spec.** If you find yourself making decisions the spec should have made — choosing between architectural approaches, rewriting multiple acceptance criteria, or building something the spec doesn't describe — stop. A build session shouldn't become a planning session. Flag to the user: "the spec has a gap in [area], should I update it or do we need to re-spec?" Small scope adjustments where the architecture holds are fine to update inline. Fundamental changes need a fresh planning pass.
+**When to stop and re-spec.** A build session shouldn't become a planning session. **Tripwire:** if you find yourself updating 3+ acceptance criteria, multiple key decisions, or the proposed approach itself in the same session, you're not editing the spec — you're re-specifying. Stop, surface the gap to the user: "the spec has a gap in [area], update it or re-spec?" Small scope adjustments where the architecture holds are fine to update inline. Fundamental changes need a fresh planning pass.
 
-**Your goal:**
-Build the feature described in the spec. The acceptance criteria are your definition of done. The project's CLAUDE.md conventions are your constraints. You have access to the codebase, tools, and everything you need — figure out the best way to get there.
+**Your goal:** acceptance criteria = definition of done; CLAUDE.md = constraints. Figure out the best way to get there.
 
 Before writing code, give the user a brief summary of what you're about to build and flag anything that looks outdated or unclear. Wait for the go-ahead.
 
@@ -48,10 +47,10 @@ Don't push through many tasks hoping they all work together at the end. Catch br
 **Scope discipline.** Only touch what the task requires. Don't refactor adjacent code, add unspecified features, or "improve" things you notice along the way. If something genuinely needs fixing, flag it — don't silently fix it mid-task.
 
 **While building, hold these in mind:**
-- Am I discovering this abstraction or forcing it?
+- **Abstraction tripwire:** if you're extracting an abstraction with one current use, inline it. Wait for the third instance — discover, don't design.
 - Am I building for a real requirement or an imaginary one?
 - Can someone understand this behavior without opening multiple files?
-- What happens when this input is empty, null, or unexpected?
+- **Input tripwire:** if you wrote a function and didn't think about empty/null/unexpected input, you didn't finish writing it.
 - What else does this change touch? What breaks if it fails?
 
 These aren't steps — they're judgment. If something feels off, pause and flag it.
@@ -104,6 +103,8 @@ Report what works, what breaks, and what feels off. Be specific -- include what 
 If the sub-agent finds issues, fix them before marking as done. Skip this step for backend-only changes or when there's no running app to test against.
 
 **Mark the spec as built.** Add `status: built` and the date to the top of the spec file. This keeps `specs/` clean -- you can tell at a glance what's pending vs done.
+
+**Before pushing — run /eng-check.** Architecture review (local-diff mode, no args). The build session shouldn't review its own work — fresh eyes catch what the author can't (Principle #7). Once /eng-check is clean and you've pushed, `/loop /eng-check <PR#>` self-paces against Codex until the merge gate is decisive.
 
 **After shipping — reflect (only if something surprised you):**
 Skip this if the build was straightforward. Most sessions won't produce a learning. But if something unexpected came up, ask the user:

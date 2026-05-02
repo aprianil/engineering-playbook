@@ -42,6 +42,8 @@ When no draft exists:
 
 **The filter: would a teammate's AI session benefit from knowing this before hitting the same problem?** If yes, capture it. If no, skip.
 
+**Articulation tripwire.** If you can't write the "Why it's hard to find" section in 2-3 specific sentences, you don't have a non-obvious solution — you have a normal solution. Skip the capture.
+
 ## Writing the solution doc
 
 **First, check for existing solutions.** Search `docs/solutions/` for overlapping topics. Use Grep to search by keywords from the problem domain. If a related doc exists, update it rather than creating a duplicate.

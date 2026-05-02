@@ -24,6 +24,7 @@ This skill spawns a sub-agent with fresh context. The builder shouldn't review t
 > - Defensive checks or try/catch blocks that are abnormal for that area of the codebase (especially if called by trusted / validated codepaths)
 > - `as any` casts to get around type issues -- find the real type
 > - Unnecessary fallback values for things that are always defined
+> - Type guards or null checks for values typed as required — if the type system says it's there, deleting the guard exposes the real bug, not creates one
 >
 > **Complexity to simplify:**
 > - Redundant logic that can be consolidated

@@ -319,6 +319,8 @@ For multi-slice features the lock cascades: parent locks before any sub-spec is 
 
 **Promote cross-phase Type 1 decisions at lock time.** If the project maintains a living cross-phase decision log (e.g., `specs/eng-spec-overview.md` — check CLAUDE.md for the project's convention), scan the spec's Type 1 decisions before declaring lock. For any that affect later phases — schema changes, contract picks, protocol decisions, architectural commitments — confirm with the user and promote them to the log now. Lock-time catches what post-build promotion forgets: decisions are fresh, the spec hasn't shipped, the canonical text is still in flux. Type 2 (reversible) decisions stay inline only; not worth the log.
 
+**Offer the next step.** Once locked, surface the build kickoff: *"Spec ready at `specs/<feature>.md`. Run `/eng-build specs/<feature>.md` now, or come back when you're ready."* For multi-slice features, point at the next sub-spec to write (continuous flow) or the first slice to build (resumed flow, per `slice_depends_on:`). Don't auto-fire — the spec/build session boundary is intentional, but the user shouldn't have to guess the next command.
+
 ## Multi-slice flow (when topology is parent + sub-specs)
 
 The session(s) produce one parent.md and N sub-spec files, in a fixed order. Skip this section when topology is solo.

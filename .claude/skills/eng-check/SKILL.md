@@ -56,23 +56,27 @@ The CLAUDE.md principles and the full diff have been provided to you inline. Use
 2. Review the main files first -- the biggest, most important changes. This is where design problems live.
 3. Review the rest once the design is solid.
 
-**Principles:**
-- Is this as simple as it can be? Can someone new read, understand, and change it without breaking anything else? Cut concepts and dependencies, not just lines of code. (Principle #1)
-- Is anything being built for an imaginary future requirement? (Principle #2 -- YAGNI)
-- Are there forced abstractions that should stay as duplication? (Principle #3)
-- If shortcuts were taken, are they documented with a concrete plan to revisit? A TODO without a ticket is a wish. (Principle #4)
-- Are irreversible decisions (database schema, public APIs, data models) being treated with enough care? Are reversible decisions being over-planned? (Principle #5)
-- Is what's being added worth its cost across future sessions, or is it one-time complexity? (Principle #6)
-- Has every change been verified -- tests, build, lint, browser? (Principle #8)
-- Can the person who ships this explain why it's structured this way? Is anything opaque or "it works but I don't know why"? (Principle #9)
+**High-yield principles — lead with these:**
+- **Simplicity (#1).** Is this as simple as it can be? Can someone new read, understand, and change it without breaking anything else? Cut concepts and dependencies, not just lines of code.
+- **Quality (#4).** If shortcuts were taken, are they documented with a concrete plan to revisit? **A TODO without a ticket is a wish.** Deferred quality without an owner compounds — flag every unowned TODO.
+- **Ownership (#9).** Can the person who ships this explain why it's structured this way? Anything opaque or "it works but I don't know why"?
 
-**Feature structure (the seven patterns):**
-- Thin routes -- validate and delegate, no business logic in route files
+**Quick pass:**
+- YAGNI (#2) — building for an imaginary future requirement?
+- Abstractions (#3) — forced patterns that should stay as duplication?
+- Reversibility (#5) — irreversible decisions (schema, public APIs) treated with enough care? Reversible ones over-planned?
+- Compounding (#6) — worth its cost across future sessions, or one-time complexity?
+- Verification (#8) — tests, build, lint, browser?
+
+**Reviewer-bias tripwire.** If your only finding is a stylistic preference and the code clearly works, that's taste, not architecture — drop it. Architecture findings name a real downstream consequence (someone gets paged, a future change breaks, a class of bugs is enabled). "I'd write it differently" is not a finding.
+
+**Feature structure (seven patterns) — most-violated lead:**
+- **Thin routes** -- validate and delegate, no business logic in route files. Most common violation.
+- **Side effects after the response** -- user doesn't wait for webhooks, emails, analytics. Easy to miss in review.
+- **Structured errors with codes**, handled at the boundary. Naked throws or string errors flag.
 - Shared schema -- one definition, used by frontend and backend
 - Auth wrapped once -- not copy-pasted per route
 - Feature names mirrored across layers
-- Side effects after the response -- user doesn't wait for webhooks, emails, analytics
-- Structured errors with codes, handled at the boundary
 - Wiring files (routers, layouts, configs) do zero logic
 
 **Structure & naming:**

@@ -44,16 +44,20 @@ Narrow down where the failure originates. Work from the error backward, not from
 - Check what changed recently: `git diff` and `git log --oneline -5` are your friends.
 - Don't read the entire codebase looking for clues. Follow the evidence.
 
+**Localize tripwire.** If you've opened more than 5 files without narrowing the failure, you're exploring, not localizing. Stop reading and add a debug log at the last known-good point — confirm where you are before going further.
+
 ### 4. Understand the root cause
 
 This is the step people skip. You found where it breaks, now understand *why*.
 
-- Generate 3-5 specific hypotheses before investigating any single one. Breadth prevents tunnel vision — the first plausible cause is often wrong.
+- **Write all 3-5 hypotheses out before testing any single one.** Listing them on screen makes the under-considered ones harder to skip; otherwise agents tunnel on hypothesis #1.
 - Test them in parallel when possible. One well-placed set of debug logs can confirm or reject several hypotheses in one reproduction run.
 - Wrap temporary debug logs in `// #region debug log` / `// #endregion` markers (or the language equivalent). Cleanup becomes a grep-and-delete instead of a hunt.
 - Common shapes to consider: logic error, wrong API assumption, race condition, stale dependency, environment drift.
 - Would this have broken before your changes, or did your changes introduce it?
 - Are there other places in the code with the same assumption that haven't broken yet?
+
+**Root-cause tripwire.** If your hypothesis explains the failure but doesn't explain *why this hasn't broken before*, you haven't found the root cause yet. Either your change introduced a new path that hits the bug, or your hypothesis is incomplete. Keep digging.
 
 If the root cause isn't clear after focused investigation, ask the user. Don't spiral.
 
