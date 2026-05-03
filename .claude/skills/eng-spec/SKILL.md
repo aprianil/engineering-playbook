@@ -134,9 +134,12 @@ The purpose of this phase is **shared understanding of how it feels** — the UX
 Convert topology to multi-slice: parent + an `<feature>-exploration` sub-spec + an `<feature>-build` sub-spec, with `slice_depends_on: [exploration]` on the build slice.
 
 **Exploration sub-spec workflow:**
-1. Build 2-3 framings against real fixtures in the project's dev/exploration area (per CLAUDE.md).
+
+Each framing is the final shipped experience, not a fragment. Every screen the build will produce is reachable from within the prototype by navigation, not by asking. Visual fidelity matches what will ship: final type, spacing, color, motion, micro-interactions, hover states. If the user has to ask "can you also build X?" or "can you make Y match the design?" to evaluate a framing, it was incomplete; finish it before showing.
+
+1. Build 2-3 framings against real fixtures in the project's dev/exploration area (per CLAUDE.md). Compose UI from the project's component library skill (`shadcn` for projects that have it). Use `make-interfaces-feel-better` and `web-animation-design` to bring each framing to final fidelity before showing.
 2. The user clicks through each framing themselves. They form their own opinion on which wins, not just receive your recommendation.
-3. Polish pass on the chosen winner — density, motion, hover states, optical alignment, micro-interactions. This is where `make-interfaces-feel-better` and `web-animation-design` earn their keep. One pass, then lock.
+3. Apply any cross-framing tweaks the user surfaced while clicking through: a hover state from B that beats A's, a density choice worth porting, an optical-alignment fix the comparison made obvious. Most polish lived in step 1; this is the +1%. Lock after this pass.
 4. Write the winners doc — chosen framing, rejected alternatives, and why.
 
 **Build sub-spec** links to the prototype as the canonical source for interaction states; prose describes only what the prototype can't show (state machines, side effects, error semantics, server-side behavior). No re-describing the UX — the prototype is already the spec.
