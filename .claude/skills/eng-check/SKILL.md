@@ -185,10 +185,28 @@ You are the deciding merge gate for an open PR. Your job is to return a decisive
 
 **Output format (machine-parseable for `/loop` integration):**
 
+The verdict has two shapes — **lean** and **full**. Default to lean; expand to full only when the extra context is load-bearing for the user's decision.
+
+**Lean shape — default for follow-up rounds and any clear `fix-then-ship`:**
+
+```
+STATUS: fix-then-ship — <count> P<sev>s, <one-line gist (e.g., "both sibling instances of just-fixed patterns")>
+
+P<sev> `<file:line>` — <one-line concern>
+   Fix: <concrete one-line action>
+
+P<sev> `<file:line>` — <one-line concern>
+   Fix: <concrete one-line action>
+
+Apply <all|both|the fix> inline?
+```
+
+**Full shape — first round on a PR, any `ship` with non-trivial suppression, or any `waiting`:**
+
 ```
 STATUS: ship | fix-then-ship | waiting
 
-VERDICT: <one-line summary, e.g., "All P1s addressed; 2 P2 architectural items suppressed as out-of-scope (linked to follow-up issues #N, #M).">
+VERDICT: <one-line summary>
 
 PR: #<n> · <title> · <additions>/<deletions> across <changedFiles> files
 Latest commit: <sha-short> "<subject>" (<time>)
@@ -205,15 +223,9 @@ Latest Codex review: <reviewed-sha-short> (<time>) · <delta minutes since lates
 
 <for ship: write "None — clear to merge.">
 
-## Addressed (informational)
-
-<count> findings addressed by fix commits across rounds <range>. Examples:
-- Round N P1 #M `<file:line>` — fixed in <sha> "<subject>"
-<keep this section to ~5 examples; no need to enumerate all>
-
 ## Suppressed as P2 / scope-out
 
-<list each suppressed item with one-line reason: "P2 architectural — out of merge-gate scope" / "Listed in PR body ## Out of scope" / "Pattern-deduped under <file:line>">
+<list each with one-line reason: "P2 architectural — out of merge-gate scope" / "Listed in PR body ## Out of scope" / "Pattern-deduped under <file:line>">
 
 ## Recommended action
 
@@ -222,7 +234,17 @@ Latest Codex review: <reviewed-sha-short> (<time>) · <delta minutes since lates
 <for waiting: "Codex hasn't reviewed the latest commit yet. Wait ~5 minutes and re-run, or use `/loop /eng-check <n>` to auto-recheck.">
 ```
 
-The `STATUS:` line on its own at the top is the loop-integration contract — `/loop` reads it to decide whether to schedule the next wakeup (`waiting` → reschedule; `ship`/`fix-then-ship` → exit and surface).
+**Picking the shape:**
+
+- **Use lean when** — round ≥ 2 on this PR, or a clear-cut `fix-then-ship` where the user only needs file:line + fix to act. The user already knows the PR header, the commit trail is in `git log`, and an empty "Suppressed" section is just noise.
+- **Use full when** — first round on this PR (the user hasn't seen the audit context yet), `ship` verdicts where the suppression list explains *why* the gate is letting things through, or `waiting` where the timing gap is the point.
+- **Always cut, regardless of shape:** an empty `## Suppressed` section, an `## Addressed (informational)` list (visible in `git log --grep "PR review round"`), and prose recommended-action paragraphs that just restate the STATUS.
+
+**Always preserved, both shapes:**
+
+- The `STATUS:` line — `/loop` parses it verbatim, so the literal token (`ship` / `fix-then-ship` / `waiting`) must be the first thing on the line.
+- For `fix-then-ship`: every open finding's P-level + `file:line` + 1-line concern + 1-line fix. This is the user's decision input — never compress further.
+- An apply prompt at the end of `fix-then-ship` so the user can `yeah` and continue.
 
 **Lens reminder.** PR-gate mode applies severity to existing Codex findings; it does not generate new architecture or correctness findings of its own. Architecture concerns belong in local-diff mode (run pre-push); correctness/security/types/perf are Codex's lens. The PR-gate's job is *judgment over existing findings*, not a fresh review.
 
