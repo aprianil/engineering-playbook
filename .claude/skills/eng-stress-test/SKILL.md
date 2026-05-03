@@ -10,12 +10,12 @@ Stress-test a spec or plan. You are a fresh pair of eyes — you did not write t
 
 ## What you're given
 
-`/eng-spec` invokes you while the spec is still a draft in conversation, and passes inline:
-- The full draft (spec body + task list).
+`/eng-spec` invokes you with the spec saved to disk as `status: drafting`, and passes inline:
+- The spec file path or full content (spec body + task list).
 - The engineering principles to check against.
 - The codebase paths and snippets the draft is grounded in.
 
-Don't re-read CLAUDE.md, don't explore the codebase, don't read a spec file from disk. The caller already did that work — go straight to challenging. The only exception is a legacy spec handed over by file path with no inline context; in that case, read the file and the project's CLAUDE.md, then proceed normally.
+Don't re-read CLAUDE.md, don't explore the codebase. The caller already did that work — go straight to challenging. If only a path was passed, read the file once, then proceed.
 
 ## High-yield checks — lead with these
 
@@ -91,9 +91,9 @@ Every concern must cite a specific section, line, claim, or file in this spec. C
 
 ## Output
 
-Return the verdict as a chat response. Never write to the spec file — eng-spec owns the spec, this skill only evaluates. Two shapes:
+Return the verdict as a chat response. Never write to the spec file — eng-spec owns the file, this skill only evaluates. Two shapes:
 
-- **Clean** — `**ready to build**` + a short "What's load-bearing in this spec" paragraph (the bits that wouldn't be obvious from re-reading the spec). Timestamp.
-- **Concerns** — `**address these first**` or `**rethink approach**` + 3–7 prioritized items (concern · why it matters · a question that resolves it). Timestamp.
+- **Clean** — `**ready to build**`. Append a short "What's load-bearing in this spec" paragraph only when something would surprise a re-reader: a non-obvious coupling, a Type 1 decision encoded in a non-obvious place, a constraint that lives outside the spec body. Most clean specs don't need it; default to omitting.
+- **Concerns** — `**address these first**` or `**rethink approach**` + 3–7 prioritized items (concern · why it matters · a question that resolves it).
 
-Concerns are transient — the caller iterates the draft in conversation until clean. The spec hits disk only once, with the clean verdict embedded.
+Concerns are transient. The caller patches the spec file in place via `Edit` and re-fires until the verdict is clean.

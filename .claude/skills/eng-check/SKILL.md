@@ -185,66 +185,43 @@ You are the deciding merge gate for an open PR. Your job is to return a decisive
 
 **Output format (machine-parseable for `/loop` integration):**
 
-The verdict has two shapes — **lean** and **full**. Default to lean; expand to full only when the extra context is load-bearing for the user's decision.
+The output is exactly one of the three templates below. Verdict shape determines which template applies. No extra sections, no PR/commit/round recap, no prose paragraphs that restate the STATUS. The user has `gh pr view`, `git log`, and the diff already; the gate's job is to add a verdict + decision input on top of what they can see.
 
-**Lean shape — default for follow-up rounds and any clear `fix-then-ship`:**
+**`fix-then-ship`:**
 
 ```
 STATUS: fix-then-ship — <count> P<sev>s, <one-line gist (e.g., "both sibling instances of just-fixed patterns")>
 
-P<sev> `<file:line>` — <one-line concern>
-   Fix: <concrete one-line action>
+**P<sev>** `<file:line>` — <one-line concern, with sibling-pattern reference if relevant>
+   Fix: <concrete one-line action with LOC estimate when meaningful>
 
-P<sev> `<file:line>` — <one-line concern>
+**P<sev>** `<file:line>` — <one-line concern>
    Fix: <concrete one-line action>
 
 Apply <all|both|the fix> inline?
 ```
 
-**Full shape — first round on a PR, any `ship` with non-trivial suppression, or any `waiting`:**
+**`ship`:**
 
 ```
-STATUS: ship | fix-then-ship | waiting
+STATUS: ship — <gist (e.g., "clean", "2 P1s deferred to #94, #95", "18 Codex findings, all taste/dedup")>
 
-VERDICT: <one-line summary>
-
-PR: #<n> · <title> · <additions>/<deletions> across <changedFiles> files
-Latest commit: <sha-short> "<subject>" (<time>)
-Latest Codex review: <reviewed-sha-short> (<time>) · <delta minutes since latest commit> | OR | 👍 reaction on PR body (<time>) — zero findings | OR | none yet
-<Devin review line if present>
-
-## Open findings
-
-<for fix-then-ship: list real P0 first, then real P1>
-- **P0** `<file:line>` — <one-line concern>
-  Fix: <concrete one-line action>
-- **P1** `<file:line>` — <one-line concern>
-  Fix: <concrete one-line action>
-
-<for ship: write "None — clear to merge.">
-
-## Suppressed as P2 / scope-out
-
-<list each with one-line reason: "P2 architectural — out of merge-gate scope" / "Listed in PR body ## Out of scope" / "Pattern-deduped under <file:line>">
-
-## Recommended action
-
-<for ship: "Run `npm run lint && npm run build && npm run test` if not already green, then `gh pr merge <n> --rebase`. Optionally file follow-up issues for: <list any P1s being deferred>.">
-<for fix-then-ship: "Address the open P0/P1 above, then re-run `/eng-check <n>`. Or file follow-up issues for items you intentionally defer and re-run.">
-<for waiting: "Codex hasn't reviewed the latest commit yet. Wait ~5 minutes and re-run, or use `/loop /eng-check <n>` to auto-recheck.">
+Merge: gh pr merge <n> --rebase
 ```
 
-**Picking the shape:**
+**`waiting`:**
 
-- **Use lean when** — round ≥ 2 on this PR, or a clear-cut `fix-then-ship` where the user only needs file:line + fix to act. The user already knows the PR header, the commit trail is in `git log`, and an empty "Suppressed" section is just noise.
-- **Use full when** — first round on this PR (the user hasn't seen the audit context yet), `ship` verdicts where the suppression list explains *why* the gate is letting things through, or `waiting` where the timing gap is the point.
-- **Always cut, regardless of shape:** an empty `## Suppressed` section, an `## Addressed (informational)` list (visible in `git log --grep "PR review round"`), and prose recommended-action paragraphs that just restate the STATUS.
+```
+STATUS: waiting — Codex hasn't reviewed <sha-short> yet (<delta minutes since push>)
 
-**Always preserved, both shapes:**
+Re-run in ~5 min or use `/loop /eng-check <n>`.
+```
 
-- The `STATUS:` line — `/loop` parses it verbatim, so the literal token (`ship` / `fix-then-ship` / `waiting`) must be the first thing on the line.
-- For `fix-then-ship`: every open finding's P-level + `file:line` + 1-line concern + 1-line fix. This is the user's decision input — never compress further.
-- An apply prompt at the end of `fix-then-ship` so the user can `yeah` and continue.
+**Machine-parseable contract:**
+
+- The `STATUS:` literal is the first thing on the first line. The token (`ship` / `fix-then-ship` / `waiting`) follows the colon and a space; `/loop` parses on this token.
+- The gist after ` — ` is freeform but never empty; if the verdict is genuinely contextless, write `clean`.
+- For `fix-then-ship`: every open finding is a bold P-level + `file:line` + one-line concern, with an indented Fix line. The apply prompt is the last line. No section headings between findings.
 
 **Lens reminder.** PR-gate mode applies severity to existing Codex findings; it does not generate new architecture or correctness findings of its own. Architecture concerns belong in local-diff mode (run pre-push); correctness/security/types/perf are Codex's lens. The PR-gate's job is *judgment over existing findings*, not a fresh review.
 

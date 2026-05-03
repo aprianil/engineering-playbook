@@ -62,7 +62,7 @@ These aren't steps — they're judgment. If something feels off, pause and flag 
 - Can someone understand this without opening multiple files?
 - Have you verified the code works (tests, build, lint, browser — whatever's appropriate)?
 
-Be honest about what's done and what isn't. Present the result referencing the spec's acceptance criteria as a checklist.
+Be honest about what's done and what isn't. If every acceptance criterion passes, one line: `Acceptance: <count>/<count> pass`. Enumerate only failures or partials with `file:line` and the gap. Listing 8 green checks when all 8 pass is noise; listing 2 red ones when 2 break is the signal.
 
 **Verify with fresh eyes (Principle #8).** If the feature has a UI or user-facing behavior, spawn a sub-agent to try to break it. Pass the context directly -- don't make it re-read the spec or explore the codebase. Run it in the background (`run_in_background: true`) so you can present the build results while QA runs.
 
@@ -98,7 +98,13 @@ Edge cases to watch for:
 
 Your job is to verify the feature works and try to break it. Test the happy path first, then try edge cases: empty inputs, rapid clicks, unexpected values, browser back button, refresh mid-flow. Check `browser_console_messages` for runtime errors and `browser_network_requests` for failed or 4xx/5xx calls — a UI can render fine while logging errors or silently failing.
 
-Report what works, what breaks, and what feels off. Be specific -- include what you did, what you saw on screen, and any console/network errors. Include screenshots when the visual rendering is the point of the bug."
+Report shape: STATUS line + findings + nothing else.
+
+If everything passes, the entire output is `STATUS: pass`. Otherwise: `STATUS: breaks` (or `STATUS: feels-off`) followed by one bullet per finding:
+
+- **break** or **feels-off** · <page or component> · <one-line concern> · <what you did to surface it>
+
+Include screenshots inline when the visual rendering is the point of the bug. No traversal logs ('I clicked X, then Y, then Z'); the findings are the report, the steps you took are not."
 
 If the sub-agent finds issues, fix them before marking as done. Skip this step for backend-only changes or when there's no running app to test against.
 
