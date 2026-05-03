@@ -60,17 +60,7 @@ When evaluating multiple approaches that need research (comparing APIs, librarie
 
 This resolves *before* the data architecture is decided. Temporal shape constrains what data architecture is feasible (streaming events, cache layers, parallelism, partial state). Data architecture does not constrain temporal shape. The reverse ordering is the most common cause of "shipped, then re-architected for speed" rework: a feature that's correct end-to-end but blocks the user at stage boundaries because no one specced what the user sees in the first second.
 
-**Exit criteria — all must hold (the fourth applies only to user-facing surfaces):**
-1. Scope is bounded — you both know what's in and what's out.
-2. Major branches of the design tree are resolved — no live question of the form "but what about X?"
-3. The user can answer follow-up questions without scrolling. **Verify by asking one they haven't already been told.** If they hesitate or scroll, keep grilling. Don't proceed on "I think we're good."
-4. **Temporal shape resolved (user-facing surfaces only).** All four perception milestones have concrete answers, and the user can name what's gated on partial vs full state.
-
-Then transition to surfacing assumptions.
-
-## Surface assumptions
-
-Skipping this finds misalignments at build time, where they cost 10x. Before writing anything, list every assumption you're making — out loud. The assumptions that are right cost nothing to list; only the wrong ones cost time. Don't silently fill in ambiguity.
+**Surface implementation assumptions before exiting.** Skipping this finds misalignments at build time, where they cost 10x. Deliver a single message listing every implementation assumption you'll proceed with: which module/file you're extending, which patterns you'll follow, which is internal vs public surface, what's a new table vs a modified one. The right assumptions cost nothing to list; only the wrong ones cost time. Don't silently fill in ambiguity.
 
 ```
 ASSUMPTIONS I'M MAKING:
@@ -81,7 +71,14 @@ ASSUMPTIONS I'M MAKING:
 → Correct me now or I'll proceed with these.
 ```
 
-Use `AskUserQuestion` to present these. Keep it one message — the user corrects what's wrong, confirms what's right, and you move on. Only the assumptions that are wrong cost time. The ones that are right cost nothing to list.
+Use `AskUserQuestion` to deliver. One round, not a multi-turn loop. The user corrects what's wrong and confirms what's right; you move on.
+
+**Exit criteria — all must hold (the fourth applies only to user-facing surfaces):**
+1. Scope is bounded — you both know what's in and what's out.
+2. Major branches of the design tree are resolved — no live question of the form "but what about X?"
+3. The user can answer follow-up questions without scrolling. **Verify by asking one they haven't already been told.** If they hesitate or scroll, keep grilling. Don't proceed on "I think we're good."
+4. **Temporal shape resolved (user-facing surfaces only).** All four perception milestones have concrete answers, and the user can name what's gated on partial vs full state.
+5. **Implementation assumptions surfaced and confirmed.** The single-message list has been delivered and the user has corrected/confirmed.
 
 Then transition to research.
 

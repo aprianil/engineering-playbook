@@ -29,7 +29,7 @@ Trust the spec. The stress-test gate signed off on it; second-guessing now is wh
 
 **Your goal:** acceptance criteria = definition of done; CLAUDE.md = constraints. Figure out the best way to get there.
 
-Before writing code, give the user a brief summary of what you're about to build and flag anything that looks outdated or unclear. Wait for the go-ahead.
+Before writing code, flag anything in the spec that looks outdated or unclear. If the spec is clean, proceed without summarizing. The user wrote and locked it; they don't need it read back.
 
 After that, execute. Follow the task list in the spec. Each task is a vertical slice — a complete path through the feature (e.g., schema + API + UI for one flow), not a horizontal layer. This keeps the feature testable and working at every step. When tasks are marked independent (no dependencies on each other), they can be built in parallel (e.g., in separate worktrees). Respect dependency order for the rest.
 

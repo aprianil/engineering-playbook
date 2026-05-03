@@ -21,6 +21,8 @@ Don't re-read CLAUDE.md, don't explore the codebase. The caller already did that
 
 These five catch most real issues. Run them before the principle pass.
 
+**When invoked on a sub-spec** (frontmatter has `slice_of:`): assume the parent's locked decisions hold. Don't re-evaluate parent's shared contracts, cross-cutting Type 1 decisions, decomposition correctness, or DAG structure. Those were validated when parent stress-tested clean. Focus the 5 checks at slice scope only: this slice's acceptance↔approach traceability, this slice's slice-internal Type 1 decisions, this slice's I/O contracts on slice-internal capability functions, this slice's edge cases, this slice's first-of-kind patterns. Sub-spec stress-tests are usually shorter than parent stress-tests; if yours isn't, you're probably re-checking inherited decisions.
+
 **1. Acceptance ↔ approach traceability.** For each acceptance criterion, point to where in the file structure and approach it gets implemented. Criteria with no clear home = gap in the plan. Files or components in the approach that don't map to any criterion = scope creep. Either is verdict-affecting.
 
 **2. Type 1 (irreversible) decisions.** Database schemas, public API contracts, data migrations, file formats other systems consume. Are they explicit and locked, or hidden inside "we'll figure it out"? Type 1 decisions deferred to build are the most expensive thing a spec can do — flag every one that isn't pinned down.
