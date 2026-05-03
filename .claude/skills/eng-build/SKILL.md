@@ -62,7 +62,7 @@ These aren't steps — they're judgment. If something feels off, pause and flag 
 - Can someone understand this without opening multiple files?
 - Have you verified the code works (tests, build, lint, browser — whatever's appropriate)?
 
-Be honest about what's done and what isn't. If every acceptance criterion passes, one line: `Acceptance: <count>/<count> pass`. Enumerate only failures or partials with `file:line` and the gap. Listing 8 green checks when all 8 pass is noise; listing 2 red ones when 2 break is the signal.
+Be honest about what's done and what isn't. Present the result as the spec's acceptance-criteria checklist with each item marked `[x]` (pass) or `[ ]` (unmet). Lead with `Acceptance: <pass>/<total>` for the scan-glance. Annotate any unmet criterion with `file:line` and the gap. The checklist is the durable record; the count line is the headline.
 
 **Verify with fresh eyes (Principle #8).** If the feature has a UI or user-facing behavior, spawn a sub-agent to try to break it. Pass the context directly -- don't make it re-read the spec or explore the codebase. Run it in the background (`run_in_background: true`) so you can present the build results while QA runs.
 
