@@ -96,6 +96,21 @@ Every concern must cite a specific section, line, claim, or file in this spec. C
 Return the verdict as a chat response. Never write to the spec file — eng-spec owns the file, this skill only evaluates. Two shapes:
 
 - **Clean** — `**ready to build**`. Append a short "What's load-bearing in this spec" paragraph only when something would surprise a re-reader: a non-obvious coupling, a Type 1 decision encoded in a non-obvious place, a constraint that lives outside the spec body. Most clean specs don't need it; default to omitting.
-- **Concerns** — `**address these first**` or `**rethink approach**` + 3–7 prioritized items (concern · why it matters · a question that resolves it).
+- **Concerns** — `**address these first**` or `**rethink approach**` + 3–7 prioritized items, one tight bullet each.
+
+**Concern format.** One bullet per item: bold concern name, citation (file:line, AC#, task ID, or section heading), one-sentence diagnosis, fix direction. The "why it matters" collapses into the citation; the "resolving question" collapses into the fix. Don't expand each item into multi-paragraph fields with separate "Concern / Why it matters / Resolving question" headings — that produces a wall the reader has to skim through.
+
+Example:
+
+```
+**address these first** · 5 concerns, 1 verdict-blocking (Type 1 backward compat)
+
+1. **Schema extension breaks replay** (lines 219-231). New required `redditCitationCount` + `reviewCitationCount` fail Zod parse against old payloads persisted in `discovery_run_events`. Fix: `.default(0)`.
+2. **useDiscoveryStream lifecycle on market switch undefined** (T2). Mirror `usePromptsStream`'s `prevMarketKey` teardown pattern. Pin in T2 acceptance.
+```
+
+**One verdict-blocking flag at the top, not per-item P-levels.** If exactly one concern is verdict-blocking, name it in the header (as above). Don't tag every item with P1/P2 priorities — list order is the priority.
+
+**No "what slipped through clean" footer on non-clean verdicts.** The builder reads concerns to fix them; passing-item roll calls are noise. Save passing-item commentary for clean verdicts via the load-bearing paragraph above.
 
 Concerns are transient. The caller patches the spec file in place via `Edit` and re-fires until the verdict is clean.
