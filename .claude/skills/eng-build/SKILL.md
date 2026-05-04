@@ -110,7 +110,9 @@ If the sub-agent finds issues, fix them before marking as done. Skip this step f
 
 **Mark the spec as built.** Add `status: built` and the date to the top of the spec file. This keeps `specs/` clean -- you can tell at a glance what's pending vs done.
 
-**Before pushing, run /deslop, then /eng-check.** /deslop strips slop from the diff first: dead defensive checks that can't fire, single-use abstractions, AI-comment noise, stray `as any` casts. Then /eng-check reviews architecture on a clean diff. The build session shouldn't review its own work — fresh eyes catch what the author can't (Principle #7), and the review isn't distracted by surface slop. Once both pass and you've pushed, `/loop /eng-check <PR#>` self-paces against Codex until the merge gate is decisive.
+**Before pushing — run /eng-check.** Architecture review (local-diff mode, no args). The build session shouldn't review its own work — fresh eyes catch what the author can't (Principle #7). Once /eng-check is clean and you've pushed, `/loop /eng-check <PR#>` self-paces against Codex until the merge gate is decisive.
+
+**Before merging, run /deslop.** Final gate after `/eng-check <PR#>` clears. Strips dead defensive checks, single-use abstractions, AI-comment noise, stray `as any` casts that crept in during fix iterations. Catching slop here (instead of pre-push) means iteration noise from review cycles doesn't land on main. Deslop should only remove dead/noise code; if it ever edits logic, re-run `/eng-check <PR#>` before merging.
 
 **After shipping — reflect (only if something surprised you):**
 Skip this if the build was straightforward. Most sessions won't produce a learning. But if something unexpected came up, ask the user:
