@@ -105,11 +105,11 @@ Example:
 ```
 **address these first** · 5 concerns, 1 verdict-blocking (Type 1 backward compat)
 
-1. **Schema extension breaks replay** (lines 219-231). New required `redditCitationCount` + `reviewCitationCount` fail Zod parse against old payloads persisted in `discovery_run_events`. Fix: `.default(0)`.
-2. **useDiscoveryStream lifecycle on market switch undefined** (T2). Mirror `usePromptsStream`'s `prevMarketKey` teardown pattern. Pin in T2 acceptance.
+1. **Migration drops index without rebuild** (migration 0042, line 18). New `users.email_lower` column referenced by old `idx_users_email`, but the migration drops the index without recreating it; production queries fall back to seq scan. Fix: rebuild the index in the same migration, concurrently if the table is large.
+2. **Auth middleware bypasses on CORS preflight** (T2). OPTIONS requests skip the auth check entirely, letting attackers probe authenticated routes by issuing OPTIONS. Fix: serve preflight headers but block non-CORS OPTIONS on auth-required routes.
 
 Flags:
-- **First-of-kind SSE per-run frontend state** (T4). Verify `__openAdVariantsBubble` is module-scoped, not window-global, so concurrent `/api/runs` don't cross-contaminate.
+- **First-of-kind webhook handler** (T4). Verify signature is checked before body parsing, not after.
 ```
 
 **One verdict-blocking flag at the top, not per-item P-levels.** If exactly one concern is verdict-blocking, name it in the header (as above). Don't tag every item with P1/P2 priorities — list order is the priority.
