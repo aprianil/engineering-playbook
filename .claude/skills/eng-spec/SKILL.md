@@ -73,6 +73,8 @@ This resolves *before* the data architecture is decided. Temporal shape constrai
 
 Specs that mumble through performance ship features that "work but feel slow." Refactoring for performance after the fact is far more expensive than speccing it upfront.
 
+**For multi-slice features, lock these decisions at the parent spec.** Sub-specs reference and inherit; never restate or override (same rule as shared code contracts). Cross-cutting architecture belongs upstream where re-opening costs least; a sub-spec that re-decides architecture invalidates sibling slices.
+
 **Surface implementation assumptions before exiting.** Skipping this finds misalignments at build time, where they cost 10x. Deliver a single message listing every implementation assumption you'll proceed with: which module/file you're extending, which patterns you'll follow, which is internal vs public surface, what's a new table vs a modified one. The right assumptions cost nothing to list; only the wrong ones cost time. Don't silently fill in ambiguity.
 
 ```
@@ -350,7 +352,7 @@ For multi-slice features the lock cascades: parent locks before any sub-spec is 
 
 The session(s) produce one parent.md and N sub-spec files, in a fixed order. Skip this section when topology is solo.
 
-**1. Parent first.** Write the parent fully — context, what, who, user flow, acceptance criteria spread across slices, file-structure map, **shared code contracts** (types and key function signatures used by 2+ slices — defined once at parent, sub-specs reference, never restate), key cross-cutting decisions (D1, D2, …), build sequence + branch topology, sub-spec roster (per slice: scope claim + `files_claimed` reservation + `slice_depends_on`), migration-number reservations.
+**1. Parent first.** Write the parent fully — context, what, who, user flow, acceptance criteria spread across slices, file-structure map, **shared code contracts** (types and key function signatures used by 2+ slices — defined once at parent, sub-specs reference, never restate), **shared architecture** (the cross-cutting performance/data/infra decisions per the Performance architecture section — locked at parent so sub-specs inherit), key cross-cutting decisions (D1, D2, …), build sequence + branch topology, sub-spec roster (per slice: scope claim + `files_claimed` reservation + `slice_depends_on`), migration-number reservations.
 
 **2. Stress-test parent draft.** Parent's stress-test focuses on decomposition correctness (right slice boundaries? shared contracts complete enough that sub-specs need no parent edits? DAG actually parallel?) and architectural soundness. Save the parent to disk with `status: drafting` before stress-testing. Run `/eng-stress-test` against the saved file; iterate per the Stress-test section. Promote to `status: specced` with the verdict embedded once clean.
 
