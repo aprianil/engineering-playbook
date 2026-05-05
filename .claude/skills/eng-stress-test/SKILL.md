@@ -62,6 +62,8 @@ Specs that handle the happy path and mumble through failure are the specs that s
 
 Even well-handled first-of-kind patterns deserve a flag in the verdict so a reviewer reads the section with that frame.
 
+**6. Performance architecture.** For features with user-perceived latency or non-trivial data flow, the spec must name: where work happens (server/edge/client/background), critical-path round trips (counted, with serial-vs-parallel justified), data arrival shape (streamed/batched/prefetched/lazy), caching boundary (pre-computed/per-request/per-session/per-user), optimistic vs pessimistic UI, backpressure/failure on streams when streams exist. Missing or hand-waved sections are verdict-affecting. Performance is hardest to retrofit; spec time is the cheapest place to lock it. Also flag any API-behavior claim that reads as memory-based rather than verified from official docs (rate limits, batch endpoints, latency characteristics, parallelism support).
+
 ## Principle pass — faster
 
 Run after the high-yield checks. Most specs do fine here; raise only specific concerns, not generic ones.

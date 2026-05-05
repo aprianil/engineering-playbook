@@ -60,6 +60,19 @@ When evaluating multiple approaches that need research (comparing APIs, librarie
 
 This resolves *before* the data architecture is decided. Temporal shape constrains what data architecture is feasible (streaming events, cache layers, parallelism, partial state). Data architecture does not constrain temporal shape. The reverse ordering is the most common cause of "shipped, then re-architected for speed" rework: a feature that's correct end-to-end but blocks the user at stage boundaries because no one specced what the user sees in the first second.
 
+**Performance architecture (for features with non-trivial data flow).** Temporal shape names what the user sees when. This names how. Resolve as a design-tree node before exiting:
+
+- **Where the work happens**: render/compute location (server, edge, client, background job). Mismatched location is the most common source of unnecessary latency.
+- **Critical path**: count the round trips between user action and first-evidence paint. Each hop multiplies tail latency. Name what's serial because the dependency is real, vs serial because someone wrote it that way; convert the second case to parallel fan-out.
+- **Data arrival shape**: streamed/progressive, batched, prefetched, lazy. For features with multiple data sources, fan-out + first-byte-stream beats wait-then-render.
+- **Caching boundary**: pre-computed, per-request, per-session, per-user. Pick deliberately; don't default to per-request.
+- **Optimistic vs pessimistic UI**: for actions likely to succeed, name what the UI assumes immediately and how it reconciles on response. For low-success or destructive actions, default to pessimistic.
+- **Backpressure / failure on streams**: when streams exist, name what happens when the consumer is slow, when the stream stalls, when it errors mid-flight. User-visible behavior, not just technical handling.
+
+**Verify external API behavior from official docs, not memory.** Performance decisions often hinge on API specifics: rate limits, batch endpoints, parallel call support, streaming availability, typical latency, response shape. When a performance choice depends on external API behavior, fetch official docs via `WebSearch` / `WebFetch` *now*, during the design tree (don't defer to Research). The spec reads confident on memory-based API claims; the build hits a missing batch endpoint or unexpected rate limit. Same self-deception tripwire as the Research section, surfaced earlier because performance specs are where memory-based guesses do the most damage.
+
+Specs that mumble through performance ship features that "work but feel slow." Refactoring for performance after the fact is far more expensive than speccing it upfront.
+
 **Surface implementation assumptions before exiting.** Skipping this finds misalignments at build time, where they cost 10x. Deliver a single message listing every implementation assumption you'll proceed with: which module/file you're extending, which patterns you'll follow, which is internal vs public surface, what's a new table vs a modified one. The right assumptions cost nothing to list; only the wrong ones cost time. Don't silently fill in ambiguity.
 
 ```

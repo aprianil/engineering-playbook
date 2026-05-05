@@ -85,6 +85,8 @@ Test like a real user. Navigate through the UI the way someone would actually us
 
 Beyond verifying acceptance criteria, flag anything that feels off from a user's perspective: missing loading states, no feedback after actions, confusing copy, weird sizing or layout, empty states with no guidance, buttons that don't look clickable, unclear what just happened. If it's technically working but the experience feels unfinished, call it out.
 
+Perceived-performance check: time the critical path roughly. How long from the user's action to first meaningful content? How long until they can act on it? Watch for dead air, where the user stares at a spinner or empty state with nothing visibly happening. On streaming features (chat, real-time updates, progressive lists, server-sent events), watch for stalled streams, missing first-byte, content that arrives in one batch instead of progressively, or progressive content that feels jumpy. Use `browser_network_requests` to count critical-path requests; flag avoidable serial round trips or fan-out that should have been parallel.
+
 Here are the acceptance criteria:
 [paste acceptance criteria from spec]
 
