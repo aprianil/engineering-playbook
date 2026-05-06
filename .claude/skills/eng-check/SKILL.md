@@ -207,6 +207,7 @@ Apply <all|both|the fix> inline?
 ```
 STATUS: ship — <gist (e.g., "clean", "2 P1s deferred to #94, #95", "18 Codex findings, all taste/dedup")>
 
+Pre-merge: /deslop  (final cleanup; may be no-op if pre-commit deslop already caught it)
 Merge: gh pr merge <n> --rebase
 ```
 
