@@ -32,7 +32,7 @@ The two modes share the fresh-sub-agent pattern, the AGENTS.md severity rubric, 
 6. Spawn one architecture sub-agent. **Pass context directly** — don't make it re-read CLAUDE.md or re-explore the codebase. The sub-agent prompt should include:
    - The CLAUDE.md sections relevant to architecture review (inline, not a file path)
    - The full diff of changed files (inline)
-   - The acceptance criteria from the spec (not the full spec — no exploration history needed)
+   - The acceptance criteria from the spec, plus the spec's `### Outcome`, `### Performance architecture`, and (if it's a sub-spec) the parent's shared architecture sections. Tight context, no exploration history needed
    - The list of changed file paths
    - Diff-relevant gotchas + checklist items pulled in step 5 (inline)
    - The architecture review instructions below
@@ -92,6 +92,7 @@ The CLAUDE.md principles and the full diff have been provided to you inline. Use
 - Does the implementation match the spec?
 - Were acceptance criteria missed or changed without reason?
 - Were out-of-scope items accidentally included?
+- **Architecture fidelity.** If the spec named architectural decisions in its `### Performance architecture` or shared architecture sections (parallel fan-out, caching boundary, streaming vs batched, optimistic UI, where work happens), does the code reflect them? Spec said parallel, code shipped serial = drift. Spec said cached, no cache hit = drift. Flag as spec drift. This is structural-fidelity detection, not a perf-bug check (that's Codex's lens).
 
 **Comments & PR hygiene:**
 - Comments explain why, not what
