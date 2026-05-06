@@ -48,6 +48,7 @@ Probe through these lenses (skip what's already clear):
 - What happens if we do nothing?
 - Is there a simpler version that delivers most of the value?
 - What would success look like?
+- What's the end goal in one or two sentences? Concrete language, not categories — "first meaningful paint <2s on the prompts page" beats "speed optimization." Feeds the spec's `### Outcome` section so the rest of the body orients to the right thing.
 
 When evaluating multiple approaches that need research (comparing APIs, libraries, architectural patterns), spawn parallel sub-agents to explore each option independently. Each sub-agent gets one option — read docs, check feasibility, identify trade-offs. The parent compares findings and recommends.
 
@@ -215,6 +216,13 @@ Then the markdown body:
 
 ```
 ## Feature: [name]
+
+### Outcome
+What this spec is trying to achieve, in your own words. The end goal that frames everything that follows. Not acceptance criteria (those come later), not a category. One or two concrete sentences answering "if this ships and works, what's better?"
+
+Concrete language anchors the rest of the spec to a real target. "First meaningful paint <2s on the dashboard, no layout shift during data load" beats "make it feel fast." "User completes checkout without hesitating on the payment-failed step" beats "improve checkout UX." Vague outcomes produce specs that drift; concrete ones produce specs that converge.
+
+A spec without an outcome is a spec searching for one. The rest of the body fills in for whatever's missing at the top.
 
 ### Context
 Why this exists. The background — enough that someone reading this 3 months from now understands the motivation without asking anyone.
