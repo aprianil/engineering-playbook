@@ -177,8 +177,8 @@ You are the deciding merge gate for an open PR. Your job is to return a decisive
 4. **Verdict logic:**
    - If **no real P0 and no real P1** open findings → `ship`. The author can merge.
    - If **real P0** open → `fix-then-ship`. List each P0 with file:line and a concrete fix.
-   - If **real P1** open and the finding is significant enough that a follow-up issue is the wrong place → `fix-then-ship`. List each P1.
-   - If **real P1** open but each is fine to defer → `ship`, with a recommendation to file follow-up issues for the deferred P1s before merging (the act of filing closes the deferral loop).
+   - If **real P1** open and the fix is small (single-file, no design decision required, no new test scaffold) → `fix-then-ship`. Default to inline fix. In an AI-driven workflow, filing a follow-up issue costs more than fixing now: future sessions have to re-load the code context, re-read the finding, re-understand what was deferred and why. Inline fix amortizes the already-loaded context. "Could be deferred" is not the same as "should be deferred." List each P1 with file:line and a concrete fix.
+   - If **real P1** open and the fix genuinely needs its own scope (cross-file refactor, new test scaffold, design decision pending user input) → `ship`, with a recommendation to file follow-up issues for the deferred P1s before merging. The bar for deferral is "needs its own scope," not "is a P1." The act of filing closes the deferral loop.
 
 5. **Don't be lenient AND don't be strict.** The lens is "what would actually break or harm if this merged right now". Codex over-flags taste; you correct for that. But if Codex caught a genuine money-loss path, that's a P0 regardless of what label Codex used.
 
