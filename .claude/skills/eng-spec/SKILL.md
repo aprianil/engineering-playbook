@@ -283,7 +283,7 @@ The stress-test gate runs the full rationalization scan with explicit action. Se
 What this feature explicitly does NOT include.
 ```
 
-## Stress-test (Principle #7) — mandatory before lock, iterate until clean
+## Stress-test (Principle #7) — mandatory before lock, auto-loop until clean
 
 `/eng-build` refuses to start on a spec whose `status:` is anything other than `specced` or whose `## Stress-test verdict` heading is anything other than `ready to build`. The spec is saved to disk with `status: drafting` before the first stress-test fires. Iteration patches the file in place via `Edit`. The clean verdict promotes `status` to `specced` and embeds the verdict heading.
 
@@ -294,20 +294,33 @@ Once the spec body and task breakdown are drafted, write the file to disk with `
 - **Clean verdict** — verdict is `ready to build`, followed by a short "What's load-bearing in this spec" paragraph.
 - **Working verdict** — verdict is `address these first` or `rethink approach`, followed by 3–7 prioritized concerns.
 
-**Iterate until clean.** When the stress-test returns a working verdict:
-1. Present the concerns to the user with your recommendation on which findings to address (group by P0/P1/P2 if useful).
-2. Wait for the user's call. They may agree to fix all, dismiss some as low-value, or push back on framing — make the call together.
-3. **Patch the spec file via `Edit`.** Update the relevant sections — What, User flow, Acceptance criteria, Edge cases, Key decisions, Tasks. Each iteration is one or more `Edit` calls against the saved file; the file at any moment reflects the current draft.
-4. Re-fire `/eng-stress-test` against the updated file. New verdict comes back in chat.
-5. Repeat from step 1 until the verdict is `ready to build`.
+**Auto-loop until clean.** Asking the user to approve each round is friction without judgment — the patches are spec edits the AI was already going to draft from prior context. Run the loop autonomously up to 3 patch rounds:
 
-**Two-round tripwire.** If the same concerns reappear across two stress-test rounds, the spec has a structural problem, not a wording problem. Stop iterating; redo the design. Polishing prose around an unsound design produces a clean verdict on a spec that still ships bugs.
+1. **Patch the spec file via `Edit`** to address every concern. Update the relevant sections — Outcome, What, User flow, Acceptance criteria, Edge cases, Key decisions, Performance architecture, Tasks. Each round is one or more `Edit` calls against the saved file; the file at any moment reflects the current draft. Track per round in a running ledger (concern title + section patched) — needed for the end-of-loop digest.
+2. **Re-fire `/eng-stress-test`** against the updated file. New verdict returns in chat.
+3. **If verdict is `ready to build`**, exit the loop and continue to promotion + digest.
+4. **If verdict is `address these first`**, return to step 1 with the new concerns. Counts against the round budget.
+5. **Otherwise, escalate to the user** (see escalation criteria below). Do not silently continue.
+
+**Escalation criteria — stop the loop and surface to the user when any of these hit:**
+- **Verdict is `rethink approach`.** The stress-test thinks the architecture is wrong, not the prose. That's a structural disagreement that needs the user, not another patch round.
+- **Round budget exhausted (3 patch rounds).** Three rounds of `address these first` without converging usually means a concern is being papered over rather than fixed. Stop and ask.
+- **Two-round tripwire.** If the same concern (same citation or same diagnosis) reappears across two consecutive rounds, the spec has a structural problem, not a wording problem. Polishing prose around an unsound design produces a clean verdict on a spec that still ships bugs. Stop and redo the design with the user.
+
+When escalating, present: the unresolved concerns, how many rounds ran, what was patched in each, and the recommendation (`rethink approach` → redesign; max-rounds → which concern is sticky and why; tripwire → which concern repeated and what structural change might fix it).
+
+**End-of-loop digest (clean exit).** When the loop converges to `ready to build`, produce a 2–4 line summary in chat covering:
+- How many rounds ran.
+- Each concern addressed, one phrase per concern, with the section it was patched into.
+- One line on what's load-bearing (lifted from the clean verdict, not re-derived).
+
+The digest is the audit trail — the user reads it in 5 seconds to confirm nothing landed they'd want to redirect, but it doesn't gate progression. Keep it terse.
 
 When the verdict is clean, promote `status: drafting` to `status: specced` in the frontmatter and embed the verdict heading + load-bearing paragraph in a single `Edit` call. Then move to spec lock. The `status: specced` file with one verdict heading is the contract; the build session reads only this.
 
 Do not commit the file until promotion is done. The commit captures the clean state, not the iteration trail.
 
-Do not write code until the verdict is clean and the user has approved.
+Do not write code until the verdict is clean.
 
 ## Task breakdown
 
