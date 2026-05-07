@@ -46,6 +46,16 @@ Don't push through many tasks hoping they all work together at the end. Catch br
 
 **Scope discipline.** Only touch what the task requires. Don't refactor adjacent code, add unspecified features, or "improve" things you notice along the way. If something genuinely needs fixing, flag it — don't silently fix it mid-task.
 
+**In-session findings: default to inline-fix.** Different from the scope-discipline rule above — that rule prevents opportunistic refactoring of unrelated code. This rule is about findings on the work you just did. When `/eng-check` mid-build flags a blocker or important, when the QA sub-agent reports `STATUS: breaks` / `feels-off`, when browser-verify catches an issue — default to fixing it now in the same session if **all** of these hold:
+
+- Single-file change.
+- No new test scaffold required.
+- No design decision pending user input.
+
+Otherwise, surface the finding to the user with a one-line summary and ask. **Never auto-spec the fix. Never quietly file a follow-up issue.** The build session is where the context is loaded; fixing now amortizes that context. A "follow-up issue" or sub-spec for a small fix costs more than the fix itself in an AI workflow — future sessions have to re-load the code, re-read the finding, re-understand the deferral. Filing the issue is the work, not a shortcut from it. The inline path is the cheap path.
+
+This rule is the antidote to the spec-everything pattern: every finding does NOT need its own spec. Most don't even need their own commit.
+
 **While building, hold these in mind:**
 - **Abstraction tripwire:** if you're extracting an abstraction with one current use, inline it. Wait for the third instance — discover, don't design.
 - Am I building for a real requirement or an imaginary one?

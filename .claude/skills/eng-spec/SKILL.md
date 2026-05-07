@@ -8,7 +8,21 @@ argument-hint: [feature-name]
 
 Turn a loose feature description into a spec that anyone — human or AI — can build from without follow-up questions. This is a planning session. No code gets written. This is where most of the value lives — if the spec is clear, execution is easy.
 
-**Before anything else:**
+## Triage: is this a feature, or a fix?
+
+**Run this check first.** This skill is for greenfield work — new surface, new flow, new capability, new architectural decision. For known bugs, the bug is the spec; routing fixes through this pipeline manufactures ceremony where there's no design to make. Watching this category mismatch happen is the single biggest source of session drag in fix-heavy phases.
+
+Exit immediately and route to `/eng-debug` if any signal fires:
+- Branch name contains `fix/`, `hotfix/`, `bug/`, `followup/`.
+- User describes it as "X is broken," "rerun found Y," "QA caught Z," "data quality issue," "this doesn't work," "fix the issue in N."
+- No new surface, flow, or capability — just a known-wrong behavior to make right.
+- The would-be spec collapses to one paragraph: what's broken + what fix to apply. If you can't fill Outcome, User flow, and Edge cases distinctly, this isn't a feature.
+
+Exit line: *"this looks like a fix, not a feature. routing to /eng-debug + fix + /eng-check. say 'spec it anyway' if you want the full pipeline."*
+
+User override wins. Uncritical default-to-spec on fix work is the bug this triage exists to kill.
+
+**Before anything else (past triage):**
 - Read the project's CLAUDE.md for engineering principles and conventions. If none exists, suggest running `/eng-init` first.
 - Explore the codebase enough to ground your work in real paths, patterns, and conventions.
 

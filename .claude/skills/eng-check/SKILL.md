@@ -25,7 +25,7 @@ The two modes share the fresh-sub-agent pattern, the AGENTS.md severity rubric, 
 1. Read the project's CLAUDE.md for conventions and principles.
 2. Get the changed files: detect the base branch, then `git diff $(git merge-base <base> HEAD) --name-only`.
 3. Read the actual content of changed files (use `git diff` for the full diff).
-4. If a spec exists in `specs/` for this feature, read it.
+4. **If on a fix branch (`fix/`, `hotfix/`, `bug/`, `followup/`), skip spec lookup.** Fix branches don't have specs to be faithful to — the bug is the spec. Otherwise: if a spec exists in `specs/` for this feature, read it.
 5. **Diff-filtered context loading.** Walk these knowledge sources and pull only entries relevant to the diff:
    - **Gotcha index** (`docs/solutions/README.md`) — match entries by tag/path. A touched file in `src/lib/supabase/` pulls Supabase gotchas; a new migration pulls migration gotchas; a new agent tool pulls AI SDK / agent-tool gotchas. Inline the matched entries' problem + solution into the sub-agent prompt
    - **Library-function checklist** (`docs/agent-workflows/library-function-checklist.md`) — pre-merge checklist for new `src/lib/<feature>/` functions. If the diff touches `src/lib/`, inline the relevant checklist items
@@ -88,7 +88,7 @@ The CLAUDE.md principles and the full diff have been provided to you inline. Use
 - Feature-specific components live in their feature folder, not in shared
 - The "and" test -- if a component does X AND Y AND Z, suggest splitting
 
-**Spec alignment (if a spec was provided):**
+**Spec alignment (skip on fix branches — no spec to be faithful to):**
 - Does the implementation match the spec?
 - Were acceptance criteria missed or changed without reason?
 - Were out-of-scope items accidentally included?
@@ -111,6 +111,8 @@ The CLAUDE.md principles and the full diff have been provided to you inline. Use
 - End with one line on what the code does well — specific, not generic praise
 - If you're uncertain about something, say so and suggest investigation rather than guessing
 - Keep it concise — flag everything worth flagging, but keep each issue to 1-2 lines plus the fix
+
+**Inline-fix bias for blockers and importants.** When `/eng-check` runs mid-session (the build session is still open, the context is loaded, the developer is in flow), default to inline-fix on blockers and importants if **all** of these hold: single-file change, no new test scaffold, no design decision pending user input. Don't suggest "file a follow-up issue," don't suggest "spec this for next session," don't auto-spec the fix. The session has the code loaded; the fix is cheap now and expensive later (next session has to re-load the code, re-read the finding, re-understand what was deferred). Filing the issue *is* the work, not a shortcut from it. The inline path is the cheap path. Same severity threshold as PR-gate mode's P1 logic — if it needs its own scope (cross-file refactor, new test scaffold, design decision), surface to the user with a one-line summary and ask, don't quietly defer.
 
 **Lens reminder.** Don't flag correctness, security, type safety, or performance — those are Codex's lens (`AGENTS.md`). If a finding fits that lens, leave it for Codex on PR open. Double-coverage burns reviewer cycles and breeds noise. The lens split is documented in `docs/agent-workflows/review-lens.md`.
 
