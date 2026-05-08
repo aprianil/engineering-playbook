@@ -110,7 +110,23 @@ Use `AskUserQuestion` to deliver. One round, not a multi-turn loop. The user cor
 4. **Temporal shape resolved (user-facing surfaces only).** All four perception milestones have concrete answers, and the user can name what's gated on partial vs full state.
 5. **Implementation assumptions surfaced and confirmed.** The single-message list has been delivered and the user has corrected/confirmed.
 
-Then transition to research.
+## After Phase 0: build now, or write the spec?
+
+Phase 0 produced shared understanding. The design lives in your head and the user's head. Now decide whether to write a spec file at all.
+
+**Default: build directly.** For solo work where you and the user just walked the design tree together, the conversation IS the spec. Writing a file now adds zero leverage — nobody else is reading it, you both already have the design. Skip Research, skip the spec body, skip the stress-test gate. Go to `/eng-build` (or build inline if context allows).
+
+The spec file becomes lazy: it materializes only when sessions overflow it. See `## Auto-spec on context pressure` below — when context approaches its limit during the build, the AI auto-creates or updates the spec from accumulated decisions. The artifact is a side effect of session continuity, not the gate.
+
+**Write the spec upfront when any of these hold:**
+- **Type 1 commitment worth audit.** Schema migration, public API contract, file format other systems consume. The spec serves as the audit trail for why the decision was made.
+- **Multi-contributor.** Teammate, designer, or reviewer will read this. The spec is shared documentation, not just AI memory.
+- **Multi-day work, already known to span 5+ sessions or 3+ slices.** Upfront spec saves repeated re-priming better than lazy creation.
+- **Complex parent + sub-spec topology** already known from Phase 0 (multiple genuinely independent subsystems with shared contracts).
+
+Otherwise, build directly. Most solo work falls in this bucket. The upfront-spec ceremony for solo work consistently costs more than it pays — the user doesn't read it, decisions evolve in conversation, the file drifts from reality.
+
+If unsure, default to building. The auto-spec mechanism catches you when needed.
 
 ## Research (ground the spec in evidence)
 
@@ -335,6 +351,90 @@ When the verdict is clean, promote `status: drafting` to `status: specced` in th
 Do not commit the file until promotion is done. The commit captures the clean state, not the iteration trail.
 
 Do not write code until the verdict is clean.
+
+## Auto-spec on context pressure
+
+This is the mechanism that makes "build directly, no upfront spec" safe. When a session approaches its context limit, the AI auto-creates or updates the spec from accumulated decisions in the conversation, so re-priming after `/compact` or in a new session is fast and faithful.
+
+**Applies to all sessions, not just `/eng-spec` invocations.** Build sessions, debug sessions, design conversations — any session where the conversation contains decisions worth preserving. The spec is AI memory, materialized lazily.
+
+**Trigger conditions (any of):**
+- **Context window crosses 75%.** Buffer before auto-compact (~85–90%) so the write completes before the source conversation is collapsed. The AI tracks its own context-window usage; act on it proactively, don't wait for the user to notice.
+- **User invokes `/compact` or `/clear`.** Run the auto-spec write *before* the compaction, not after — after, the source conversation is gone.
+- **User says "save the context" or equivalent.** Verbal trigger overrides any threshold; fire immediately.
+- **Session-end signals from the runtime** (e.g., `SessionEnd` hook): catch genuine session ends, not just compaction.
+
+**First creation vs subsequent updates need different friction:**
+
+- **First creation** — work was supposed to be single-session, but context filled up. The spec didn't exist yet. The AI now creates it for the first time, encoding the canonical decision set from the conversation. **Notify the user briefly with what's being encoded:**
+
+  ```
+  Creating spec at specs/<feature>.md — context approaching 75%, the work has outgrown one session. Capturing as canonical:
+  - Outcome: <one line>
+  - Locked decisions: <count, with one-phrase summaries>
+  - Open questions: <count>
+  Redirect now if anything looks wrong; otherwise proceeding.
+  ```
+
+  Don't block on user input. If the user wants to redirect, they will. If silence, proceed. The notification is the audit point — after `/compact` the source conversation is gone, so this is the user's only chance to catch a wrong encoding.
+
+- **Subsequent updates** — spec already exists. Run silently, then drop a 3–4 line diff summary in chat:
+
+  ```
+  Spec updated: locked D7 (chose <X> over <Y>), marked AC3 resolved, added "behavior under stale auth token" to open questions.
+  ```
+
+  No permission ask, no blocking. User reads, redirects if needed, otherwise work continues.
+
+**Format: lean AI-memory shape.** Auto-spec writes produce the lean format below, not the heavy human-doc format from `## Spec writing`. The reader is the AI itself across boundaries; narrative sections are overhead.
+
+```yaml
+---
+title: <human-readable>
+status: building          # auto-spec creates at building, not drafting — work is already in flight
+purpose: ai-memory        # signals lean format
+references: [<paths>]
+---
+```
+
+```
+## Outcome
+<one or two concrete sentences. What's better when this ships and works.>
+
+## Locked decisions
+- **D1**: <chose X over Y>. Why: <one-line reason>. Rejected: <one-phrase>.
+- **D2**: ...
+
+## Acceptance criteria
+- [ ] <concrete, verifiable>
+- [x] <ones already met>
+
+## File map
+- `path/to/file.ts` — <one line on purpose>
+- ...
+
+## Current state
+<2–4 lines: what's built, what's next, any open thread (failing test, blocked decision, mid-refactor file).>
+
+## Open questions
+- <unresolved decision>
+- ...
+```
+
+That's it. No Context, no Who, no User flow as prose, no Interaction states section, no Rationalization check section. The AI doesn't need them; they're optimization for human readers who aren't reading.
+
+**What gets updated, not rewritten.** Subsequent updates patch sections that changed:
+- Locked decisions: append new entries, don't rewrite old ones (the audit trail matters).
+- Acceptance criteria: tick `[x]` on completed, append new criteria if discovered.
+- Current state: rewrite (this section is always a snapshot).
+- Open questions: remove resolved, append new.
+- Outcome and File map: rarely change; touch only on real shifts.
+
+**The failure mode to watch.** Silent miscoding — the AI writes the wrong decision into "locked decisions" and the user doesn't catch it before `/compact` collapses the source conversation. Mitigation: every update shows the diff inline (above). If the diff line says "locked D7 (chose X over Y)" and you remember choosing Y over X, redirect immediately. Worth being a little paranoid about reading the diff lines.
+
+**No stress-test on auto-spec writes.** The lean format isn't the kind of artifact stress-test is designed for (no User flow to cross-check against acceptance, no full Edge cases section). The conversation already stress-tested the design implicitly through Phase 0 and back-and-forth. Auto-spec captures the result; it doesn't re-validate it.
+
+**When the spec graduates.** If accumulated work is being handed to a teammate or open-sourced, auto-spec's lean format may need expansion to the heavy format for human readers. That's a one-time conversion the user invokes explicitly: *"expand specs/<feature>.md to full format for review."* Default is lean; expansion is the exception.
 
 ## Task breakdown
 

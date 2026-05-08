@@ -13,12 +13,18 @@ Build a feature from an approved spec file. This is an execution session — the
 - Ask the user which spec to build from. Look in the `specs/` directory for available specs, or accept a file path.
 - Read the spec file completely.
 
+**No spec yet?** That's fine — `/eng-spec`'s "build now, write spec lazily" path is the default for solo work. Proceed from the conversation context: outcome, decisions, acceptance criteria all live in the recent conversation. The spec file will be auto-created when context approaches its limit (see `/eng-spec`'s `## Auto-spec on context pressure` section — same rules apply during `/eng-build` sessions).
+
 **Preconditions.** Pass silently — only speak to halt or ask.
 
-1. Spec has `## Stress-test verdict` followed by `**ready to build**`. If absent, halt: "spec missing clean verdict — re-run `/eng-spec <spec-path>` to iterate the draft to clean and re-save." If verdict is `address these first` / `rethink approach` (legacy specs only — new specs never reach disk in that state), halt: "verdict is `<verdict>` — re-run `/eng-spec <spec-path>` to iterate to clean." Pre-rule specs without the heading: skip silently.
+1. **Spec mode determines what to check:**
+   - **No spec passed (build directly from conversation):** no precondition. Proceed.
+   - **Lean / AI-memory spec** (frontmatter `purpose: ai-memory`): no stress-test verdict required. Auto-spec didn't run stress-test; the conversation stress-tested implicitly. Proceed.
+   - **Heavy / human-doc spec** (no `purpose:` field, or `purpose: human-doc`): must have `## Stress-test verdict` followed by `**ready to build**`. If absent, halt: "spec missing clean verdict — re-run `/eng-spec <spec-path>` to iterate the draft to clean and re-save." If verdict is `address these first` / `rethink approach`, halt: "verdict is `<verdict>` — re-run `/eng-spec <spec-path>` to iterate to clean."
+   - Pre-rule specs (no frontmatter, no verdict heading): skip silently.
 2. Sub-specs only (frontmatter has `slice_of:`): every entry in `slice_depends_on:` must be `status: built` in its sibling sub-spec. If not, halt: "depends on unbuilt slices: [<ids>]."
 
-Trust the spec. The stress-test gate signed off on it; second-guessing now is what re-opens planning sessions, and that's exactly what /eng-spec's lock rule prevents. If something seems outdated or wrong, flag it; otherwise start.
+Trust the spec when one exists. Second-guessing it re-opens planning sessions. If something seems outdated or wrong, flag it; otherwise start. When no spec exists, trust the conversation context — the design conversation already produced shared understanding; that's what /eng-spec's "build now" path is built on.
 
 **Keep the spec alive.** The spec is a living document, not a frozen artifact. When things change during the build:
 - If the approach shifts (different data model, different API shape), update the spec first, then implement. A spec that doesn't match the code actively misleads the next person.
