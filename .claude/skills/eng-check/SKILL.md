@@ -94,6 +94,15 @@ The CLAUDE.md principles and the full diff have been provided to you inline. Use
 - Were out-of-scope items accidentally included?
 - **Architecture fidelity.** If the spec named architectural decisions in its `### Performance architecture` or shared architecture sections (parallel fan-out, caching boundary, streaming vs batched, optimistic UI, where work happens), does the code reflect them? Spec said parallel, code shipped serial = drift. Spec said cached, no cache hit = drift. Flag as spec drift. This is structural-fidelity detection, not a perf-bug check (that's Codex's lens).
 
+**Prompt-injection lens (only when diff touches LLM-integrated paths).** Skip this lens entirely if the diff contains no LLM-related code. Fire when the diff modifies anything that constructs prompts, registers agent tools, or processes LLM output — `src/lib/prompt-research/`, `skills/<name>/SKILL.md`, files importing `@anthropic-ai/sdk` / `openai` / `generateObject` / `messages.create`, MCP tool registrations, or any code interpolating untrusted data into prompt text. When triggered, audit for:
+
+- **Direct injection.** User input interpolated into the prompt without marking. Vulnerable: `prompt = "Summarize: ${userInput}"`. Fix: mark untrusted via structured roles, fenced sections, or a separate `user`-role message that the system prompt explicitly cannot trust.
+- **Indirect injection.** External data (scraped pages, RAG results, tool outputs, DB records, file contents, email bodies) interpolated without quarantine. Same shape as direct; the attacker planted the payload upstream and the LLM consumes it later.
+- **LLM output trust.** LLM output rendered as HTML, executed as code, used in SQL, fed to another LLM, or trusted for authorization decisions. Always treat LLM output as untrusted user input from the downstream consumer's perspective.
+- **Cross-privilege flow.** Lower-privileged user's data plants instructions that a higher-privileged AI session consumes (admin reads a user-uploaded document, agent reads another tenant's records, support session ingests customer-supplied content). The AI layer becomes a privilege-escalation vector even when each individual permission check looks correct.
+
+This is the lens beyond Codex's OWASP review. Codex catches generic input-validation at the boundary; this catches prompt-specific patterns that look fine to a general security review. Reference: `briiirussell/cybersecurity-skills/skills/prompt-injection` has deeper methodology for the rare case you want a focused audit session (not vendored — pull on demand).
+
 **Comments & PR hygiene:**
 - Comments explain why, not what
 - TODOs reference a ticket or have a name
