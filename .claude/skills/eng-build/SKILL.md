@@ -39,6 +39,8 @@ Before writing code, flag anything in the spec that looks outdated or unclear. I
 
 After that, execute. Follow the task list in the spec. Each task is a vertical slice — a complete path through the feature (e.g., schema + API + UI for one flow), not a horizontal layer. This keeps the feature testable and working at every step. When tasks are marked independent (no dependencies on each other), they can be built in parallel (e.g., in separate worktrees). Respect dependency order for the rest.
 
+**Delegate mechanical tasks; stay lead.** Tasks whose approach is fully decided by the spec (boilerplate, tests for decided behavior, repetitive edits, independent parallel slices) go to `fast-worker` sub-agents. Pass the task's spec section, acceptance criteria, and file list inline so they don't re-explore. Keep core implementation, integration, and anything requiring judgment in the main session. Review every delegated diff before checkpointing: delegation moves token burn, not accountability. Unpinned sub-agents inherit the main model; pin the tier deliberately.
+
 **Checkpoint at natural boundaries** -- after completing a vertical slice, or when multiple tasks connect. Stop and verify:
 - Tests pass
 - Application builds without errors
@@ -49,6 +51,8 @@ For UI or user-facing tasks, "works" means it works *in a real browser* — not 
 Don't push through many tasks hoping they all work together at the end. Catch breakage early while the cause is obvious. Briefly state progress at each checkpoint.
 
 **When something breaks unexpectedly:** If you hit an error that isn't a simple typo or missing import and you can't resolve it in one attempt, shift into the eng-debug methodology: stop, preserve the error evidence, reproduce, localize, understand the root cause, fix it, and write a guard test. Don't guess randomly or suppress the error. Complete the debug loop before resuming the build. If the root cause was non-obvious, flag it for `/eng-compound` after the PR merges.
+
+**When the debug loop itself stalls** (hypotheses worked, root cause still unclear), stop grinding in one context: task `deep-reasoner` and `/codex:rescue` on the problem in parallel, each with the error evidence and repro steps but not each other's answers, then compare diagnoses. A second independent context beats a third lap in a biased one.
 
 **Scope discipline.** Only touch what the task requires. Don't refactor adjacent code, add unspecified features, or "improve" things you notice along the way. If something genuinely needs fixing, flag it — don't silently fix it mid-task.
 

@@ -64,7 +64,9 @@ Probe through these lenses (skip what's already clear):
 - What would success look like?
 - What's the end goal in one or two sentences? Concrete language, not categories — "first meaningful paint <2s on the prompts page" beats "speed optimization." Feeds the spec's `### Outcome` section so the rest of the body orients to the right thing.
 
-When evaluating multiple approaches that need research (comparing APIs, libraries, architectural patterns), spawn parallel sub-agents to explore each option independently. Each sub-agent gets one option — read docs, check feasibility, identify trade-offs. The parent compares findings and recommends.
+When evaluating multiple approaches that need research (comparing APIs, libraries, architectural patterns), spawn parallel sub-agents to explore each option independently. Each sub-agent gets one option — read docs, check feasibility, identify trade-offs. The parent compares findings and recommends. Pin each sub-agent to the right tier: `fast-worker` for mechanical scans (inventorying files, checking versions, confirming API signatures), `deep-reasoner` for evaluations that weigh trade-offs. Unpinned sub-agents inherit the orchestrator's model and burn planning budget on file reading.
+
+**For Type 1 decisions** (hard to reverse: schemas, public API contracts, protocol and file-format choices), get an independent second opinion before locking: task `deep-reasoner` and the codex agent on the same question in parallel, without showing either the other's answer, then synthesize. Two independent contexts catch what one context anchored on. Skip this for Type 2 decisions; a second opinion on reversible choices is ceremony.
 
 **Temporal shape (for user-facing surfaces).** Resolve the four perception milestones as a design-tree node before exiting:
 
@@ -138,7 +140,7 @@ Before writing the spec, gather concrete evidence from the codebase. This preven
 
 **When the feature involves external technologies** (APIs, libraries, frameworks, services), verify current state from official sources before writing the spec. Use `WebSearch` and `WebFetch` to check official documentation for: current stable versions, current API signatures and capabilities, deprecations or breaking changes, and recommended patterns. Training data goes stale. Official docs don't. Never spec against assumed API behavior when you can verify it in 30 seconds.
 
-Gather evidence on up to three concerns -- through direct exploration, parallel sub-agents, or both. Use your judgment on the approach; what matters is that all relevant concerns are covered before writing the spec.
+Gather evidence on up to three concerns -- through direct exploration, parallel sub-agents, or both. Use your judgment on the approach; what matters is that all relevant concerns are covered before writing the spec. When spawning sub-agents, route by tier: codebase-fit and external-tech scans are mechanical (`fast-worker`); edge-case and constraint analysis needs judgment (`deep-reasoner`).
 
 | Concern | What to find out | What you need |
 | --- | --- | --- |
@@ -501,7 +503,7 @@ The session(s) produce one parent.md and N sub-spec files, in a fixed order. Ski
 
 Both timings are valid; pick whichever fits the work.
 
-- **Continuous (default).** Same session writes parent + all sub-specs. Decisions compound in conversation, prefix cache stays warm, no re-priming. Right when one operator runs the whole feature in one sitting. Opus 4.7 (1M context) holds parent + ~5 sub-specs comfortably.
+- **Continuous (default).** Same session writes parent + all sub-specs. Decisions compound in conversation, prefix cache stays warm, no re-priming. Right when one operator runs the whole feature in one sitting. A 1M-context session holds parent + ~5 sub-specs comfortably.
 - **Resumed.** Session 1 ends after parent locks. Later sessions invoked as `/eng-spec <parent-spec-path>` — read parent, ask which slice, write one sub-spec, exit. Right when sub-specs span multiple days, multiple operators, or are parallelized across worktrees. Parent must be self-sufficient as input — that's enforced by parent's roster + shared contracts, both of which the continuous path also requires, so no extra work to support resumed. **Handoff messages between sessions:** output operational state only — skill invocation, branch, tree caveats. The spec carries the rest. Three lines is usually enough.
 
 ### Naming + filesystem
