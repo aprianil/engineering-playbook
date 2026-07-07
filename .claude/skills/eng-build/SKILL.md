@@ -39,7 +39,7 @@ Before writing code, flag anything in the spec that looks outdated or unclear. I
 
 After that, execute. Follow the task list in the spec. Each task is a vertical slice — a complete path through the feature (e.g., schema + API + UI for one flow), not a horizontal layer. This keeps the feature testable and working at every step. When tasks are marked independent (no dependencies on each other), they can be built in parallel (e.g., in separate worktrees). Respect dependency order for the rest.
 
-**Delegate mechanical tasks; stay lead.** Tasks whose approach is fully decided by the spec (boilerplate, tests for decided behavior, repetitive edits, independent parallel slices) go to `fast-worker` sub-agents. Pass the task's spec section, acceptance criteria, and file list inline so they don't re-explore. Keep core implementation, integration, and anything requiring judgment in the main session. Review every delegated diff before checkpointing: delegation moves token burn, not accountability. Unpinned sub-agents inherit the main model; pin the tier deliberately.
+**Delegate implementation; stay lead.** Tasks whose approach is fully decided by the spec (feature slices, fixes, tests for decided behavior, repetitive edits) go to the codex agent by default — it bills a separate quota bucket from the orchestrator and its sub-agents. Use `fast-worker` for small mechanical edits where a Codex round trip is overkill. Pass the task's spec section, acceptance criteria, and file list inline so delegates don't re-explore. Keep integration and anything requiring judgment in the main session. Review every delegated diff before checkpointing: delegation moves token burn, not accountability. Unpinned sub-agents inherit the main model; pin the tier deliberately.
 
 **Checkpoint at natural boundaries** -- after completing a vertical slice, or when multiple tasks connect. Stop and verify:
 - Tests pass
@@ -134,7 +134,7 @@ If the sub-agent finds issues, fix them before marking as done. On re-verificati
 
 **Mark the spec as built.** Add `status: built` and the date to the top of the spec file. This keeps `specs/` clean -- you can tell at a glance what's pending vs done.
 
-**Before pushing — run /eng-check.** Architecture review (local-diff mode, no args). The build session shouldn't review its own work — fresh eyes catch what the author can't (Principle #7). Once /eng-check is clean and you've pushed, `/loop /eng-check <PR#>` self-paces against Codex until the merge gate is decisive.
+**Before pushing — run /eng-check.** Architecture review (local-diff mode, no args). The build session shouldn't review its own work — fresh eyes catch what the author can't (Principle #7). Once /eng-check is clean and you've pushed, `/loop /eng-check <PR#>` self-paces against Codex until the merge gate is decisive. Judge independence: whoever wrote the code doesn't judge it. When Codex wrote the slice, the Claude-side /eng-check verdict is the fresh-eyes gate (Codex findings on its own diff carry less weight); when Claude wrote it, the Codex gate is the independent check.
 
 **Before merging, run /deslop.** Final gate after `/eng-check <PR#>` clears. Strips dead defensive checks, single-use abstractions, AI-comment noise, stray `as any` casts that crept in during fix iterations. Catching slop here (instead of pre-push) means iteration noise from review cycles doesn't land on main. Deslop should only remove dead/noise code; if it ever edits logic, re-run `/eng-check <PR#>` before merging.
 
