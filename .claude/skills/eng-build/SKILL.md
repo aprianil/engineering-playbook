@@ -84,7 +84,7 @@ These aren't steps — they're judgment. If something feels off, pause and flag 
 
 Be honest about what's done and what isn't. Present the result as the spec's acceptance-criteria checklist with each item marked `[x]` (pass) or `[ ]` (unmet). Lead with `Acceptance: <pass>/<total>` for the scan-glance. Annotate any unmet criterion with `file:line` and the gap. The checklist is the durable record; the count line is the headline.
 
-**Verify with fresh eyes (Principle #8).** If the feature has a UI or user-facing behavior, spawn a sub-agent to try to break it. Pass the context directly -- don't make it re-read the spec or explore the codebase. Run it in the background (`run_in_background: true`) so you can present the build results while QA runs.
+**Verify with fresh eyes (Principle #8).** If the feature has a UI or user-facing behavior, spawn a sub-agent to try to break it. Pass the context directly -- don't make it re-read the spec or explore the codebase. Run it in the background (`run_in_background: true`) so you can present the build results while QA runs. Pin the QA sub-agent to the fast tier (`model: sonnet`, medium effort): QA rigor lives in the prompt, not the tier, and browser QA is the most snapshot-heavy work in the pipeline. An unpinned sub-agent inherits the expensive main model.
 
 Confirm the dev server is running before spawning the sub-agent — it can't test what isn't serving. If it isn't, start it (e.g. `npm run dev`) via a backgrounded Bash call first. The sub-agent uses the Playwright MCP browser tools to drive the app as a real user would — no direct API hits, no internal-only routes, no reasoning from the source code.
 
@@ -102,6 +102,8 @@ Example prompt structure:
 Drive the browser directly with the Playwright MCP tools — `mcp__playwright__browser_navigate` to load pages, `_snapshot` to see what's on screen, `_click` / `_fill_form` / `_type` / `_select_option` / `_press_key` to interact, `_console_messages` to catch runtime errors, `_network_requests` to spot failed API calls, `_take_screenshot` when the user-visible rendering matters. Do NOT write Playwright test files or spawn a test runner — drive the live browser, observe, and report.
 
 Test like a real user. Navigate through the UI the way someone would actually use it. Don't go to internal URLs directly, don't call APIs, don't use knowledge of the code. If a user would click a nav link to get to a page, you click the nav link. Users don't know about your internal tools — test the experience they'll actually have.
+
+Stay within the surfaces listed in the change summary plus the edge cases below; don't explore pages the change can't affect. When reading console or network output, filter with a pattern instead of dumping everything.
 
 Beyond verifying acceptance criteria, flag anything that feels off from a user's perspective: missing loading states, no feedback after actions, confusing copy, weird sizing or layout, empty states with no guidance, buttons that don't look clickable, unclear what just happened. If it's technically working but the experience feels unfinished, call it out.
 
@@ -128,7 +130,7 @@ If everything passes, the entire output is `STATUS: pass`. Otherwise: `STATUS: b
 
 Include screenshots inline when the visual rendering is the point of the bug. No traversal logs ('I clicked X, then Y, then Z'); the findings are the report, the steps you took are not."
 
-If the sub-agent finds issues, fix them before marking as done. Skip this step for backend-only changes or when there's no running app to test against.
+If the sub-agent finds issues, fix them before marking as done. On re-verification after fixes, re-check only the criteria that failed — not the full pass. Skip this step for backend-only changes or when there's no running app to test against.
 
 **Mark the spec as built.** Add `status: built` and the date to the top of the spec file. This keeps `specs/` clean -- you can tell at a glance what's pending vs done.
 
