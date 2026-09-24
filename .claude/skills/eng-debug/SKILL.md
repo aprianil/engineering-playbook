@@ -44,7 +44,7 @@ Narrow down where the failure originates. Work from the error backward, not from
 - Check what changed recently: `git diff` and `git log --oneline -5` are your friends.
 - Don't read the entire codebase looking for clues. Follow the evidence.
 
-**Localize tripwire.** If you've opened more than 5 files without narrowing the failure, you're exploring, not localizing. Stop reading and add a debug log at the last known-good point — confirm where you are before going further.
+**Localize tripwire.** If you've opened more than 5 files without narrowing the failure, you're exploring, not localizing. Stop reading and add a debug log at the last known-good point to confirm where you are before going further.
 
 ### 4. Understand the root cause
 
@@ -112,4 +112,4 @@ If yes, flag it to the user: "This was non-obvious. Worth running `/eng-compound
 - Don't expand scope. You're here to fix this bug, not improve the surrounding code.
 - Don't skip the guard step because "it's obvious." If it were obvious, you wouldn't have needed to debug it.
 - Don't debug for more than 20 minutes without updating the user on where you are and what you've tried.
-- Don't use `setTimeout`, `sleep`, or artificial delays as a fix. They paper over race conditions without solving them. Use proper events, lifecycles, or reactivity — see the Race Conditions deep dive in the playbook.
+- Don't use `setTimeout`, `sleep`, or artificial delays as a fix. They paper over race conditions without solving them. Use proper events, lifecycles, or reactivity instead (the engineering playbook's Race Conditions deep dive covers this, if you have it).

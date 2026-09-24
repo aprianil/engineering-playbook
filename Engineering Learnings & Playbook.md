@@ -265,8 +265,8 @@ One-line description of the product and who it's for.
 - npm run test — run tests
 
 ## PR guidelines
-- Keep PRs under 500 lines and 10 files — one responsibility per PR
-- When a change is too big, split by layer (database → backend → frontend), by feature component (API → UI → integration), or by refactor vs feature (separate PRs)
+- One responsibility per PR. A big PR is fine when it's built in vertical slices (one working commit per slice) with a short slice map in the description
+- Split into separate PRs only when a piece has its own gate: a data migration, a change to auth, payments or deploys themselves, or a refactor riding along with a feature
 - Fix type errors before test failures — types are often the root cause
 
 ## When stuck
@@ -417,8 +417,8 @@ Side Effects
 - Is the failure mode graceful for the user?
 
 PR Hygiene
-- Is the PR small and focused on one thing? (aim for <500 lines, <10 files)
-- If it's too big, can I split by layer (database → backend → frontend), by component (API → UI → integration), or by refactor vs feature?
+- Is the PR focused on one thing? If it's big, is it built in vertical slices, one working commit each, so I can read it slice by slice?
+- Is anything riding along that has its own gate (a migration, an auth or payment change, a refactor)? That goes in its own PR.
 - Does the commit history tell a story?
 ```
 

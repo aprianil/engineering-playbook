@@ -16,7 +16,7 @@ Then create a CLAUDE.md. Ask the user for:
 
 Scan the current directory to understand the existing structure, commands (package.json scripts, Makefile, etc.), and patterns.
 
-The CLAUDE.md should be concise — every line earns its place. Principles and behavioral rules go first (they guide every action). Structure and reference material go after (they're looked up when needed).
+The CLAUDE.md should be concise: every line earns its place. Principles and behavioral rules go first (they guide every action). Structure and reference material go after (they're looked up when needed).
 
 Use this template, adapting to what you found in the project:
 
@@ -26,49 +26,49 @@ Use this template, adapting to what you found in the project:
 [One-line description of what this is and who it's for.]
 
 ## Tech stack
-- [Framework, language, database, styling, deployment — whatever applies]
+- [Framework, language, database, styling, deployment, whatever applies]
 
 ## Engineering principles
 
-Most of the work happens before and after writing code — not during. Plan thoroughly, review to catch issues, codify knowledge so it's reusable, keep quality high so future changes are easy. If execution feels hard, the planning was incomplete.
+Most of the work happens before and after writing code, not during. Plan thoroughly, review to catch issues, codify knowledge so it's reusable, keep quality high so future changes are easy. If execution feels hard, the planning was incomplete.
 
-1. Aim for simplicity. Simple = readable, changeable, few things to think about. Simple is not the same as easy — a framework can be easy to start with but complex to change. Prefer deep over shallow: a good function has a simple interface and does a lot behind it. A self-contained 200-line file is simpler than a 50-line file that imports from 8 others.
-2. YAGNI — don't build for requirements that don't exist yet.
+1. Aim for simplicity. Simple = readable, changeable, few things to think about. Simple is not the same as easy: a framework can be easy to start with but complex to change. Prefer deep over shallow: a good function has a simple interface and does a lot behind it. A self-contained 200-line file is simpler than a 50-line file that imports from 8 others.
+2. YAGNI: don't build for requirements that don't exist yet.
 3. Discover abstractions, don't design them. Wait until the pattern repeats before extracting. Duplication is cheaper than the wrong abstraction.
-4. Never trade quality for speed. What you build should be correct and verified. If you need to move faster, build less, not worse. Shortcuts are fine if deliberate and documented - "I'll fix it later" without a ticket is a wish.
-5. Type 1 vs Type 2 decisions. Type 1 = hard to reverse (database schema, public APIs) — proceed carefully. Type 2 = reversible (UI, naming, library choice) — just decide. Most decisions are Type 2.
+4. Never trade quality for speed. What you build should be correct and verified. If you need to move faster, build less, not worse. Shortcuts are fine if deliberate and documented. "I'll fix it later" without a ticket is a wish.
+5. Type 1 vs Type 2 decisions. Type 1 = hard to reverse (database schema, public APIs), so proceed carefully. Type 2 = reversible (UI, naming, library choice), so just decide. Most decisions are Type 2.
 6. Invest in what compounds. If it makes the next 10 sessions better, add it now. If it's a one-time need, add it when needed.
 7. The builder shouldn't be the reviewer. Fresh eyes catch what the author can't. Have someone (or a separate agent) challenge your work before committing.
-8. Verify, don't trust. Every change needs a way to prove it works — tests, build, lint, browser. Applies to your own code and AI-generated code equally.
+8. Verify, don't trust. Every change needs a way to prove it works: tests, build, lint, browser. Applies to your own code and AI-generated code equally.
 9. Own what you ship. If you can't explain why the code is structured this way, you don't understand it enough to maintain it.
-10. Context before action. Load and understand the relevant context before starting any work — specs, code, architecture, constraints. Not everything, just what's relevant. Five minutes of context loading prevents hours of rework from wrong assumptions.
-11. Decompose for parallelism. Spec with full context, build in parallel. One spec session produces multiple independent build specs — each self-contained, no file overlap, buildable with only its spec + CLAUDE.md. The spec writing stays sequential (decisions compound on each other), the building is where parallelism pays off.
+10. Context before action. Load and understand the relevant context before starting any work: specs, code, architecture, constraints. Not everything, just what's relevant. Five minutes of context loading prevents hours of rework from wrong assumptions.
+11. Decompose into vertical slices, ship whole. One spec, one build session, one PR by default. Inside the build, each vertical slice (schema + API + UI for one flow) is one commit that builds and passes tests on its own, so the PR can be reviewed, bisected, and reverted slice by slice. Split into a separate spec and PR only for work with its own gate (see PR guidelines). Splitting a feature into more PRs adds review rounds, integration merges, and re-priming without reducing total review.
 
 ## Do
 - Validate all input at the API boundary with Zod schemas
-- Keep route files thin — validate and delegate to lib/. No business logic in routes.
+- Keep route files thin: validate and delegate to lib/. No business logic in routes.
 - Use the auth wrapper on every protected route
 - Name features consistently across layers (api/billing/, lib/billing/, use-billing.ts)
-- Run tests/build/lint to verify changes — don't just trust the code
+- Run tests/build/lint to verify changes. Don't just trust the code
 - Write integration tests over unit tests. Test behavior, not implementation. "Write tests. Not too many. Mostly integration."
 - Log intentionally in production: structured logs with labels (`[POST /api/billing]`), context (userId, action), and outcome. Never log secrets.
 - Use early returns to reduce nesting: `if (!user) return null;`
 - Use descriptive errors with context: `Unable to create invoice: User ${userId} has no payment method`
 - Disable submit buttons after click to prevent double submissions
-- Sanitize user input before rendering — never use `dangerouslySetInnerHTML` or equivalent without explicit approval
-- Comments explain *why*, not *what* — if the code needs a comment to explain what it does, the code isn't clear enough
+- Sanitize user input before rendering. Never use `dangerouslySetInnerHTML` or equivalent without explicit approval
+- Comments explain *why*, not *what*. If the code needs a comment to explain what it does, the code isn't clear enough
 
 ## Don't
 - Put business logic in API routes or layout files
 - Copy-paste auth checks into individual routes
-- Return raw database types to the frontend — transform first
-- Skip input validation — even for internal APIs
+- Return raw database types to the frontend (transform first)
+- Skip input validation, even for internal APIs
 - Let AI write code without a way to verify it works
-- Use `as any` — find the real type instead
+- Use `as any` (find the real type instead)
 - Commit secrets, API keys, or .env files
 - Add comments that restate the code (e.g. `// Get the user` above `getUser()`)
-- Refactor and add features in the same PR — if something breaks, you won't know which change caused it
-- Remove code without checking `git blame` first — it may be there for a reason
+- Refactor and add features in the same PR. If something breaks, you won't know which change caused it
+- Remove code without checking `git blame` first (it may be there for a reason)
 
 ## Ask first
 - Adding new dependencies (each one is a maintenance commitment)
@@ -78,35 +78,35 @@ Most of the work happens before and after writing code — not during. Plan thor
 - Refactoring working code that isn't actively slowing you down
 
 ## When writing or editing code
-- Organize by feature, not by file type. Start flat — one file is fine. Split when a file does too many things, not before.
+- Organize by feature, not by file type. Start flat; one file is fine. Split when a file does too many things, not before.
 - Dependencies flow one direction. Features don't import from other features. Shared code doesn't import from features.
-- Each file should do one thing. Favor locality of behavior — if someone needs to open 5 files to understand one behavior, it's over-separated.
+- Each file should do one thing. Favor locality of behavior: if someone needs to open 5 files to understand one behavior, it's over-separated.
 - Name things so the reader never has to open the body to understand what it does. Don't abbreviate, don't put the type in the name (`users` not `userList`), don't repeat context (`user.getName()` not `user.getUserName()`). Match name length to scope.
 - Handle the sad path, not just the happy path.
 - If a component can be described with "and" (does X AND Y AND Z), suggest splitting it.
 - Proactively flag when a file is growing beyond one responsibility.
-- Side effects (webhooks, emails, analytics) run after the response — the user doesn't wait for work they didn't ask for.
+- Side effects (webhooks, emails, analytics) run after the response. The user doesn't wait for work they didn't ask for.
 - Code you write is also context for AI tools. Clear naming, small files, and co-located features make AI assistance dramatically better.
 
 ## How features are structured
-- API routes validate input and delegate — no business logic in route files
-- Business logic lives in lib/{feature}/ — reusable from any entry point
+- API routes validate input and delegate, with no business logic in route files
+- Business logic lives in lib/{feature}/, reusable from any entry point
 - Schemas (Zod) defined once, shared between frontend and backend
-- Auth handled via a shared wrapper — not copy-pasted per route
+- Auth handled via a shared wrapper, not copy-pasted per route
 - Background work (webhooks, emails, analytics) runs after the response
-- Errors use a custom AppError class with codes — handled once at the boundary
-- Router/layout/config files compose pieces together — no business logic in wiring files
+- Errors use a custom AppError class with codes, handled once at the boundary
+- Router/layout/config files compose pieces together, with no business logic in wiring files
 
 ## Project structure
 [Document what's actually in the project. For new/empty projects, suggest:]
 
-/app/api     — API routes (thin — validate input, delegate to lib/)
-/lib         — business logic, organized by feature (e.g. lib/billing/)
-/components  — shared UI components (no business logic)
-/features    — feature-specific UI (components + hooks + types per feature)
+- `/app/api`: API routes (thin: validate input, delegate to lib/)
+- `/lib`: business logic, organized by feature (e.g. lib/billing/)
+- `/components`: shared UI components (no business logic)
+- `/features`: feature-specific UI (components + hooks + types per feature)
 
 ## Context loading guide
-When working on a feature, load these files — nothing else:
+When working on a feature, load these files and nothing else:
 - Backend: app/api/{feature}/ + lib/{feature}/
 - Frontend: features/{feature}/
 - Shared: lib/{feature}/schema.ts (the contract between frontend and backend)
@@ -114,15 +114,31 @@ When working on a feature, load these files — nothing else:
 Don't load unrelated features. The structure is designed so each feature is self-contained.
 
 ## PR guidelines
-- Keep PRs under 500 lines and 10 files — one responsibility per PR
-- When a change is too big, split by layer (database → backend → frontend), by feature component (API → UI → integration), or by refactor vs feature (separate PRs)
-- Fix type errors before test failures — types are often the root cause
+- One spec, one build session, one PR by default, with one responsibility per PR. Build in vertical slices (one thin capability end-to-end), one green commit per slice, and put a slice map in the PR body (one line per slice: name, commit range, where the risk sits)
+- Never split by layer (database, then backend, then frontend): nothing is testable until the last piece lands
+- Split into a separate spec and PR, sequenced with `depends_on:`, only for:
+  - Schema migrations with backfill, or any destructive or irreversible data change (migration first, expand then contract)
+  - Changes to the auth, money, or publish mechanism itself (auth flow or permission model, payment or billing logic, the publish or deploy pipeline). Features that only use them stay in the one PR, with those slices reviewed mid-build
+  - Acceptance criteria that depend on a post-deploy action (manual step, env change, external config)
+  - Cross-repo changes
+  - A refactor bundled with a feature
+  - Changes to something actively running where a restart or deploy is its own gate: [list this project's, or delete]
+- Merge with `--rebase` (or the convention under Agent workflow) so slice commits survive on main
+- Fix type errors before test failures; types are often the root cause
+
+## Agent workflow
+[Per-project facts the eng-* skills read instead of hardcoding. Fill in what applies, delete what doesn't.]
+- Orchestration: [who codes, who reviews, or "follow the user-level CLAUDE.md policy"]
+- PR review bot: [e.g. Codex, configured in AGENTS.md, owns correctness/security/types/perf | none: /eng-check covers every lens]
+- Merge: [e.g. `gh pr merge --rebase`, the default, which keeps per-slice commits]
+- Fix-commit convention: [subject format for commits that address review findings, or none]
+- Safety-critical: [code that gets a second fresh review, e.g. anything that can type into, close, or restart what the user is using]
 
 ## When stuck
 - Ask a clarifying question before making large speculative changes
 - Propose a short plan for complex tasks before coding
-- Fix type errors first — they often cause cascading test failures
-- If something seems wrong, investigate before deleting — it may be intentional
+- Fix type errors first. They often cause cascading test failures
+- If something seems wrong, investigate before deleting. It may be intentional
 
 ## Commands
 [Detect from package.json, Makefile, etc. and list available scripts]
@@ -154,14 +170,14 @@ When unsure about framework APIs, patterns, or best practices, look these up bef
 [If a technology isn't in this table, ask the user for the docs URL.]
 
 ## Knowledge base
-- `docs/solutions/` — non-obvious solutions from past sessions. Search here before debugging from scratch.
+- `docs/solutions/`: non-obvious solutions from past sessions. Search here before debugging from scratch.
 
 ## What to watch out for
 [Include any gotchas from the user]
 
 ## For contributors
 - Read this file before making changes
-- Follow the principles above — they apply to all code in this project
+- Follow the principles above; they apply to all code in this project
 ```
 
 After generating the CLAUDE.md, set up project-level hooks for mechanical enforcement in `.claude/settings.json`.
@@ -183,7 +199,7 @@ Detect the project's tooling from package.json, Makefile, etc. and configure hoo
 
 Write hook scripts to `.claude/hooks/` in the project root (create the directory). Make them executable.
 
-Write `.claude/settings.json` with the hooks configuration. If settings.json already exists, merge the hooks key — don't overwrite other settings.
+Write `.claude/settings.json` with the hooks configuration. If settings.json already exists, merge the hooks key. Don't overwrite other settings.
 
 Example `.claude/settings.json`:
 ```json
@@ -276,7 +292,7 @@ for DRAFT in "$DRAFTS_DIR"/*.md; do
 done
 
 if [ "$MERGED_COUNT" -gt 0 ]; then
-  echo "Compound draft(s) ready — PR(s) merged:" >&2
+  echo "Compound draft(s) ready, PR(s) merged:" >&2
   printf "$MERGED_LIST" >&2
   echo "Run /eng-compound to enrich and promote." >&2
   exit 2
@@ -287,8 +303,8 @@ if [ "$PENDING_COUNT" -gt 0 ]; then
 fi
 ```
 
-The `exit 2` path on merged drafts surfaces stderr to the session as a directive Claude acts on — closing the loop from PR-merge to compound-capture without waiting for the user to remember.
+The `exit 2` path on merged drafts surfaces stderr to the session as a directive Claude acts on, closing the loop from PR-merge to compound-capture without waiting for the user to remember.
 
-Adapt the other hook scripts to the specific tools detected in the project. Keep them simple — check if the tool exists, run it, exit 2 on failure.
+Adapt the other hook scripts to the specific tools detected in the project. Keep them simple: check if the tool exists, run it, exit 2 on failure.
 
 Tell the user what hooks were set up and how they work: lint catches issues on every edit, typecheck + tests gate commits, compound drafts are checked at session start.

@@ -6,25 +6,25 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 argument-hint: [optional: description of what was learned]
 ---
 
-Capture a non-obvious solution so the team never pays the same debugging cost twice. Without this step, AI-assisted engineering is amnesiac -- every session is equally fast, but no session is faster than the last. This is what makes cycle N+1 faster than cycle N.
+Capture a non-obvious solution so the team never pays the same debugging cost twice. Without this step, AI-assisted engineering is amnesiac: every session is equally fast, but no session is faster than the last. This is what makes cycle N+1 faster than cycle N.
 
 ## Two paths into this skill
 
 **Path 1: From a draft (automatic loop)**
 
-`/eng-check` writes drafts to `docs/solutions/.drafts/` when it spots something non-obvious during review. After the PR merges and a new session starts, a SessionStart hook detects the draft and tells Claude to run `/eng-compound`. This is the primary path -- no one has to remember anything.
+`/eng-check` writes drafts to `docs/solutions/.drafts/` when it spots something non-obvious during review. After the PR merges and a new session starts, a SessionStart hook detects the draft and tells Claude to run `/eng-compound`. This is the primary path. No one has to remember anything.
 
 When a draft exists:
 1. Read the draft file
 2. Look up the PR from the draft's `pr` field using `gh pr view [number] --json title,body,comments,reviews,files`
-3. Combine the draft's signal with the full PR history -- review comments, requested changes, fixes, discussions
+3. Combine the draft's signal with the full PR history: review comments, requested changes, fixes, discussions
 4. Write the complete solution doc (see format below)
 5. Ask the user to confirm, edit, or discard
 6. If confirmed, move from `.drafts/` to `docs/solutions/`. If discarded, delete the draft.
 
 **Path 2: Standalone (manual)**
 
-Run `/eng-compound` directly after any session where something non-obvious was learned -- debugging, production incidents, or a teammate asking "did we hit this before?"
+Run `/eng-compound` directly after any session where something non-obvious was learned: debugging, production incidents, or a teammate asking "did we hit this before?"
 
 When no draft exists:
 1. If the user provided a description, start from that. If not, gather evidence:
@@ -36,13 +36,13 @@ When no draft exists:
 
 ## When NOT to capture
 
-- The fix is obvious from the code and commit message -- `git blame` has it
-- It's a project convention -- belongs in CLAUDE.md
-- It's a timeless principle or mindset shift -- belongs in the playbook's learnings log
+- The fix is obvious from the code and commit message (`git blame` has it)
+- It's a project convention, so it belongs in CLAUDE.md
+- It's a timeless principle or mindset shift, so it belongs in the playbook's learnings log
 
 **The filter: would a teammate's AI session benefit from knowing this before hitting the same problem?** If yes, capture it. If no, skip.
 
-**Articulation tripwire.** If you can't write the "Why it's hard to find" section in 2-3 specific sentences, you don't have a non-obvious solution — you have a normal solution. Skip the capture.
+**Articulation tripwire.** If you can't write the "Why it's hard to find" section in 2-3 specific sentences, you don't have a non-obvious solution. You have a normal solution. Skip the capture.
 
 ## Writing the solution doc
 
@@ -54,7 +54,7 @@ Format:
 
 ```markdown
 ---
-title: [descriptive title -- scannable, specific]
+title: [descriptive title: scannable, specific]
 date: [YYYY-MM-DD]
 tags: [relevant technology, pattern, or domain tags]
 pr: [PR number that surfaced this, if applicable]
@@ -66,7 +66,7 @@ What went wrong or what was non-obvious. Enough context that someone encounterin
 
 ## Why it's hard to find
 
-Why this isn't obvious from reading the code, docs, or error messages. This is what makes it worth documenting -- if it were googleable, you wouldn't need this doc.
+Why this isn't obvious from reading the code, docs, or error messages. This is what makes it worth documenting. If it were googleable, you wouldn't need this doc.
 
 ## Solution
 
@@ -87,7 +87,7 @@ Keep it short. A good solution doc is 20-40 lines.
 
 ```markdown
 ## Knowledge base
-- `docs/solutions/` — non-obvious solutions from past sessions. Search here before debugging from scratch.
+- `docs/solutions/`: non-obvious solutions from past sessions. Search here before debugging from scratch.
 ```
 
 ## Rules

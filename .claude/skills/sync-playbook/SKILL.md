@@ -8,7 +8,7 @@ Sync the playbook, deep dives, and skills to the `engineering-playbook` GitHub r
 
 ## Sources of truth
 
-- **Skills:** `~/.claude/skills/` is canonical. If you've been editing skill files in a project-local `.claude/skills/` (e.g. `Developer/engineering-playbook/`, `open-visibility/`, `companio-agent/`), copy those edits into `~/.claude/skills/` FIRST. This skill blindly pushes whatever lives in the canonical source, and silent downgrades are how regressions land on main.
+- **Skills:** `~/.claude/skills/` is canonical. If you've been editing skill files in a project-local `.claude/skills/` (e.g. the mirror at `Developer/engineering-playbook/`), copy those edits into `~/.claude/skills/` FIRST. This skill blindly pushes whatever lives in the canonical source, and silent downgrades are how regressions land on main.
 - **Playbook and deep dives:** the Obsidian vault at `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Apri/`.
 
 ## Steps
@@ -32,18 +32,18 @@ Read `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Apri/Engineering L
 
 Copy the playbook file and every deep dive `.md` into `/tmp/engineering-playbook/` (flat structure, no subfolders). If a deep dive listed in the playbook doesn't exist in the vault, stop and tell the user which one is missing. Don't silently skip.
 
-### 3. Copy skills with rsync
+### 3. Copy skills with rsync (allowlist)
 
 ```bash
-rsync -a --delete \
-  --exclude='web-animation-design' \
-  --exclude='make-interfaces-feel-better' \
-  ~/.claude/skills/ /tmp/engineering-playbook/.claude/skills/
+SKILLS="deslop eng-build eng-check eng-compound eng-debug eng-init eng-spec eng-stress-test sync-playbook"
+for S in $SKILLS; do
+  rsync -a --delete "$HOME/.claude/skills/$S/" "/tmp/engineering-playbook/.claude/skills/$S/"
+done
 ```
 
-The trailing slash on the source is mandatory. It copies the *contents* of `~/.claude/skills/`, not the directory itself. `--delete` removes any skill files in the repo that no longer exist in the canonical source.
+The trailing slash on each source is mandatory. It copies the skill's *contents*, not the directory itself. `--delete` keeps each skill's files exactly matching the canonical source.
 
-**The repo ships engineering-process skills only.** Domain skills (`web-animation-design`, `make-interfaces-feel-better`, future `<domain>-design` / `<stack>-patterns` skills) live in `~/.claude/skills/` for the user's own invocation but don't belong in the public playbook, which is scoped to the engineering learning arc (plan → build → review → learn). Add any new non-engineering skill to the `--exclude` list above. If the excludes list grows past ~3 entries, flip to an allowlist instead of a blocklist.
+**The repo ships engineering-process skills only, so this is an allowlist.** `~/.claude/skills/` also holds personal and domain skills (desktop and browser control, basecamp, design skills, symlinked tools) that don't belong in the public playbook, which is scoped to the engineering learning arc (plan, build, review, learn). A blocklist silently publishes every new personal skill; an allowlist can only miss one. When a new engineering skill should ship, add it to `SKILLS` here and to the README skills table. When one is retired, remove it from `SKILLS` and `git rm` its directory in the repo.
 
 Do not use `cp -r ~/.claude/skills/<skill> .claude/skills/<skill>`. That pattern creates nested directories like `.claude/skills/eng-build/eng-build/` and was the source of a previous bug that required a cleanup commit to remove.
 
@@ -86,42 +86,25 @@ Examples:
 - `cleanup: remove stale nested skill dirs`
 - `sync playbook and deep dives from vault` (for routine syncs with no deliberate skill changes)
 
-### 7. Propagate canonical skills to consumer projects
+### 7. Refresh the local mirror
 
-The GitHub repo is now up to date, but any project that keeps a project-local `.claude/skills/<skill>/` copy is still running the old version — project-local overrides user-level at invocation time, so a stale project-local copy silently ships stale behavior the next time the user runs that skill in that project. Push the updated canonical version back down into each consumer project.
+Canonical is `~/.claude/skills/`. The one mirror is `~/Developer/engineering-playbook/.claude/skills/`, the local checkout of the repo you just pushed. Other projects no longer keep project-local eng-* copies, so there's nothing else to propagate. If a project ever adds a project-local copy back, add it here: project-local overrides user-level at invocation time, so a stale copy silently ships stale behavior.
 
 ```bash
-PROJECTS=(
-  "/Users/apri/Developer/engineering-playbook"
-  "/Users/apri/Developer/open-visibility"
-  "/Users/apri/companio-agent"
-)
-
-for PROJECT in "${PROJECTS[@]}"; do
-  TARGET="$PROJECT/.claude/skills"
-  [ -d "$TARGET" ] || continue
-  echo "Propagating to $PROJECT"
-  for SKILL in "$TARGET"/*/; do
-    SKILL_NAME=$(basename "$SKILL")
-    SOURCE="$HOME/.claude/skills/$SKILL_NAME"
-    if [ -d "$SOURCE" ]; then
-      rsync -a --delete "$SOURCE/" "$SKILL/"
-    fi
-  done
+MIRROR="$HOME/Developer/engineering-playbook"
+for SKILL in "$MIRROR/.claude/skills"/*/; do
+  SKILL_NAME=$(basename "$SKILL")
+  SOURCE="$HOME/.claude/skills/$SKILL_NAME"
+  if [ -d "$SOURCE" ]; then
+    rsync -a --delete "$SOURCE/" "$SKILL/"
+  fi
 done
 ```
 
-What this does:
-- Only overwrites skills that already exist in both user-level AND project-local. Skills that only exist project-local are left alone (deliberate project-specific customizations are preserved by not being in user-level).
-- Skills added to user-level but absent from a project are NOT auto-added — adopting a new skill into a project is a deliberate decision, not a side effect of sync.
-- The `--delete` flag keeps each skill's internal files (SKILL.md + scripts/ + resources/) exactly matching the canonical source.
+This only overwrites skills that exist in both places, and `--delete` keeps each skill's internal files exactly matching the canonical source.
 
-Add new projects to the `PROJECTS` array as they're created. If a project no longer exists, the `[ -d "$TARGET" ] || continue` guard skips it silently rather than failing the sync.
-
-After this step, every known project has the same skill code that was just pushed to the GitHub repo. No manual `cp` dance per project.
-
-**Note on `Developer/engineering-playbook`:** this is the local checkout of the GitHub repo you just pushed to. After step 7, its working tree matches `origin/main` (what you pushed), but its local HEAD is still one commit behind. Fast-forward it:
+After the rsync the mirror's working tree matches `origin/main` (what you pushed), but its local HEAD is still one commit behind. Fast-forward it:
 
 ```bash
-git -C /Users/apri/Developer/engineering-playbook pull --ff-only
+git -C "$HOME/Developer/engineering-playbook" pull --ff-only
 ```
