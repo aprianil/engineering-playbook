@@ -304,9 +304,8 @@ See [[Working Effectively With AI]] for the full deep dive on context engineerin
 
 Custom skills built for this playbook (lives in `.claude/skills/` — the standard Claude Code location):
 - `/eng-init` — scaffolds a CLAUDE.md in any project with the engineering principles from this playbook baked in. Run once per project. Team-friendly — any contributor benefits from it.
-- `/eng-spec` — planning session. Captures context (who, why, what triggered this), defines user flow and acceptance criteria, and saves a spec file. No code gets written — just thinking.
-- `/eng-build` — execution session. Reads a spec file and builds from it. Clean context, clear instructions. The spec is the contract.
-- `/eng-debug` — systematic debugging when something breaks unexpectedly. Auto-triggers from `/eng-build` when an error can't be resolved in one attempt. Runs the debug loop (reproduce, localize, root cause, fix, guard test), then resumes the build. Hands off non-obvious findings to `/eng-compound`.
+- `/eng-spec` — planning session. Captures context (who, why, what triggered this), defines user flow and acceptance criteria, and saves a spec file. Then a fresh sub-agent stress-tests it until it's ready to build. `/eng-spec stress <path>` runs just the stress test on any spec or plan. No code gets written — just thinking.
+- `/eng-build` — execution session. Reads a spec file and builds from it. Clean context, clear instructions. The spec is the contract. When something breaks unexpectedly, it runs the debug loop (reproduce, 3-5 hypotheses, root cause, fix, guard test) and resumes. It ends with a Capture step that writes anything non-obvious to `docs/solutions/`.
 - `/eng-check` — reviews code against the engineering principles in the project's CLAUDE.md. Auto-triggers when you ask Claude to review code.
 - `/sync-playbook` — syncs the playbook and deep dive files from Obsidian to GitHub.
 

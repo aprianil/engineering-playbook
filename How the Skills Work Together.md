@@ -98,9 +98,9 @@ The feature follows the project's structure conventions -- thin routes, business
 
 While building, the skill holds judgment questions in mind -- am I discovering this abstraction or forcing it? What breaks if this fails? Can someone understand this without opening multiple files? These aren't steps, they're a lens. If something feels off, it pauses and flags.
 
-If something actually breaks during the build -- not a typo, but an unexpected failure -- the skill shifts into `/eng-debug` methodology: reproduce with runtime evidence, form 3-5 hypotheses instead of committing to the first plausible cause, fix the root cause, and guard with a test. Then it resumes the build where it left off. Debugging inside a build session shouldn't become a separate track.
+If something actually breaks during the build (not a typo, an unexpected failure), the skill runs its debug loop: reproduce with runtime evidence, write out 3-5 hypotheses instead of committing to the first plausible cause, fix the root cause, and guard with a test. Then it resumes where it left off. Debugging inside a build session shouldn't become a separate track.
 
-After building, the skill prompts reflection -- but only if something surprised you. What trade-off did we make? What would we do differently? If something non-obvious was learned -- an API quirk, a debugging insight, a pattern that wasn't googleable -- the skill suggests running `/eng-compound` to capture it so the team never pays the same cost again.
+The build ends with a Capture step, but only if something surprised you. Most builds produce no learning, and that's fine. If something non-obvious came up (an API quirk, a misleading error, a pattern that wasn't googleable), it goes into `docs/solutions/` so the team never pays the same cost again.
 
 **Principles in play:** simplicity (6 focused files), documented trade-offs (in the spec), verified against acceptance criteria.
 
@@ -169,31 +169,31 @@ That's the difference between shipping code and owning it.
      |
 /eng-spec            Explore --> Research --> Spec --> Stress-test
      |               (searches docs/solutions/ for prior art)
-/eng-build           Execute from the approved spec + reflect
+/eng-build           Execute from the approved spec, debug in place
      |
 /deslop              Clean up with fresh eyes (sub-agent)
      |
-/eng-check           Verify against principles + draft compound learnings
+/eng-check           Verify against principles + draft learnings
      |
 You review           Own what you ship
      |
 Ship PR              Merge and deploy
      |
-/eng-compound        Enriches draft with PR history, you confirm
+Capture              Promote drafts to docs/solutions/ (end of /eng-build)
                      (SessionStart hook reminds you; stale drafts auto-clean)
 ```
 
-### Standalone skills
+### Standalone uses
 
-Most skills fit the cycle above, but these can also be used independently:
+Most skills fit the cycle above, but these also work on their own:
 
-- **`/eng-stress-test`** -- auto-triggered by `/eng-spec`, but you can also run it standalone on any spec or plan. Useful when you've written a spec by hand or want to re-challenge one after changes.
-- **`/eng-debug`** -- auto-triggered from `/eng-build` on unexpected failures, but you can also run it standalone on any bug. Runs the debug loop (reproduce with runtime evidence, form 3-5 hypotheses, fix the root cause, guard with a test) and hands off non-obvious findings to `/eng-compound` after the PR merges.
-- **`/deslop`** -- works on any branch with changes, not just after `/eng-build`. Good for cleaning up code from any session.
-- **`/eng-compound`** -- primarily auto-triggered: `/eng-check` writes drafts when it spots something non-obvious, and a SessionStart hook quietly reminds you they exist. But you can also run it standalone after debugging sessions or production incidents. Captured solutions feed back into `/eng-spec`'s research phase. Stale drafts (30+ days) are auto-cleaned.
+- **`/eng-spec stress <path>`** runs just the stress test on any spec or plan. Useful when you've written a spec by hand or want to re-challenge one after changes.
+- **`/deslop`** works on any branch with changes, not just after `/eng-build`. Good for cleaning up code from any session.
+
+Learnings don't need their own command. `/eng-check` writes a draft when it spots something non-obvious, a SessionStart hook quietly reminds you it exists, and the Capture step at the end of the next build promotes it or drops it. Captured solutions feed back into `/eng-spec`'s research phase. Stale drafts (30+ days) are auto-cleaned.
 
 ---
 
-Most of the work happens before and after writing code. The spec forces planning. The research grounds it in real codebase evidence. The stress-test catches assumptions. The build follows the spec and reflects on what surprised you. Compound captures what was learned so the team never solves the same problem twice. Deslop brings fresh eyes to clean up. Eng-check splits the review into two lenses so nothing gets missed. And at the end, you understand what you shipped.
+Most of the work happens before and after writing code. The spec forces planning. The research grounds it in real codebase evidence. The stress-test catches assumptions. The build follows the spec and captures what surprised you, so the team never solves the same problem twice. Deslop brings fresh eyes to clean up. Eng-check splits the review into two lenses so nothing gets missed. And at the end, you understand what you shipped.
 
 The principles aren't abstract -- they're embedded in every step.
