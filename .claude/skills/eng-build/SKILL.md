@@ -13,7 +13,7 @@ Build a feature from an approved spec file. This is an execution session; the pl
 - Ask the user which spec to build from. Look in the `specs/` directory for available specs, or accept a file path.
 - Read the spec file completely.
 
-**No spec?** Stop and route: features go to `/eng-spec` first (a small feature gets a short spec, minutes of work), fixes go to `/eng-debug`. The build session starts from the file, and the spec is what the review checks the diff against and where deviations get logged. A build from conversation memory has none of that.
+**No spec?** Stop and route: features go to `/eng-spec` first (a small feature gets a short spec, minutes of work), fixes skip the spec (reproduce, root cause, guard test, then `/eng-check`). The build session starts from the file, and the spec is what the review checks the diff against and where deviations get logged. A build from conversation memory has none of that.
 
 **Preconditions.** Pass silently. Only speak to halt or ask.
 
@@ -22,9 +22,9 @@ Build a feature from an approved spec file. This is an execution session; the pl
    - `status: building`: resume. Read `## Current state` and `### Deviations` first, then continue at the slice `## Current state` names as next.
    - `status: built`: halt: "spec is already built (built: <date>). Nothing to build; start a new spec for new work."
    - Anything else (`drafting`, a missing value on a spec that has frontmatter): halt: "spec is `<status>`, not ready to build. Run `/eng-spec <spec-path>` to finish it."
-2. **Spec mode determines what else to check:**
-   - **Lean / AI-memory spec** (frontmatter `purpose: ai-memory`, written by auto-spec): accepted only at `status: building`, as a resume of work that was already in flight when auto-spec captured it. No stress-test verdict required there: auto-spec didn't run stress-test; the conversation stress-tested implicitly. A lean file at any other status halts: "lean spec at `<status>`: lean specs only resume in-flight work. Run `/eng-spec` for a new build." That keeps a hand-written lean file from skipping the stress-test.
-   - **Heavy / human-doc spec** (no `purpose:` field, or `purpose: human-doc`): must have `## Stress-test verdict` followed by `**ready to build**`. If absent, halt: "spec missing clean verdict. Re-run `/eng-spec <spec-path>` to iterate the draft to clean and re-save." If verdict is `address these first` / `rethink approach`, halt: "verdict is `<verdict>`. Re-run `/eng-spec <spec-path>` to iterate to clean."
+   - `status:` must be exactly one word. If anything follows the word (a date, progress, notes), halt: "status must be one word; move the rest to `## Current state` or `### Deviations`."
+2. **Verdict:**
+   - Specs with frontmatter must have `## Stress-test verdict` followed by `**ready to build**`. If absent, halt: "spec missing clean verdict. Re-run `/eng-spec <spec-path>` to iterate the draft to clean and re-save." If verdict is `address these first` / `rethink approach`, halt: "verdict is `<verdict>`. Re-run `/eng-spec <spec-path>` to iterate to clean."
    - Pre-rule specs (no frontmatter, no verdict heading): skip silently.
    - **Legacy slice frontmatter** (`slice_of:`, `slice_id:`, `build_specs:` and similar from the old multi-slice flow): treat the file as a single spec. Say so in one line ("legacy slice frontmatter ignored, building as one spec") and continue.
 3. **Dependencies.** Every spec in `depends_on:` must be built and merged: `git show <base>:<dep-spec-path>` shows `status: built` (fetch the base first). If not, halt: "depends on specs not yet built and merged: [<paths>]."
@@ -77,11 +77,13 @@ Then, for each slice:
 5. **After slice 1 only: assumptions check-in.** Re-read the spec's `### Assumptions` section and the Type 1 entries under Key decisions against what slice 1 revealed. A changed Type 1 decision stops the build and goes back to the spec (same path as the re-spec tripwire). A Type 2 change gets a bullet in `### Deviations` and the build continues. Slice 1 was ordered to surface the riskiest assumption; this is where that pays off.
 6. **Risk slices get a range review.** A slice that uses auth, money, or publish paths, adds a migration, or touches anything the project marks safety-critical (e.g. code that can type into, close, or restart what the user is using) gets `/eng-check <first-sha>^..<last-sha>` over that slice's commits before the next slice starts. If the risk slice is the last slice, skip the separate range review: the end review covers it. Every other slice is reviewed once at the end, not per slice: per-slice reviews on ordinary slices cost more round trips than they catch.
 7. **Log deviations.** Anything that differs from the spec gets one bullet in `### Deviations` with the evidence that forced it.
-8. **Coder context hygiene.** Reset the coder when its replies start dropping earlier details or contradicting the spec, or after about 5 slices, whichever comes first. Before it's replaced, the coder writes a checkpoint into the spec's `## Current state` section (per `/eng-spec`'s auto-spec rules: what's built, which slice is next, any open thread). Start the fresh coder from the spec plus that checkpoint, with a handoff message that carries operational state only (the slice to start, the branch, tree caveats such as uncommitted files or a dev server that must be running), usually three lines. The spec carries the rest. A fresh coder reading a good checkpoint makes better edits than one deep in a saturated context.
+8. **Coder context hygiene.** Reset the coder when its replies start dropping earlier details or contradicting the spec, or after about 5 slices, whichever comes first. Before it's replaced, the coder writes the checkpoint below. Start the fresh coder from the spec plus that checkpoint, with a handoff message that carries operational state only (the slice to start, the branch, tree caveats such as uncommitted files or a dev server that must be running), usually three lines. The spec carries the rest. A fresh coder reading a good checkpoint makes better edits than one deep in a saturated context.
 
 State progress briefly after each slice: slice name, commit, verify result.
 
-**When something breaks unexpectedly:** If you hit an error that isn't a simple typo or missing import and you can't resolve it in one attempt, shift into the eng-debug methodology: stop, preserve the error evidence, reproduce, localize, understand the root cause, fix it, and write a guard test. Don't guess randomly or suppress the error. Complete the debug loop before resuming the build. If the root cause was non-obvious, flag it for `/eng-compound` after the PR merges.
+**Current state checkpoint.** Before a coder reset, before `/compact`, or when the session nears its compaction point, add or rewrite a `## Current state` section at the end of the spec: what's built, which slice is next, any open thread (failing test, blocked decision, mid-refactor file). Log any change from the spec in `### Deviations`. This is what a fresh session or a fresh coder resumes from.
+
+**When something breaks unexpectedly:** If you hit an error that isn't a simple typo or missing import and you can't resolve it in one attempt, run the debug loop: stop, preserve the error evidence, reproduce, localize, understand the root cause, fix it, and write a guard test. Write 3-5 hypotheses out before testing any; a root cause that doesn't explain why this never broke before isn't the root cause yet. Revert speculative guards from rejected hypotheses. Don't guess randomly or suppress the error. Complete the loop before resuming the build. If the root cause was non-obvious, capture it at the end (see Capture).
 
 **When the debug loop itself stalls** (hypotheses worked, root cause still unclear), stop grinding in one context: put the problem to two independent contexts in parallel (e.g. a fresh deep-reasoning agent and a second fresh agent per the orchestration policy; `/codex:rescue` when the project declares Codex), each with the error evidence and repro steps but not each other's answers, then compare diagnoses. A second independent context beats a third lap in a biased one.
 
@@ -198,15 +200,13 @@ If the sub-agent finds issues, fix them before marking as done. On re-verificati
 
 **Merge** per the project's convention (CLAUDE.md / AGENTS.md). Default when none is stated: `gh pr merge <n> --rebase`, so the slice commits survive on main. Squash collapses them into one and loses per-slice revert.
 
-**After shipping, reflect (only if something surprised you):**
-Skip this if the build was straightforward. Most sessions won't produce a learning. But if something unexpected came up, ask the user:
-- What trade-off did we make? What did we choose, what did we reject?
-- What would we do differently next time?
-- Did anything break or feel harder than expected? Why?
+## Capture (after merge, only if something surprised you)
 
-**Where learnings go depends on scope:**
-- **CLAUDE.md**: conventions or constraints that affect how all code should be written in this project. Keep it lean.
-- **Engineering Learnings & Playbook** (via `/sync-playbook`): timeless insights that change how you think about building, not just this project.
-- **`/eng-compound`**: non-obvious solutions that would save a teammate from hitting the same problem. Run this after the PR is merged, not now. The solution needs to survive reviews and testing before it's worth capturing.
+Most builds produce no learning; skip this then. Capture only what isn't findable from the code, docs, git history, or error messages: an API quirk, a misleading error, an integration gotcha, a root cause that took real digging. If you can't write why it was hard to find in 2-3 specific sentences, it's a normal solution; skip it.
 
-Before adding, check for duplicates. Update an existing entry rather than adding a new one if the topic is already covered.
+**Where it goes:**
+- **CLAUDE.md**: a convention or constraint for all code in this project. Keep it lean.
+- **Engineering Learnings & Playbook** (via `/sync-playbook`): a timeless insight about building, not just this project.
+- **`docs/solutions/<kebab-name>.md`**: a non-obvious solution a teammate's AI session should know before hitting the same problem. One problem per doc, 20-40 lines, frontmatter `title`, `date`, `tags`, `pr`, then `## Problem`, `## Why it's hard to find`, `## Solution`, `## Context`. Also promote any drafts `/eng-check` left in `docs/solutions/.drafts/` for this PR: combine the draft with the PR history (`gh pr view <n> --json title,body,comments,reviews,files`), write the doc, and delete the draft. If the project CLAUDE.md doesn't mention `docs/solutions/`, add a one-line Knowledge base entry pointing to it.
+
+Search for an existing entry first and update it rather than adding a duplicate. Ask the user to confirm each entry before saving.

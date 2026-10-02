@@ -12,6 +12,6 @@ if [ -d "$DRAFTS_DIR" ]; then
   # Count remaining drafts
   DRAFT_COUNT=$(find "$DRAFTS_DIR" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
   if [ "$DRAFT_COUNT" -gt 0 ]; then
-    echo "Note: $DRAFT_COUNT compound draft(s) in docs/solutions/.drafts/ from past reviews. Run /eng-compound when you're ready."
+    echo "Note: $DRAFT_COUNT compound draft(s) in docs/solutions/.drafts/ from past reviews. Promote or drop them with the Capture step in /eng-build."
   fi
 fi

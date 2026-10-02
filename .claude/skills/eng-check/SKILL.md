@@ -2,243 +2,142 @@
 name: eng-check
 description: Review code before shipping, OR gate an open PR for merge. Use when asked to review code, audit a diff, check a change against project conventions, determine if something is ready to ship, or decide whether an open PR is mergeable. Three entry points. Local-diff (default; architecture lens, plus correctness, security, type safety and performance when no PR review bot owns them; reads a slice map and reviews slice by slice). Range (`/eng-check <sha>..<sha>`, one commit range, e.g. a risk slice mid-build, always with the correctness checklist). PR-gate (`/eng-check <PR#>`, merge call against the review bot's findings, or a fresh review when the project has no bot). Spawns a fresh sub-agent so the reviewer has no build-session bias.
 disable-model-invocation: false
-allowed-tools: Read, Glob, Grep, Bash, Agent
+allowed-tools: Read, Write, Glob, Grep, Bash, Agent
 ---
 
-Review code against the project's engineering principles: **review lens** for local and range mode, **merge-gate lens** for PR mode.
+Review code against the project's engineering principles. A fresh sub-agent does the review: the builder shouldn't review their own work (Principle #7).
 
-**Who owns correctness depends on the project.** Check AGENTS.md / CLAUDE.md for a declared automated PR reviewer (e.g. Codex, configured by AGENTS.md and run on every PR open/sync) that owns correctness, security, type safety, and performance.
-- **Bot declared:** local mode stays architecture-only. The bot owns the other lens; double coverage burns reviewer cycles and breeds noise.
-- **No bot:** local mode also reviews correctness, security, type safety, and performance (checklist below). Nothing else will.
-- **Range mode always runs that checklist**, bot or no bot. It runs mid-build on risk slices, before any PR exists, so the bot hasn't seen the code yet.
+**Parse args first.** An argument containing `..` is a commit range: range mode. A numeric argument is a PR number: PR-gate mode. No args: local-diff mode.
 
-If the project documents its lens split in a file (check CLAUDE.md / AGENTS.md), follow it and keep this review consistent with it.
-
-This skill spawns a fresh sub-agent: the builder shouldn't review their own work (Principle #7).
-
-## Modes
-
-**Parse args first.** An argument containing `..` is a commit range: range mode. Otherwise a numeric argument is a PR number: PR-gate mode. No args: local-diff mode.
-
-- **Local-diff mode (default, no args):** review of pending changes against CLAUDE.md principles, run by the author pre-push. When a slice map exists, reviews slice by slice, then the whole.
-- **Range mode (`/eng-check <sha>..<sha>`):** the same review plus the correctness, security, type safety, and performance checklist, scoped to that commit range only. Used mid-build for risk slices (slices that use auth, money, or publish paths, add a migration, or touch safety-critical code) before the next slice starts.
-- **PR-gate mode (`/eng-check <PR#>`):** merge call on an open PR, returning a structured verdict (`ship` / `fix-then-ship` / `waiting`). With a review bot: pulls the bot's findings and commit history, maps fix commits to findings, applies the severity rubric. Without a bot: spawns a fresh review sub-agent over the commits after the recorded local verdict (the full PR diff if none was recorded) and returns the same STATUS templates. Designed to compose with `/loop /eng-check <PR#>` so the loop's self-pacing waits for async bot review and exits when the merge call is decisive.
-
-All modes share the fresh-sub-agent pattern, the severity rubric (from AGENTS.md when it defines one), and the CLAUDE.md context. They differ in input (local diff, commit range, or PR) and output shape (review findings vs. merge call).
+**Who owns correctness.** Check AGENTS.md / CLAUDE.md for a declared automated PR reviewer (e.g. Codex) that owns correctness, security, type safety, and performance, and follow any lens split the project documents.
+- **Bot declared:** local mode stays architecture-only. Double coverage burns reviewer cycles and breeds noise.
+- **No bot:** local mode also runs the correctness checklist below. Nothing else will.
+- **Range mode always runs the checklist.** It runs mid-build on risk slices, before the bot has seen the code.
 
 ---
 
 ## Local-diff mode (default) and range mode
 
-**How it works:**
+1. Read the project's CLAUDE.md, and AGENTS.md if present (review-bot declaration, severity rubric, commit convention).
+2. Get the changed files: detect the base branch, then `git diff $(git merge-base <base> HEAD) --name-only`. **Range mode:** use `git diff <sha>..<sha>` and `git log <sha>..<sha>` and review only that range.
+3. Read the full diff.
+4. **On a fix branch (`fix/`, `hotfix/`, `bug/`, `followup/`), skip spec lookup**; the bug is the spec. Otherwise read the feature's spec in `specs/` if one exists.
+5. **Slice map (local mode).** If the spec has `#### Slice N:` headings, or the PR body has a slice map, and the commits line up with slices, map each slice to its commit range. The sub-agent reviews slice by slice, then the whole diff. A large diff read one capability at a time is reviewable; read as one blob it hides which slice a problem belongs to. Range mode skips this: the range is one slice.
+6. **Diff-filtered context.** Pull only entries relevant to the diff:
+   - **Gotcha index** (`docs/solutions/README.md`, if present): match entries by tag or path (a touched database client pulls database gotchas, a new migration pulls migration gotchas). Inline each match's problem + solution.
+   - **Library-function checklist** (if CLAUDE.md / AGENTS.md names one): inline the items for the layer the diff touches.
+7. Spawn one review sub-agent. **Pass everything inline** so it doesn't re-read CLAUDE.md or re-explore:
+   - The CLAUDE.md sections relevant to review
+   - The full diff and the changed file paths
+   - The spec's acceptance criteria, `### Outcome`, `### Performance architecture`, and `### Deviations`
+   - The slice map with commit ranges, when step 5 found one
+   - The gotchas and checklist items from step 6
+   - Whether a bot owns correctness, and the review instructions below (with the checklist when no bot owns it, or in range mode)
+8. Use the sub-agent's findings as your report. **Local mode only:** end with `eng-check: <verdict> @ <short-sha>`, the HEAD that was reviewed. Once no blockers or importants are open, that line goes in the PR body (`gh pr edit` if the PR exists; otherwise the author adds it when opening). The no-bot PR gate reads it to review only the commits after that SHA.
 
-1. Read the project's CLAUDE.md for conventions and principles, and AGENTS.md if present (review-bot declaration, severity rubric, commit convention).
-2. Get the changed files: detect the base branch, then `git diff $(git merge-base <base> HEAD) --name-only`. **Range mode:** use `git diff <sha>..<sha>` and `git log <sha>..<sha>` instead, and review only that range.
-3. Read the actual content of changed files (use `git diff` for the full diff).
-4. **If on a fix branch (`fix/`, `hotfix/`, `bug/`, `followup/`), skip spec lookup.** Fix branches don't have specs to be faithful to; the bug is the spec. Otherwise: if a spec exists in `specs/` for this feature, read it.
-5. **Slice map (local mode).** If the spec's task list has `#### Slice N:` headings, or the PR body has a slice map, and the commits line up with slices (one commit or a short green run per slice, messages naming the slice), map each slice to its commit range. The sub-agent reviews slice by slice in order, then the whole diff. A large diff read one capability at a time is reviewable; the same diff read as one blob hides which slice a problem belongs to. Range mode skips this step: the range is already one slice.
-6. **Diff-filtered context loading.** Walk these knowledge sources and pull only entries relevant to the diff:
-   - **Gotcha index** (`docs/solutions/README.md`, if present; it's the `/eng-compound` convention): match entries by tag/path. A touched file in the database client layer pulls database gotchas; a new migration pulls migration gotchas; a new agent tool pulls agent-tool gotchas. Inline the matched entries' problem + solution into the sub-agent prompt
-   - **Library-function checklist** (if the project keeps one; CLAUDE.md / AGENTS.md names its path): if the diff adds or changes functions in the layer it covers, inline the relevant checklist items
-7. Spawn one review sub-agent. **Pass context directly**: don't make it re-read CLAUDE.md or re-explore the codebase. The sub-agent prompt should include:
-   - The CLAUDE.md sections relevant to architecture review (inline, not a file path)
-   - The full diff of changed files (inline)
-   - The acceptance criteria from the spec, plus the spec's `### Outcome`, `### Performance architecture`, and `### Deviations` sections. Tight context, no exploration history needed
-   - The list of changed file paths
-   - The slice map with each slice's commit range, when step 5 found one
-   - Diff-relevant gotchas + checklist items pulled in step 6 (inline)
-   - Whether a PR review bot owns correctness (from step 1), and the review instructions below, including the correctness checklist when no bot owns it or when this is range mode
-8. Use the sub-agent's findings as your report. **Local mode only:** end the report with `eng-check: <verdict> @ <short-sha>`, the HEAD that was reviewed. Once no blockers or importants are open, that line goes in the PR body (add or update it with `gh pr edit` if the PR exists; otherwise the author includes it when opening the PR). The no-bot PR gate reads it to review only the commits after that SHA.
+**After the report**, when the build session is still open: fix blockers and importants inline if the fix is single-file, needs no new test scaffold, and has no design decision pending. Otherwise surface it to the user in one line and ask. Don't quietly file a follow-up or spec it.
 
 ---
 
 **Review instructions for sub-agent:**
 
-You are reviewing code with fresh eyes. You did not write this code.
+You are reviewing code with fresh eyes. You did not write it. The CLAUDE.md principles and the full diff are inline; use them as your source of truth.
 
-The CLAUDE.md principles and the full diff have been provided to you inline. Use them as your source of truth.
+**Read the diff deeply first.** Read every changed function: what it does, how it handles errors, what it assumes. Most findings come from here.
 
-**Read the diff deeply first.** Don't skim the diff to go exploring. Read every changed function, understand what it does, how it handles errors, what it assumes. Form your assessment from the diff. This is where most of your findings should come from.
+**Explore with purpose.** Read a file outside the diff only for a named concern the diff can't resolve ("this route doesn't check auth, let me read one existing route for a wrapper"). To check a pattern, read one example. If you're reading without a concern, stop and write findings.
 
-**Explore with purpose, not speculatively.** Only read files outside the diff when you've identified a specific concern that the diff alone can't resolve. Before reading any file, name the concern you're investigating (e.g., "this route doesn't check auth, let me read one existing route to see if there's a wrapper"). To check a pattern, read one example of it, not every instance. Every file read should answer a specific question. If you're reading files without a concern to investigate, stop and write your findings from what you have.
+**Order:** zoom out first (spec or PR description: does the approach make sense? if not, stop and say so), then the main files, then the rest. **With a slice map,** review each slice's commits in order (one capability end-to-end? builds on its own? leaks into another slice's scope?), then the whole diff once for cross-slice problems. Tag each finding with its slice.
 
-**Review in this order.** Design problems found early save you from reviewing code that might get rewritten.
+**High-yield principles:**
+- **Simplicity (#1).** Could someone new read and change this without breaking anything? Cut concepts and dependencies, not just lines.
+- **Quality (#4).** Shortcuts documented with a plan to revisit? **A TODO without a ticket is a wish.** Flag every unowned TODO.
+- **Ownership (#9).** Anything opaque, "works but I don't know why"?
 
-1. Zoom out: read the PR description or spec. Does the approach make sense? If not, stop here and say so.
-2. Review the main files first: the biggest, most important changes. This is where design problems live.
-3. Review the rest once the design is solid.
+**Quick pass:** YAGNI (#2), forced abstractions (#3), irreversible decisions handled with care and reversible ones not over-planned (#5), compounding (#6), verification (#8). Check the project shape rules from CLAUDE.md, leading with the most-violated: thin routes, side effects after the response, structured errors handled at the boundary.
 
-**If you were given a slice map,** walk it: review each slice's commits in order (does the slice deliver one capability end-to-end, does it build on its own, does it leak into another slice's scope?), then read the whole diff once for cross-slice problems. Tag each finding with its slice.
+**Reviewer-bias tripwire.** If your only finding is a stylistic preference and the code clearly works, drop it. Architecture findings name a real downstream consequence (someone gets paged, a future change breaks, a class of bugs is enabled). "I'd write it differently" is not a finding.
 
-**High-yield principles (lead with these):**
-- **Simplicity (#1).** Is this as simple as it can be? Can someone new read, understand, and change it without breaking anything else? Cut concepts and dependencies, not just lines of code.
-- **Quality (#4).** If shortcuts were taken, are they documented with a concrete plan to revisit? **A TODO without a ticket is a wish.** Deferred quality without an owner compounds, so flag every unowned TODO.
-- **Ownership (#9).** Can the person who ships this explain why it's structured this way? Anything opaque or "it works but I don't know why"?
+**Spec alignment (skip on fix branches):**
+- Does the implementation match the spec? Missed or changed acceptance criteria are justified only by a `### Deviations` entry with evidence.
+- Out-of-scope items included?
+- **Architecture fidelity.** If `### Performance architecture` names decisions (parallel fan-out, caching boundary, streaming vs batched, optimistic UI, where work happens), does the code reflect them? Spec said parallel, code shipped serial = drift. Flag as spec drift.
 
-**Quick pass:**
-- YAGNI (#2): building for an imaginary future requirement?
-- Abstractions (#3): forced patterns that should stay as duplication?
-- Reversibility (#5): irreversible decisions (schema, public APIs) treated with enough care? Reversible ones over-planned?
-- Compounding (#6): worth its cost across future sessions, or one-time complexity?
-- Verification (#8): tests, build, lint, browser?
-
-**Reviewer-bias tripwire.** If your only finding is a stylistic preference and the code clearly works, that's taste, not architecture. Drop it. Architecture findings name a real downstream consequence (someone gets paged, a future change breaks, a class of bugs is enabled). "I'd write it differently" is not a finding.
-
-**Feature structure (seven patterns, most-violated first):**
-- **Thin routes**: validate and delegate, no business logic in route files. Most common violation.
-- **Side effects after the response**: user doesn't wait for webhooks, emails, analytics. Easy to miss in review.
-- **Structured errors with codes**, handled at the boundary. Naked throws or string errors flag.
-- Shared schema: one definition, used by frontend and backend
-- Auth wrapped once, not copy-pasted per route
-- Feature names mirrored across layers
-- Wiring files (routers, layouts, configs) do zero logic
-
-**Structure & naming:**
-- Each file focused on one thing
-- Organized by feature, not by type
-- Naming reveals intent without reading the body
-- Locality of behavior: understand the feature without opening 5 files
-- Dependencies flow one direction: features don't import from each other
-- Feature-specific components live in their feature folder, not in shared
-- The "and" test: if a component does X AND Y AND Z, suggest splitting
-
-**Spec alignment (skip on fix branches, which have no spec to be faithful to):**
-- Does the implementation match the spec?
-- Were acceptance criteria missed or changed without reason? A change is justified only if the spec's `### Deviations` logs it with evidence.
-- Were out-of-scope items accidentally included?
-- **Architecture fidelity.** If the spec named architectural decisions in its `### Performance architecture` section (parallel fan-out, caching boundary, streaming vs batched, optimistic UI, where work happens), does the code reflect them? Spec said parallel, code shipped serial = drift. Spec said cached, no cache hit = drift. Flag as spec drift. This is structural-fidelity detection; perf bugs belong to the correctness lens below (or to the PR review bot).
-
-**Correctness, security, type safety, performance (when no PR review bot owns them, and always in range mode).** Skip this block only in local mode on a project that declares a bot. Otherwise nothing else reviews these yet, so check:
-- **Correctness.** Logic errors and wrong conditionals; unhandled null, empty, or unexpected input; error paths that swallow failures or leave partial state; async misuse (unawaited promises, races, double submits); behavior an acceptance criterion requires that the code doesn't do.
-- **Security.** Input validated at the boundary; every new route or action has authentication and authorization (ownership or tenant checks, not just "logged in"); no secrets in code or logs; no injection (SQL, shell, HTML, prompt) through interpolated untrusted data; webhook signatures verified before the body is trusted.
+**Correctness, security, type safety, performance (no bot, or range mode).** Skip only in local mode on a project with a bot:
+- **Correctness.** Wrong conditionals; unhandled null, empty, or unexpected input; error paths that swallow failures or leave partial state; async misuse (unawaited promises, races, double submits); an acceptance criterion the code doesn't meet.
+- **Security.** Input validated at the boundary; every new route or action has authentication *and* authorization (ownership or tenant checks, not just "logged in"); no secrets in code or logs; no injection (SQL, shell, HTML, prompt) through interpolated untrusted data; webhook signatures verified before the body is trusted.
 - **Type safety.** No `as any`, unchecked casts, or non-null assertions papering over a real type; external data (API responses, DB rows, LLM output) parsed through a schema before use.
-- **Performance.** N+1 queries; serial awaits that could run in parallel; unbounded queries or loops over user-controlled sizes; work on the request path that belongs after the response; new query shapes with no supporting index.
+- **Performance.** N+1 queries; serial awaits that could be parallel; unbounded queries or loops over user-controlled sizes; request-path work that belongs after the response; new query shapes with no index.
 
-Same severity labels as the rest of the review. A finding that would break or harm users if merged is a blocker.
+**Prompt-injection lens (only when the diff builds prompts, registers agent or MCP tools, imports an LLM SDK, or consumes LLM output).** Check: untrusted input (user text, scraped pages, RAG results, tool outputs, DB records, email bodies) interpolated into prompts without marking it untrusted; LLM output rendered as HTML, executed, used in SQL, fed to another LLM, or trusted for authorization; and cross-privilege flow, where a lower-privileged user's data plants instructions a higher-privileged AI session consumes (admin reads an uploaded doc, agent reads another tenant's records). Each permission check can look correct while the AI layer escalates privilege.
 
-**Prompt-injection lens (only when diff touches LLM-integrated paths).** Skip this lens entirely if the diff contains no LLM-related code. Fire when the diff modifies anything that constructs prompts, registers agent tools, or processes LLM output: prompt templates, agent skill or instruction files, files importing an LLM SDK (`@anthropic-ai/sdk`, `openai`, `generateObject`, `messages.create`), MCP tool registrations, or any code interpolating untrusted data into prompt text. When triggered, audit for:
+**PR hygiene:**
+- Comments explain why; TODOs reference a ticket or a name.
+- A large PR is fine with a slice map and green per-slice commits; flag a large PR with neither.
+- Flag any bundled item from `/eng-spec`'s forced-split list: a migration with backfill or a destructive data change; a change to the auth, money, or publish mechanism itself (auth flow or permission model, payment or billing logic, the publish or deploy pipeline; code that only *uses* them stays); an acceptance criterion that needs a post-deploy action; a cross-repo change; a refactor bundled with a feature; a change to something the user is actively running where a restart or deploy is its own gate. Each belongs in its own PR.
 
-- **Direct injection.** User input interpolated into the prompt without marking. Vulnerable: `prompt = "Summarize: ${userInput}"`. Fix: mark untrusted via structured roles, fenced sections, or a separate `user`-role message that the system prompt explicitly cannot trust.
-- **Indirect injection.** External data (scraped pages, RAG results, tool outputs, DB records, file contents, email bodies) interpolated without quarantine. Same shape as direct; the attacker planted the payload upstream and the LLM consumes it later.
-- **LLM output trust.** LLM output rendered as HTML, executed as code, used in SQL, fed to another LLM, or trusted for authorization decisions. Always treat LLM output as untrusted user input from the downstream consumer's perspective.
-- **Cross-privilege flow.** Lower-privileged user's data plants instructions that a higher-privileged AI session consumes (admin reads a user-uploaded document, agent reads another tenant's records, support session ingests customer-supplied content). The AI layer becomes a privilege-escalation vector even when each individual permission check looks correct.
-
-This is the lens beyond a general OWASP-style security review. A general review catches generic input validation at the boundary; this catches prompt-specific patterns that look fine to it. Reference: `briiirussell/cybersecurity-skills/skills/prompt-injection` has deeper methodology for the rare case you want a focused audit session (not vendored, pull on demand).
-
-**Comments & PR hygiene:**
-- Comments explain why, not what
-- TODOs reference a ticket or have a name
-- One responsibility per PR. A large PR is fine when it has a slice map (PR body, or the spec's task list pre-push) and each slice's commits are green on their own; flag a large PR that has neither.
-- Flag any bundled item from `/eng-spec`'s forced-split list: a migration with backfill or a destructive data change, a change to the auth, money, or publish mechanism itself (auth flow or permission model, payment or billing logic, the publish or deploy pipeline; code that only *uses* them stays), an acceptance criterion that needs a post-deploy action, a cross-repo change, a refactor bundled with a feature, a change to something the user is actively running where a restart or deploy is its own gate. Each belongs in its own PR.
-
-**Calibration:** Approve once the code improves overall code health, even if it isn't perfect. The bar is: is this better than what we had before? Too strict and nothing ships. Too lenient and quality degrades one compromise at a time.
+**Calibration:** approve once the change improves overall code health, even if it isn't perfect. Too strict and nothing ships; too lenient and quality degrades one compromise at a time.
 
 **Output:**
 - One-line verdict: **looks good** / **has concerns** / **needs rework**
-- Specific issues found, referencing the principle or pattern violated
-- Surface diff-relevant gotchas inline (`docs/solutions/<entry>.md` applies, verify the diff handles X)
-- Surface diff-relevant checklist items inline (checklist item N applies, verify Y)
-- Label each: **blocker** (must fix before merge), **important** (should fix before merge, won't block approval alone), or **nit** (optional improvement)
-- Concrete fix for each issue
-- End with one line on what the code does well: specific, not generic praise
-- If you're uncertain about something, say so and suggest investigation rather than guessing
-- Keep it concise. Flag everything worth flagging, but keep each issue to 1-2 lines plus the fix
-
-**Inline-fix bias for blockers and importants.** When `/eng-check` runs mid-session (the build session is still open, the context is loaded, the developer is in flow), default to inline-fix on blockers and importants if **all** of these hold: single-file change, no new test scaffold, no design decision pending user input. Don't suggest "file a follow-up issue," don't suggest "spec this for next session," don't auto-spec the fix. The session has the code loaded; the fix is cheap now and expensive later (next session has to re-load the code, re-read the finding, re-understand what was deferred). Filing the issue *is* the work, not a shortcut from it. The inline path is the cheap path. Same severity threshold as PR-gate mode's P1 logic: if it needs its own scope (cross-file refactor, new test scaffold, design decision), surface to the user with a one-line summary and ask, don't quietly defer.
-
-**Lens reminder.** When the project declares a PR review bot, don't flag correctness, security, type safety, or performance: that's the bot's lens. If a finding fits it, leave it for the bot on PR open; double coverage burns reviewer cycles and breeds noise. When no bot is declared, or in range mode, those findings are yours, via the checklist above.
+- Each issue: the principle or pattern violated, labeled **blocker** (must fix before merge), **important** (should fix, won't block approval alone), or **nit**, with a concrete fix, 1-2 lines plus the fix
+- Matched gotchas and checklist items inline ("`docs/solutions/<entry>.md` applies, verify the diff handles X")
+- Say so when uncertain, and suggest what to investigate
+- End with one specific line on what the code does well
 
 ---
 
 ## PR-gate mode (`/eng-check <PR#>`)
 
-Decisive merge call on an open PR. A review bot finds something on every commit indefinitely; this mode is the converging gate that decides when to merge.
-
-**Which gate?** Read AGENTS.md / CLAUDE.md for a declared PR review bot. Bot declared: the bot flow below. No bot: the no-bot flow after it. Both return the same STATUS templates.
+The converging merge call. A review bot finds something on every commit forever; this gate decides when to merge. Read AGENTS.md / CLAUDE.md for a declared bot: bot flow if declared, no-bot flow if not. Both return the same STATUS templates.
 
 ### With a review bot
 
-The steps below are written for Codex (`chatgpt-codex-connector[bot]`), the common case. For another bot, swap in its login and its signal channels.
+Written for Codex (`chatgpt-codex-connector[bot]`). For another bot, swap in its login and signal channels.
 
-**How it works:**
-
-1. Fetch PR state via `gh`:
+1. Fetch PR state:
    - `gh pr view <n> --json number,title,state,isDraft,mergeable,additions,deletions,changedFiles,headRefName,baseRefName,reviewDecision,statusCheckRollup,url,body,commits`
-   - `gh api repos/<owner>/<repo>/pulls/<n>/comments --paginate`: all inline review comments (per-line findings).
-   - `gh pr view <n> --json reviews`: review-level entries (round summaries).
-   - `gh pr view <n> --json comments`: issue-level conversation, including author scope-out declarations and `@codex review` pings.
-   - `gh api repos/<owner>/<repo>/issues/<n>/reactions`: reactions on the PR body. Codex (`chatgpt-codex-connector[bot]`) leaves a `+1` reaction here when a review found zero issues, instead of posting an empty review comment. Without fetching reactions, the gate sits in `waiting` indefinitely on clean reviews.
-2. Read AGENTS.md and CLAUDE.md from the repo root. Pull the severity rubric sections from AGENTS.md verbatim (severity calibration, convergence across review rounds, PR-scope honoring, P0/P1 blast-radius rules, or whatever the project calls them). If AGENTS.md has none, use the P0/P1/P2 definitions in the sub-agent instructions below.
-3. **Map fix commits to findings.**
-   - **Project convention (preferred).** If AGENTS.md / CLAUDE.md defines a fix-commit convention (e.g. a subject that names the review round, severity, and finding index), regex-match each commit subject on the PR branch against it. Build a `fix_map` keyed by `(round, severity, index)` → fix commit SHA + subject. Finding index M is the 1-indexed position of the finding within round N's comments, ordered by submission timestamp.
-   - **Fallback (no convention).** A finding counts as **likely addressed** when a commit after the finding's review time touches the same file near the flagged line (within ~10 lines, or the same function). The sub-agent confirms by reading the current code at that location.
-4. **Identify open findings.** For each bot inline comment:
-   - Record (commit reviewed, round-number heuristic by submission order, file, line, body, P-level the bot assigned).
-   - Look it up via step 3. A fix commit whose SHA postdates the finding's review submission time makes it **addressed** (or **likely addressed** under the fallback). Otherwise **open**.
-5. **Identify scope-outs.** Parse the PR body for `## Out of scope`, `## Deferred`, or `## Follow-up issues` headings. List items under those headings, including any linked issue references (`#123`) or file-path/feature mentions. Findings matching scope-outs are **suppressed**.
-6. **Determine waiting state.** A Codex "review signal" on the latest commit is any of: (a) an inline comment from `chatgpt-codex-connector[bot]` postdating the latest commit, (b) a formal review submission from Codex postdating the latest commit, or (c) a `+1` reaction from `chatgpt-codex-connector[bot]` on the PR body postdating the latest commit (Codex's "zero findings" shorthand: no inline comments, no formal review, just a thumbs-up on the body). If none of (a)/(b)/(c) is present AND the latest commit was pushed less than 30 minutes ago, status is `waiting` (Codex hasn't had a chance yet). If older than 30 minutes and still no signal, surface that as a separate concern (Codex may have stalled; flag for user, but proceed with classification). When the only signal is (c), record it as "Codex review: 👍 reaction (no findings)". There are no inline comments to classify.
-7. Spawn one merge-gate sub-agent. **Pass everything inline**: don't make it re-fetch:
-   - The CLAUDE.md principles relevant to severity (Principles #1, #4, #8, #9, plus any product principle that frames data corruption or user harm).
-   - The AGENTS.md severity rubric and convergence rules (verbatim, sections from step 2).
-   - The full list of open findings (file, line, the bot's body, the bot's P-label, the round it appeared in).
-   - The fix-commit mapping: which findings are addressed and by which commit, and which are only likely addressed under the fallback (the sub-agent confirms those by reading the code).
-   - The PR scope-out section verbatim.
-   - The waiting-state determination.
-   - The merge-gate review instructions below.
-8. Use the sub-agent's verdict as the report output.
+   - `gh api repos/<owner>/<repo>/pulls/<n>/comments --paginate` (inline findings)
+   - `gh pr view <n> --json reviews` (round summaries)
+   - `gh pr view <n> --json comments` (scope-out declarations, `@codex review` pings)
+   - `gh api repos/<owner>/<repo>/issues/<n>/reactions`. Codex leaves a `+1` reaction on the PR body when a review found zero issues, instead of posting a review. Without fetching reactions, the gate sits in `waiting` forever on clean reviews.
+2. Pull AGENTS.md's severity rubric and convergence rules verbatim. If it has none, use the P0/P1/P2 definitions below.
+3. **Map fix commits to findings.** With a project fix-commit convention (e.g. a subject naming round, severity, index), regex-match commit subjects into a `fix_map` keyed `(round, severity, index)` → SHA + subject; index M is the finding's 1-indexed position within round N, by submission time. Without one, a finding is **likely addressed** when a later commit touches the same file within ~10 lines or the same function; the sub-agent confirms by reading the code.
+4. **Open findings.** For each bot inline comment record commit reviewed, round (by submission order), file, line, body, and the bot's P-level. A fix commit that postdates it makes it **addressed** (or **likely addressed**); otherwise **open**.
+5. **Scope-outs.** Items under `## Out of scope`, `## Deferred`, or `## Follow-up issues` in the PR body (including `#123` links and file or feature mentions). Matching findings are **suppressed**.
+6. **Waiting state.** A Codex review signal on the latest commit is any of: (a) an inline comment, (b) a formal review, or (c) a `+1` reaction on the PR body, each postdating the latest commit. No signal and the commit is under 30 minutes old: `waiting`. No signal past 30 minutes: flag a possible stalled bot to the user and classify anyway. If the only signal is (c), record "Codex review: 👍 reaction (no findings)".
+7. Spawn one merge-gate sub-agent with everything inline: severity-relevant CLAUDE.md principles (#1, #4, #8, #9, plus any product principle about data corruption or user harm), the rubric from step 2, open findings (file, line, body, P-label, round), the fix mapping (flagging likely-addressed ones), the scope-out section verbatim, the waiting state, and the merge-gate instructions below.
+8. Use its verdict as the report.
 
 ### Without a review bot
 
-Nothing reviewed the PR asynchronously, so the gate runs the review itself.
-
-1. Fetch PR state with the first `gh pr view` call above, plus `gh pr diff <n>`.
-2. Read CLAUDE.md and AGENTS.md (if present) for principles, severity rubric, and merge convention.
-3. Pull the slice map from the PR body (or the spec's task list) and map each slice to its commit range.
-4. Parse scope-outs from the PR body, as in step 5 above.
-5. **Find the recorded local verdict.** Look for an `eng-check: <verdict> @ <sha>` line in the PR body. If it's there and the SHA is in the PR's history, review only the commits after it (`git diff <sha>..<head>`), and pass the recorded verdict as context. If no commits follow it, skip the sub-agent and return `ship` with the gist "clean, local review @ <sha> covers head". If there's no line, or the SHA isn't in the history (e.g. after a force-pushed rebase), do a full review. Why: without a bot, a full PR-gate review right after the local review reads the same diff twice.
-6. Spawn one fresh review sub-agent that hasn't seen the build session or any earlier review. Pass inline: the diff from step 5 (full or post-SHA), the slice map with commit ranges, the relevant CLAUDE.md sections, the spec's acceptance criteria, Outcome, and Deviations if a spec exists, diff-relevant gotchas (local mode step 6), the scope-outs, the local-mode review instructions (architecture plus the correctness, security, type safety, performance checklist), and the merge-gate severity definitions and verdict logic below. It reviews slice by slice in order, then the whole.
-7. **One output contract.** The sub-agent uses the local-mode review instructions only for *what to look for*. Its output is the STATUS template below, not the local-mode Output list. Map its severities first (blocker → P0, important → P1, nit → P2), re-check each against the merge-gate definitions, then apply the verdict logic and return `ship` or `fix-then-ship`. `waiting` doesn't apply: nothing asynchronous is pending.
+1. Fetch PR state with the first `gh pr view` above, plus `gh pr diff <n>`.
+2. Read CLAUDE.md and AGENTS.md for principles, severity rubric, and merge convention.
+3. Map the slice map (PR body or spec) to commit ranges, and parse scope-outs as in bot step 5.
+4. **Find the recorded local verdict.** If the PR body has `eng-check: <verdict> @ <sha>` and that SHA is in the PR's history, review only `git diff <sha>..<head>` and pass the recorded verdict as context. No commits after it: skip the sub-agent and return `ship` with gist "clean, local review @ <sha> covers head". No line, or the SHA is gone (e.g. a force-pushed rebase): full review. This avoids reading the same diff twice.
+5. Spawn one fresh review sub-agent that hasn't seen the build or any earlier review. Pass inline: the diff from step 4, the slice map, relevant CLAUDE.md sections, the spec's acceptance criteria, Outcome, and Deviations, diff-relevant gotchas, the scope-outs, the local-mode review instructions (architecture plus the checklist), and the merge-gate instructions below. It reviews slice by slice, then the whole.
+6. **One output contract.** The local-mode instructions say what to look for; the output is the STATUS template. Map blocker → P0, important → P1, nit → P2, re-check each against the definitions below, and return `ship` or `fix-then-ship`. `waiting` doesn't apply.
 
 ---
 
-**Merge-gate review instructions for sub-agent:**
+**Merge-gate instructions for sub-agent:**
 
-You are the deciding merge gate for an open PR. Your job is to return a decisive verdict (`ship`, `fix-then-ship`, or `waiting`) based on the open findings, the project's severity rubric, and the addressed/scope-out classifications already done by the harness.
+You are the deciding merge gate. Return `ship`, `fix-then-ship`, or `waiting` from the open findings, the severity rubric, and the harness's addressed and scope-out classifications. Addressed findings are informational; don't re-evaluate them. Confirm **likely addressed** ones by reading the code at the flagged location, and treat them as open if the problem is still there. Scope-out items are out of this verdict. A `+1` reaction with no inline comments means the bot found zero issues: verdict `ship`. In the no-bot flow you generated the findings; skip the waiting step.
 
-**Inputs you've been given (bot flow):**
+1. **If status is `waiting`**, return `waiting` immediately with the gap (latest SHA + minutes since push, last reviewed SHA).
+2. **Re-classify each open finding by actual blast radius on this diff.** The bot's P-label is a hint:
+   - **Real P0**: merging now causes a concrete bad outcome: data corruption in flight, a security exploit (auth bypass, unsigned webhook on a prod path, exposed secret), a money-loss vector with realistic trigger frequency, RLS missing on tenant data. Ship-blocker.
+   - **Real P1**: real bug, narrow blast radius: edge-case correctness, observability gap, partial state on a recoverable path, type laundering on a CLI or fixture path.
+   - **P2**: taste, a sibling instance of an addressed pattern, future cleanup. Suppress unless it has concrete blast radius the rubric misses.
+3. **Pattern-dedup.** Findings describing the same pattern across files count as one. Inflated counts shouldn't block merge.
+4. **Verdict:**
+   - No real P0 or P1 open → `ship`.
+   - Real P0 open → `fix-then-ship`, each with file:line and a concrete fix.
+   - Real P1 open with a small fix (single file, no design decision, no new test scaffold) → `fix-then-ship`. Fix inline: a follow-up issue costs more in an AI workflow, because the next session re-loads the code, re-reads the finding, and re-learns the deferral.
+   - Real P1 open that needs its own scope (cross-file refactor, new test scaffold, design decision pending) → `ship`, recommending follow-up issues be filed before merging. The bar for deferral is "needs its own scope," not "is a P1."
+5. **Judge per finding, not by round.** Round 5+ findings are usually taste and sibling noise, and you're the layer that says "good enough, merge." A real security hole found at round 8 is still a real security hole, and a genuine money-loss path is P0 whatever the bot labeled it.
 
-- AGENTS.md severity rubric and convergence rules (the source of truth for P0/P1/P2 calibration).
-- The list of **open findings** (bot inline comments without a corresponding fix commit).
-- The list of **addressed findings** (bot inline comments mapped to fix commits): informational, do not re-evaluate. **Likely addressed** findings (fallback mapping) you confirm by reading the current code at the flagged location; if the problem is still there, treat it as open.
-- The PR's `## Out of scope` / `## Deferred` declarations: items there are out of scope for this verdict.
-- The waiting-state signal, including which of the bot's review channels produced the signal: inline comments, formal review, or `+1` reaction on the PR body. A `+1` reaction with no inline comments = "Codex reviewed and found zero issues": there are no findings to classify and the verdict is `ship`.
-
-In the no-bot flow you generated the findings yourself; skip the waiting step and classify your own findings the same way.
-
-**Your task:**
-
-1. **If status is `waiting`**: return verdict `waiting` immediately. Don't classify anything. The latest commit hasn't been reviewed by the bot yet; come back later. State the gap (latest commit SHA + minutes since push, last reviewed SHA).
-
-2. **For each open finding**: apply the severity rubric **to this diff specifically**. The bot's P-label is a hint, not the final answer; you re-classify based on actual blast radius:
-   - **Real P0**: merging now causes a concrete bad outcome: data corruption in flight, security exploit (auth bypass, unsigned webhook on prod path, exposed secret), money-loss vector with realistic trigger frequency, RLS missing on tenant data. Treat as ship-blocker.
-   - **Real P1**: real bug with narrow blast radius: edge-case correctness, observability gap, partial-state risk on a recoverable path, type laundering on a CLI/fixture path. Worth tracking; not strictly merge-blocking if filed as a follow-up.
-   - **P2**: architectural taste, sibling instance of an addressed pattern, future-cleanup ("this could be moved to lib", "this could be a DTO"). Suppress unless the finding has concrete blast radius the rule list misses.
-
-3. **Pattern-dedup.** If multiple open findings describe the same pattern across different files, count them as one for the verdict (file the suppressed siblings under the deduplicated finding). Inflated counts shouldn't block merge.
-
-4. **Verdict logic:**
-   - If **no real P0 and no real P1** open findings → `ship`. The author can merge.
-   - If **real P0** open → `fix-then-ship`. List each P0 with file:line and a concrete fix.
-   - If **real P1** open and the fix is small (single-file, no design decision required, no new test scaffold) → `fix-then-ship`. Default to inline fix. In an AI-driven workflow, filing a follow-up issue costs more than fixing now: future sessions have to re-load the code context, re-read the finding, re-understand what was deferred and why. Inline fix amortizes the already-loaded context. "Could be deferred" is not the same as "should be deferred." List each P1 with file:line and a concrete fix.
-   - If **real P1** open and the fix genuinely needs its own scope (cross-file refactor, new test scaffold, design decision pending user input) → `ship`, with a recommendation to file follow-up issues for the deferred P1s before merging. The bar for deferral is "needs its own scope," not "is a P1." The act of filing closes the deferral loop.
-
-5. **Don't be lenient AND don't be strict.** The lens is "what would actually break or harm if this merged right now". Review bots over-flag taste; you correct for that. But if the bot caught a genuine money-loss path, that's a P0 regardless of what label it used.
-
-**Calibration:** This gate exists to break the asymptotic-review trap. Round 5+ bot findings are usually taste/sibling-instance noise; you're the layer that says "good enough, merge". But also: a real security hole found at round 8 is still a real security hole. Judge per-finding, not by round number.
-
-**Output format (machine-parseable for `/loop` integration):**
-
-The output is exactly one of the three templates below. Verdict shape determines which template applies. No extra sections, no PR/commit/round recap, no prose paragraphs that restate the STATUS. The user has `gh pr view`, `git log`, and the diff already; the gate's job is to add a verdict + decision input on top of what they can see. In the templates, "Codex" stands for whichever review bot the project declares; in the no-bot flow the `ship` gist names the fresh review instead (e.g. "clean", "fresh review, 3 nits").
+**Output: exactly one of the three templates.** No extra sections, no PR or round recap, no prose restating the STATUS. "Codex" stands for the project's bot; in the no-bot flow the `ship` gist names the fresh review (e.g. "clean", "fresh review, 3 nits").
 
 **`fix-then-ship`:**
 
@@ -263,7 +162,7 @@ Pre-merge: /deslop  (final cleanup; may be no-op if pre-commit deslop already ca
 Merge: <merge command>
 ```
 
-`<merge command>` is the project's merge convention from CLAUDE.md / AGENTS.md. Default when none is stated: `gh pr merge <n> --rebase`, so per-slice commits survive on main (squash loses per-slice revert).
+`<merge command>` is the project's merge convention from CLAUDE.md / AGENTS.md. Default: `gh pr merge <n> --rebase`, so per-slice commits survive on main (squash loses per-slice revert).
 
 **`waiting`:**
 
@@ -273,44 +172,37 @@ STATUS: waiting · Codex hasn't reviewed <sha-short> yet (<delta minutes since p
 Re-run in ~5 min or use `/loop /eng-check <n>`.
 ```
 
-**Machine-parseable contract:**
+**Machine-parseable contract (`/loop` parses this):**
+- `STATUS:` is the first thing on the first line, followed by a space and the token (`ship` / `fix-then-ship` / `waiting`).
+- The gist after ` · ` is never empty; write `clean` if there's nothing else to say.
+- In `fix-then-ship`, every finding is a bold P-level + `file:line` + one-line concern with an indented Fix line, no headings between findings, and the apply prompt is the last line.
 
-- The `STATUS:` literal is the first thing on the first line. The token (`ship` / `fix-then-ship` / `waiting`) follows the colon and a space; `/loop` parses on this token.
-- The gist after ` · ` is freeform but never empty; if the verdict is genuinely contextless, write `clean`.
-- For `fix-then-ship`: every open finding is a bold P-level + `file:line` + one-line concern, with an indented Fix line. The apply prompt is the last line. No section headings between findings.
-
-**Lens reminder.** With a bot, PR-gate mode applies severity to the bot's existing findings; it doesn't generate new architecture or correctness findings of its own. Architecture concerns belong in local-diff mode (run pre-push); correctness, security, types, and perf are the bot's lens. The gate's job there is *judgment over existing findings*, not a fresh review. Without a bot, the fresh full review is the only reviewer, so it generates findings across both lenses.
+With a bot, the gate judges existing findings; it doesn't generate new ones. Architecture belongs to local mode, the rest to the bot. Without a bot, the fresh review is the only reviewer and covers both lenses.
 
 ---
 
 ## Compound draft (automatic)
 
-After the review, evaluate: **did this PR involve something non-obvious that a teammate would hit again?**
+After the review, ask: **did this change involve something non-obvious a teammate would hit again?** Non-obvious means not findable from the code, docs, or error messages: API quirks, hard-won debugging insights, integration gotchas, patterns that broke unexpectedly. Most reviews produce nothing; then do nothing.
 
-Non-obvious means: not findable from reading the code, docs, or error messages. API quirks, debugging insights that took real effort, integration gotchas, patterns that broke in unexpected ways.
-
-**If nothing is worth capturing, do nothing. Most PRs won't produce a draft. That's fine.**
-
-If something is worth capturing, write a draft to `docs/solutions/.drafts/[descriptive-name].md`. Create the directory if needed.
-
-Format:
+If something is worth capturing, write a 10-20 line seed to `docs/solutions/.drafts/<descriptive-name>.md`:
 
 ```markdown
 ---
 title: [descriptive title]
 date: [YYYY-MM-DD]
-tags: [relevant technology, pattern, or domain tags]
-pr: [PR number or branch name, used to look up full PR history after merge]
+tags: [technology, pattern, or domain tags]
+pr: [PR number or branch name]
 status: draft
 ---
 
 ## What was non-obvious
 
-[What eng-check or the review surfaced that a teammate would benefit from knowing]
+[What the review surfaced that a teammate would benefit from knowing]
 
 ## Signal
 
-[The specific review findings, edge cases, or patterns that flagged this as worth capturing]
+[The findings, edge cases, or patterns that flagged it]
 ```
 
-Keep drafts short: 10-20 lines. They're seeds, not finished docs. After the PR merges, `/eng-compound` enriches them with the full PR history (review comments, fixes, discussions) and presents the complete solution for the user to confirm.
+After the PR merges, the draft gets promoted into `docs/solutions/` (see `/eng-build`'s Capture step).

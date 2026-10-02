@@ -35,7 +35,7 @@ Copy the playbook file and every deep dive `.md` into `/tmp/engineering-playbook
 ### 3. Copy skills with rsync (allowlist)
 
 ```bash
-SKILLS="deslop eng-build eng-check eng-compound eng-debug eng-init eng-spec eng-stress-test sync-playbook"
+SKILLS="deslop eng-build eng-check eng-init eng-spec sync-playbook"
 for S in $SKILLS; do
   rsync -a --delete "$HOME/.claude/skills/$S/" "/tmp/engineering-playbook/.claude/skills/$S/"
 done
@@ -82,7 +82,7 @@ Commit message style: short, lowercase first word, describes what changed. Match
 
 Examples:
 
-- `eng-debug: plural hypotheses, revert rejected code, ban sleep fixes`
+- `eng-check: compress PR-gate, fold inline-fix into the orchestrator step`
 - `cleanup: remove stale nested skill dirs`
 - `sync playbook and deep dives from vault` (for routine syncs with no deliberate skill changes)
 

@@ -43,13 +43,10 @@ Or copy the `.claude/skills/` folder manually. Once in your project, the skills 
 | Phase | Skill | What it does |
 |---|---|---|
 | Setup | [`/eng-init`](.claude/skills/eng-init/SKILL.md) | Scaffold a CLAUDE.md with playbook principles baked in. Run once per project. |
-| Plan | [`/eng-spec`](.claude/skills/eng-spec/SKILL.md) | Walks the design tree with you to shared understanding, grounds the spec in real codebase evidence, then writes a stress-tested spec with its tasks grouped into vertical slices. One spec, one build, one PR by default. No code. |
-| Plan | [`/eng-stress-test`](.claude/skills/eng-stress-test/SKILL.md) | Adversarial review of a spec with fresh eyes. Challenges assumptions, surfaces risks, labels each concern Type 1 or Type 2 so only irreversible ones block. Auto-triggered by `/eng-spec`, or run standalone. |
-| Build | [`/eng-build`](.claude/skills/eng-build/SKILL.md) | Build a whole spec in one session and one PR, slice by slice: one green commit per slice, an assumptions check after slice 1, and every acceptance criterion ticked with proof. Auto-triggers `/eng-debug` when something breaks unexpectedly. |
-| Build | [`/eng-debug`](.claude/skills/eng-debug/SKILL.md) | Systematic debugging: reproduce, localize, root cause, fix, guard test. Auto-triggered from `/eng-build` or run standalone. Hands off non-obvious findings to `/eng-compound`. |
+| Plan | [`/eng-spec`](.claude/skills/eng-spec/SKILL.md) | Walks the design tree with you to shared understanding, grounds the spec in real codebase evidence, then writes a spec and stress-tests it with a fresh sub-agent until it is ready to build (`/eng-spec stress <path>` runs the stress test alone) with its tasks grouped into vertical slices. One spec, one build, one PR by default. No code. |
+| Build | [`/eng-build`](.claude/skills/eng-build/SKILL.md) | Build a whole spec in one session and one PR, slice by slice: one green commit per slice, an assumptions check after slice 1, and every acceptance criterion ticked with proof. Runs a debug loop when something breaks unexpectedly, and ends with a Capture step that writes non-obvious solutions to `docs/solutions/`. |
 | Review | [`/deslop`](.claude/skills/deslop/SKILL.md) | Remove AI-generated slop: unnecessary comments, defensive checks, `any` casts. Run as the final gate before merge. |
 | Review | [`/eng-check`](.claude/skills/eng-check/SKILL.md) | Fresh-eyes review before shipping. Architecture always, plus correctness and security when no PR review bot covers them. Reviews slice by slice, a single commit range, or gates an open PR for merge. |
-| Learn | [`/eng-compound`](.claude/skills/eng-compound/SKILL.md) | Capture non-obvious solutions so the team never solves the same problem twice. Feeds back into `/eng-spec`'s research phase. |
 
 **See it in action:** [How the Skills Work Together](<How the Skills Work Together.md>) — a full walkthrough from vague idea to shipped code, showing how each skill and principle connects.
 

@@ -255,7 +255,7 @@ Always create this hook regardless of stack. Write `.claude/hooks/check-compound
 ```bash
 #!/bin/bash
 # Check for unprocessed compound drafts from eng-check.
-# - When gh is available: drafts whose PR is merged exit 2 to prompt /eng-compound;
+# - When gh is available: drafts whose PR is merged exit 2 to prompt promotion;
 #   drafts whose PR is open get a quiet note.
 # - When gh is unavailable: quiet note for all drafts.
 # - Drafts older than 30 days are auto-cleaned.
@@ -269,7 +269,7 @@ DRAFT_COUNT=$(find "$DRAFTS_DIR" -name "*.md" -type f 2>/dev/null | wc -l | tr -
 [ "$DRAFT_COUNT" -gt 0 ] || exit 0
 
 if ! command -v gh >/dev/null 2>&1; then
-  echo "Note: $DRAFT_COUNT compound draft(s) in docs/solutions/.drafts/. Run /eng-compound when their PRs merge."
+  echo "Note: $DRAFT_COUNT compound draft(s) in docs/solutions/.drafts/. Promote them to docs/solutions/ when their PRs merge."
   exit 0
 fi
 
@@ -294,7 +294,7 @@ done
 if [ "$MERGED_COUNT" -gt 0 ]; then
   echo "Compound draft(s) ready, PR(s) merged:" >&2
   printf "$MERGED_LIST" >&2
-  echo "Run /eng-compound to enrich and promote." >&2
+  echo "Promote each into docs/solutions/: combine the draft with its PR history (gh pr view), confirm with the user, delete the draft (see /eng-build Capture)." >&2
   exit 2
 fi
 
@@ -303,7 +303,7 @@ if [ "$PENDING_COUNT" -gt 0 ]; then
 fi
 ```
 
-The `exit 2` path on merged drafts surfaces stderr to the session as a directive Claude acts on, closing the loop from PR-merge to compound-capture without waiting for the user to remember.
+The `exit 2` path on merged drafts surfaces stderr to the session as a directive Claude acts on, closing the loop from PR merge to capture without waiting for the user to remember.
 
 Adapt the other hook scripts to the specific tools detected in the project. Keep them simple: check if the tool exists, run it, exit 2 on failure.
 

@@ -1,98 +1,78 @@
 ---
 name: eng-spec
-description: Write a feature spec before building anything. Planning session, no code gets written. Every feature past fix triage gets a spec scaled to its size; default is one spec, one build session, one PR, with vertical slices as the unit of commit inside it.
+description: Write a feature spec before building anything, then stress-test it with a fresh sub-agent until it's ready to build. Planning session, no code gets written. Every feature past fix triage gets a spec scaled to its size; default is one spec, one build session, one PR, with vertical slices as the unit of commit inside it. `/eng-spec stress <path>` runs only the fresh-eyes stress test on an existing spec or plan and returns the verdict in chat.
 disable-model-invocation: false
-allowed-tools: Read, Glob, Grep, Write, Bash, Agent, Skill, AskUserQuestion, EnterPlanMode, ExitPlanMode
-argument-hint: [feature-name]
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, AskUserQuestion, WebSearch, WebFetch
+argument-hint: [feature-name | stress <spec-or-plan-path>]
 ---
 
-Turn a loose feature description into a spec that anyone (human or AI) can build from without follow-up questions. This is a planning session. No code gets written. This is where most of the value lives: if the spec is clear, execution is easy.
+Turn a loose feature description into a spec that anyone (human or AI) can build from without follow-up questions. This is a planning session. No code gets written. If the spec is clear, execution is easy.
+
+## Modes
+
+- **`/eng-spec <feature>`** (default): triage, Phase 0, spec, stress-test loop, lock.
+- **`/eng-spec stress <path>`**: stress-test an existing spec or plan. Read the file once, spawn the stress-test sub-agent (see Stress test), and return its verdict in chat. Don't edit the file. Skip checks that don't fit a plan that isn't in spec format.
 
 ## Triage: is this a feature, or a fix?
 
-**Run this check first.** This skill is for greenfield work: new surface, new flow, new capability, new architectural decision. For known bugs, the bug is the spec; routing fixes through this pipeline manufactures ceremony where there's no design to make. Watching this category mismatch happen is the single biggest source of session drag in fix-heavy phases.
+**Run this check first.** This skill is for greenfield work: new surface, new flow, new capability, new architectural decision. For known bugs, the bug is the spec; routing fixes through this pipeline manufactures ceremony where there's no design to make. This category mismatch is the single biggest source of session drag in fix-heavy phases.
 
-Exit immediately and route to `/eng-debug` if any signal fires:
+Exit immediately if any signal fires:
 - Branch name contains `fix/`, `hotfix/`, `bug/`, `followup/`.
 - User describes it as "X is broken," "rerun found Y," "QA caught Z," "data quality issue," "this doesn't work," "fix the issue in N."
 - No new surface, flow, or capability. Just a known-wrong behavior to make right.
 - The would-be spec collapses to one paragraph: what's broken + what fix to apply. If you can't fill Outcome, User flow, and Edge cases distinctly, this isn't a feature.
 
-Exit line: *"this looks like a fix, not a feature. routing to /eng-debug + fix + /eng-check. say 'spec it anyway' if you want the full pipeline."*
+Exit line: *"this looks like a fix, not a feature. fixing it directly (reproduce, root cause, guard test) + /eng-check. say 'spec it anyway' if you want the full pipeline."*
 
 User override wins. Uncritical default-to-spec on fix work is the bug this triage exists to kill.
 
-**Before anything else (past triage):**
-- Read the project's CLAUDE.md for engineering principles and conventions. If none exists, suggest running `/eng-init` first.
-- Explore the codebase enough to ground your work in real paths, patterns, and conventions.
+**Past triage:** read the project's CLAUDE.md (suggest `/eng-init` if none exists) and explore the codebase enough to ground the work in real paths, patterns, and conventions.
 
-**Delegation.** Follow the orchestration policy in CLAUDE.md (user-level or project). Default when none is stated: the orchestrator does quick mechanical scans itself (inventorying files, checking versions, confirming an API signature); one deep-reasoning agent handles trade-off evaluations; implementation and markup go to one long-lived coder agent, kept alive with `SendMessage` so it keeps its context. Use Codex only when the project's CLAUDE.md / AGENTS.md names it.
+**Delegation.** Follow the orchestration policy in CLAUDE.md (user-level or project). Default when none is stated: the orchestrator does quick mechanical scans itself; one deep-reasoning agent handles trade-off evaluations; implementation and markup go to one long-lived coder agent kept alive with `SendMessage`. Use Codex only when the project's CLAUDE.md / AGENTS.md names it.
 
-**Assess whether the idea is ready to spec.**
-
-Clear requirements indicators (Phase 0 may be brief, but still verify shared understanding before proceeding):
-- User provides specific acceptance criteria or behavior
-- References existing patterns to follow
-- Describes exact expected behavior with constrained scope
-
-Vague or exploratory indicators (full grill):
-- "I want something like...", "what if we...", "I'm thinking about..."
-- Multiple possible directions, unclear scope
-- User seems unsure about what they actually want
+**How much Phase 0?** Brief when the user gives specific acceptance criteria, references patterns to follow, and bounds the scope (still verify shared understanding). Full grill when they say "something like...", "what if we...", or seem unsure what they want.
 
 ## Phase 0: Reach shared design concept
 
-The goal of this phase is **shared understanding**, not a saved file or a plan asset. The design concept (Frederick Brooks's term for the invisible theory of what you're building) lives in the conversation between you and the user. It is not yet an artifact.
+The goal is **shared understanding**, not a saved file. The design concept (Brooks's invisible theory of what you're building) lives in the conversation.
 
 **Hard rules:**
 - Do not call `Write`. Nothing gets saved this phase.
-- Do not call `EnterPlanMode`. Plan mode produces a plan for approval; you don't yet know what to plan.
-- Exit only when the *user* could explain the design to a teammate without scrolling back. Not when you understand it. When they do.
+- Do not enter plan mode. You don't yet know what to plan.
+- Exit only when the *user* could explain the design to a teammate without scrolling back. Not when you understand it.
 
-**If the user pushes to skip Phase 0** ("just write it, I know what I want"), ask one tripwire question: *"In one sentence: who is this for, and what does success look like?"* Hesitation, a paragraph, or a re-frame means Phase 0 still needs to happen. Don't skip on confidence alone.
+**If the user pushes to skip** ("just write it, I know what I want"), ask one tripwire question: *"In one sentence: who is this for, and what does success look like?"* Hesitation, a paragraph, or a re-frame means Phase 0 still needs to happen.
 
-**Walk the design tree.** Resolve dependencies one decision at a time. Earlier decisions constrain later ones, so name the dependency before each question to make the structure visible ("B depends on A, let me lock A first"). One question at a time, via `AskUserQuestion` with concrete options. Batches break the dependency structure.
+**Walk the design tree.** Resolve dependencies one decision at a time, naming the dependency before each question ("B depends on A, let me lock A first"). One question at a time via `AskUserQuestion` with concrete options. Batches break the dependency structure.
 
-**Lead every question with your recommended answer** (Principle #10: load context before suggesting), grounded in a specific CLAUDE.md principle, a file or pattern you found, or a prior `docs/solutions/` entry. The user agrees, redirects, or corrects, which is much faster than generating from scratch. Recommendations from vibes don't count; if you can't cite what's driving the recommendation, explore until you can.
+**Lead every question with your recommended answer** (Principle #10), grounded in a specific CLAUDE.md principle, a file or pattern you found, or a prior `docs/solutions/` entry. If you can't cite what drives the recommendation, explore until you can.
 
-**Explore before asking.** If the question is answerable by reading the codebase, an existing spec, or `docs/solutions/`, read it first. Only ask the user about what code can't tell you: product intent, priorities, trade-offs that depend on business context.
+**Explore before asking.** If the codebase, an existing spec, or `docs/solutions/` can answer it, read it. Ask the user only about product intent, priorities, and business trade-offs. Pin the end goal in concrete language ("first meaningful paint <2s on the prompts page", not "speed optimization"); it becomes the spec's `### Outcome`.
 
-Probe through these lenses (skip what's already clear):
-- What's the real problem? Is this the right framing, or a proxy for something more important?
-- Who cares about this? What are they doing when they hit it?
-- What triggered this? (customer feedback, bug, internal idea)
-- What happens if we do nothing?
-- Is there a simpler version that delivers most of the value?
-- What would success look like?
-- What's the end goal in one or two sentences? Concrete language, not categories: "first meaningful paint <2s on the prompts page" beats "speed optimization." Feeds the spec's `### Outcome` section so the rest of the body orients to the right thing.
+When comparing approaches that need research (APIs, libraries, architectural patterns), research each on its own terms, then compare and recommend. The trade-off evaluation goes to one deep-reasoning agent briefed with every option.
 
-When evaluating multiple approaches that need research (comparing APIs, libraries, architectural patterns), research each option on its own terms: read docs, check feasibility, identify trade-offs. Then compare and recommend. Route per Delegation above: quick scans the orchestrator does itself, and the trade-off evaluation goes to one deep-reasoning agent briefed with every option. Parallel research agents only if the orchestration policy allows fan-out.
+**For Type 1 decisions** (see Labels), get an independent second opinion before locking: the same question to two independent contexts in parallel (e.g. a fresh deep-reasoning agent and the coder agent), neither seeing the other's answer, then synthesize. Skip for Type 2; a second opinion on reversible choices is ceremony.
 
-**For Type 1 decisions** (hard to reverse: schemas, public API contracts, protocol and file-format choices), get an independent second opinion before locking: put the same question to two independent contexts in parallel (e.g. a fresh deep-reasoning agent and the coder agent), without showing either the other's answer, then synthesize. Two independent contexts catch what one context anchored on. Skip this for Type 2 decisions; a second opinion on reversible choices is ceremony.
+**Temporal shape (user-facing surfaces).** Resolve the four perception milestones as a design-tree node:
+- **Promise paint** (T=0): what the user sees the moment they trigger this.
+- **First-evidence paint**: the first piece of real content, and at what T.
+- **First-actionable paint**: the earliest moment they can act on partial results. What's gated on full load that doesn't have to be?
+- **Full paint**: when everything is done.
 
-**Temporal shape (for user-facing surfaces).** Resolve the four perception milestones as a design-tree node before exiting:
+This resolves *before* the data architecture. Temporal shape constrains what data architecture is feasible, not the reverse. The reverse ordering is the most common cause of "shipped, then re-architected for speed."
 
-- **Promise paint** (T=0): what does the user see the moment they trigger this? Shell, header, status copy that confirms the system heard them.
-- **First-evidence paint**: what's the first piece of real content, and at what T?
-- **First-actionable paint**: what's the earliest moment the user can act on partial results? What's gated on full load that doesn't have to be?
-- **Full paint**: when is everything done?
+**Performance architecture (features with non-trivial data flow).** Temporal shape names what the user sees when; this names how:
+- **Where the work happens**: server, edge, client, background job.
+- **Critical path**: count round trips from user action to first-evidence paint. Separate serial-because-dependent from serial-because-someone-wrote-it-that-way, and fan out the second.
+- **Data arrival shape**: streamed, batched, prefetched, lazy.
+- **Caching boundary**: pre-computed, per-request, per-session, per-user. Pick deliberately.
+- **Optimistic vs pessimistic UI**: optimistic for likely-success actions (name how it reconciles), pessimistic for low-success or destructive ones.
+- **Backpressure / failure on streams**: what the user sees when the consumer is slow, the stream stalls, or it errors mid-flight.
 
-This resolves *before* the data architecture is decided. Temporal shape constrains what data architecture is feasible (streaming events, cache layers, parallelism, partial state). Data architecture does not constrain temporal shape. The reverse ordering is the most common cause of "shipped, then re-architected for speed" rework: a feature that's correct end-to-end but blocks the user at stage boundaries because no one specced what the user sees in the first second.
+**Verify external API behavior from official docs, not memory.** When a decision depends on rate limits, batch endpoints, parallelism, streaming, latency, or response shape, fetch the docs now with `WebSearch` / `WebFetch`. Same for library versions, signatures, and deprecations at Research time. A spec reads just as confident on a memory-based claim, and the build is where the missing batch endpoint shows up.
 
-**Performance architecture (for features with non-trivial data flow).** Temporal shape names what the user sees when. This names how. Resolve as a design-tree node before exiting:
-
-- **Where the work happens**: render/compute location (server, edge, client, background job). Mismatched location is the most common source of unnecessary latency.
-- **Critical path**: count the round trips between user action and first-evidence paint. Each hop multiplies tail latency. Name what's serial because the dependency is real, vs serial because someone wrote it that way; convert the second case to parallel fan-out.
-- **Data arrival shape**: streamed/progressive, batched, prefetched, lazy. For features with multiple data sources, fan-out + first-byte-stream beats wait-then-render.
-- **Caching boundary**: pre-computed, per-request, per-session, per-user. Pick deliberately; don't default to per-request.
-- **Optimistic vs pessimistic UI**: for actions likely to succeed, name what the UI assumes immediately and how it reconciles on response. For low-success or destructive actions, default to pessimistic.
-- **Backpressure / failure on streams**: when streams exist, name what happens when the consumer is slow, when the stream stalls, when it errors mid-flight. User-visible behavior, not just technical handling.
-
-**Verify external API behavior from official docs, not memory.** Performance decisions often hinge on API specifics: rate limits, batch endpoints, parallel call support, streaming availability, typical latency, response shape. When a performance choice depends on external API behavior, fetch official docs via `WebSearch` / `WebFetch` *now*, during the design tree (don't defer to Research). The spec reads confident on memory-based API claims; the build hits a missing batch endpoint or unexpected rate limit. Same self-deception tripwire as the Research section, surfaced earlier because performance specs are where memory-based guesses do the most damage.
-
-Specs that mumble through performance ship features that "work but feel slow." Refactoring for performance after the fact is far more expensive than speccing it upfront.
-
-**Surface implementation assumptions before exiting.** Skipping this finds misalignments at build time, where they cost 10x. Deliver a single message listing every implementation assumption you'll proceed with: which module/file you're extending, which patterns you'll follow, which is internal vs public surface, what's a new table vs a modified one. The right assumptions cost nothing to list; only the wrong ones cost time. Don't silently fill in ambiguity.
+**Surface implementation assumptions before exiting.** One message via `AskUserQuestion`, one round:
 
 ```
 ASSUMPTIONS I'M MAKING:
@@ -103,50 +83,42 @@ ASSUMPTIONS I'M MAKING:
 → Correct me now or I'll proceed with these.
 ```
 
-Use `AskUserQuestion` to deliver. One round, not a multi-turn loop. The user corrects what's wrong and confirms what's right; you move on. The confirmed list goes into the spec as `### Assumptions`, right after Proposed approach. Chat doesn't survive into the build session, and the build re-reads this list after slice 1.
+The confirmed list goes into the spec as `### Assumptions`. Chat doesn't survive into the build session, and the build re-reads this list after slice 1.
 
-**Exit criteria (all must hold; the fourth applies only to user-facing surfaces):**
-1. Scope is bounded: you both know what's in and what's out.
-2. Major branches of the design tree are resolved, with no live question of the form "but what about X?"
-3. The user can answer follow-up questions without scrolling. **Verify by asking one they haven't already been told.** If they hesitate or scroll, keep grilling. Don't proceed on "I think we're good."
-4. **Temporal shape resolved (user-facing surfaces only).** All four perception milestones have concrete answers, and the user can name what's gated on partial vs full state.
-5. **Implementation assumptions surfaced and confirmed.** The single-message list has been delivered and the user has corrected/confirmed.
+**Exit criteria (all must hold):**
+1. Scope is bounded: in and out are both known.
+2. Major branches of the design tree are resolved; no live "but what about X?"
+3. The user can answer follow-up questions without scrolling. **Verify by asking one they haven't been told.** Don't proceed on "I think we're good."
+4. Temporal shape resolved (user-facing surfaces only).
+5. Implementation assumptions surfaced and confirmed.
 
-## After Phase 0: write the spec
+## After Phase 0: always a spec
 
-Phase 0 produced shared understanding. Every feature that made it past triage now gets a spec file, scaled to the task: a small feature gets a short spec (Outcome, acceptance criteria with proofs, file map, one slice), a new initiative gets the full format. Fixes already routed to `/eng-debug` at triage.
+Every feature past triage gets a spec file, scaled to the task: a small feature gets Outcome, acceptance criteria with proofs, file map, one slice; a new initiative gets the full format. Spec and build are separate sessions. The build starts from the file, `/eng-check` reviews the diff against it, and the builder logs deviations in it.
 
-Why always a spec: spec and build are separate sessions. The build session starts from the file, not from this conversation, and the spec is also what `/eng-check` reviews the diff against and where the builder logs deviations. A short spec costs minutes; a build that re-derives the design from a half-remembered conversation costs the session.
+## Research
 
-Auto-spec on context pressure (below) is the safety net for any long session whose decisions would be lost to compaction. It is not a substitute for writing the spec here.
+Ground the spec in evidence before writing. Skip when the feature is small and you already know the relevant files and patterns.
 
-## Research (ground the spec in evidence)
+**Self-deception tripwire.** If you're naming a library version, API signature, file path, function name, or pattern *from memory*, stop and verify with a fetch or grep. Spec-from-vibes is the most common failure mode and the hardest to catch in review.
 
-Before writing the spec, gather concrete evidence from the codebase. This prevents the spec from being written on vibes. The proposed approach should reference real files, real patterns, and real constraints.
-
-**Skip this step when the feature is small and the codebase is familiar enough that you already know the relevant files and patterns.** Don't launch agents to confirm what's obvious.
-
-**Self-deception tripwire.** If you find yourself naming a library version, API signature, file path, function name, or pattern *from memory* rather than from a fetch or grep, stop and verify. Spec-from-vibes is the most common failure mode and the hardest to catch in review, because the spec reads as confident even when the underlying claim is unchecked.
-
-**When the feature involves external technologies** (APIs, libraries, frameworks, services), verify current state from official sources before writing the spec. Use `WebSearch` and `WebFetch` to check official documentation for: current stable versions, current API signatures and capabilities, deprecations or breaking changes, and recommended patterns. Training data goes stale. Official docs don't. Never spec against assumed API behavior when you can verify it in 30 seconds.
-
-Gather evidence on up to three concerns, through direct exploration, sub-agents, or both. Use your judgment on the approach; what matters is that all relevant concerns are covered before writing the spec. Route per Delegation above: codebase-fit and external-tech scans are mechanical (the orchestrator does them directly); edge-case and constraint analysis needs judgment (the deep-reasoning agent).
+Cover up to three concerns. Codebase fit and external tech are mechanical (the orchestrator does them); edge cases need judgment (the deep-reasoning agent).
 
 | Concern | What to find out | What you need |
 | --- | --- | --- |
-| **Codebase fit** | What existing patterns should this feature follow? What files will be touched or created? Is there code that already solves part of this? Also check `docs/solutions/` for prior art: past problems and solutions related to this feature's domain. | File paths with line numbers, relevant code snippets, the pattern to follow, and any relevant prior solutions |
-| **Edge cases & constraints** | What inputs or states could break this? What happens when external dependencies fail? Are any decisions irreversible (DB schema, public APIs)? | Prioritized list of risks with severity (blocks build vs. handle later) |
-| **External tech** *(only when the feature touches external dependencies)* | What's the current stable version? Have APIs changed? Are there deprecations or new recommended patterns? What does the official docs say vs. what training data assumes? | Verified versions, confirmed API signatures, links to relevant docs, and any gaps between assumed and actual behavior |
+| **Codebase fit** | Patterns to follow, files touched or created, code that already solves part of this, prior art in `docs/solutions/` | File paths with line numbers, the pattern to follow, relevant prior solutions |
+| **Edge cases & constraints** | Inputs or states that break it, external dependency failures, irreversible decisions | Prioritized risks: blocks build vs. handle later |
+| **External tech** *(only when external dependencies are involved)* | Current stable version, API changes, deprecations, docs vs. training data | Verified versions and signatures, doc links, gaps between assumed and actual |
 
-**Use the findings to ground the spec.** The "Proposed approach" section should reference the codebase agent's file paths and patterns. The "Edge cases & risks" section should incorporate the constraints agent's findings. Don't just append findings; weave them into the spec so the builder gets one coherent document.
+Weave the findings into Proposed approach and Edge cases rather than appending them.
 
 ## Spec writing
 
 ### Decide spec topology
 
-**Default: one spec file, one build session, one PR.** The build ships the whole spec in one session. Inside that session the vertical slice (see Task breakdown) is the unit of commit and verification, not a separate PR, spec, or session.
+**Default: one spec file, one build session, one PR.** Inside the build, the vertical slice is the unit of commit and verification, not a separate PR, spec, or session.
 
-Why one PR: splitting a feature into separate slice PRs doesn't reduce total review load. Several small slice PRs take more review rounds than one PR of similar total size, and they still land on main as one big integration merge. The real cost of splitting is integration branches, sub-spec files, and re-priming a session per slice. Large-context models remove the builder's context-budget reason to split. Per-slice commits keep the reviewability that small PRs were buying.
+Why one PR: separate slice PRs don't reduce total review load. They take more review rounds, still land as one big integration merge, and cost integration branches, sub-spec files, and a re-primed session per slice. Per-slice commits keep the reviewability small PRs were buying.
 
 **Forced-split list.** Anything on this list becomes its own spec and its own PR, sequenced with `depends_on:`:
 - Schema migration with backfill, or any destructive or irreversible data change. Ship the migration first, expand then contract.
@@ -156,201 +128,211 @@ Why one PR: splitting a feature into separate slice PRs doesn't reduce total rev
 - A refactor bundled with a feature.
 - Changes to something the user is actively running, where a restart or deploy is its own gate (the project's CLAUDE.md / AGENTS.md declares which systems these are).
 
-Why these: each carries its own gate or blast radius (a deploy, a data state, a security review, another repo's CI) that shouldn't hide inside a feature PR or block it. A split item gets its own spec at `specs/<item>.md`, and the feature spec lists it in `depends_on:`. `/eng-build` refuses to start until every `depends_on:` spec is built and merged. Everything not on the list stays in the one spec, however large.
+Each carries its own gate or blast radius (a deploy, a data state, a security review, another repo's CI) that shouldn't hide inside a feature PR or block it. A split item gets its own spec at `specs/<item>.md`, listed in the feature spec's `depends_on:`. `/eng-build` refuses to start until every `depends_on:` spec is built and merged. Everything not on the list stays in the one spec, however large.
 
-**Vertical slices, never horizontal layers.** Each slice ships *one thin capability end-to-end* (DB → API → UI for one flow). Layer splits (one piece for migrations, one for routes, one for UI) re-sequentialize the build and keep nothing testable until the last piece lands. Vertical slices keep every step independently testable. The forced-split migration is the one deliberate layer split: it ships first so the feature builds on the expanded schema.
+**Vertical slices, never horizontal layers.** Each slice ships one thin capability end-to-end (DB → API → UI for one flow), so every step is testable. Layer splits keep nothing testable until the last piece lands. The forced-split migration is the one deliberate layer split: it ships first.
 
 ### UX exploration (when the spec creates new UI)
 
-Skip for backend-only, refactor, infra, migration, or doc-only specs. Skip for modifications to existing UI surfaces: the live app already is the sandbox; verify in the browser at build time.
+Skip for backend-only, refactor, infra, migration, or doc-only specs, and for changes to existing UI (the live app is already the sandbox; verify in the browser at build time).
 
-For specs that create a **new** user-facing UI surface (new screen, new flow, new component category, new content surface), sandbox-first is the only path. Prose framings describe UX; sandboxes demonstrate it. Whole categories of UX failure (wrong density, wrong empty state, fake-feeling streaming, ambiguous primary action) only surface when you click through.
+For a **new** user-facing surface (screen, flow, component category, content surface), sandbox-first is the only path. Prose describes UX; sandboxes demonstrate it. Wrong density, wrong empty state, fake-feeling streaming, and ambiguous primary actions only surface when you click through. The goal is the user knowing what they're getting because they've clicked it. Exploration happens inside this spec session and doesn't change topology.
 
-The purpose of this phase is **shared understanding of how it feels**, the UX equivalent of Phase 0. The prototype is the medium prose can't replace; the goal is not picking a framing, the goal is the user knowing what they're getting because they've clicked it.
+Each framing is the final shipped experience, not a fragment: every screen the build will produce is reachable by navigation, at shipping fidelity (type, spacing, color, motion, hover states). If the user has to ask "can you also build X?" to evaluate it, it was incomplete.
 
-Exploration is a step inside this spec session, before lock. It doesn't change topology: the feature is still one spec, one build, one PR, and the exploration's output becomes part of the spec.
+1. The coder agent builds 2-3 framings against real fixtures in the project's dev/exploration area, composed from the project's component library. The orchestrator directs and judges; it never writes markup. Distill the project's design-quality skills into each build prompt, or run a polish pass with them, before showing.
+2. The user clicks through each framing and forms their own opinion.
+3. Apply cross-framing tweaks they surfaced (a hover state from B that beats A's), then lock.
+4. Write the result into `### UX exploration`: chosen framing, rejected alternatives, why, path to the prototype.
 
-**Exploration workflow:**
+**Real fixtures means real fixtures:** actual product text, realistic volumes (50 items, not 3), and every state the build will hit: empty, error, slow network, very long and very short content, partial loads.
 
-Each framing is the final shipped experience, not a fragment. Every screen the build will produce is reachable from within the prototype by navigation, not by asking. Visual fidelity matches what will ship: final type, spacing, color, motion, micro-interactions, hover states. If the user has to ask "can you also build X?" or "can you make Y match the design?" to evaluate a framing, it was incomplete; finish it before showing.
-
-1. Build 2-3 framings against real fixtures in the project's dev/exploration area (per CLAUDE.md). The coder agent builds them, per the orchestration policy (see Delegation); parallel coders only if the policy allows. Markup volume is the pipeline's heaviest token sink and needs no orchestrator-tier reasoning: the orchestrator directs and judges, it never writes markup. Compose UI from the project's component library and conventions (per CLAUDE.md). Distill the relevant guidance from the project's design-quality skills into each build prompt (or run a polish pass with those skills after) to bring each framing to final fidelity before showing.
-2. The user clicks through each framing themselves. They form their own opinion on which wins, not just receive your recommendation.
-3. Apply any cross-framing tweaks the user surfaced while clicking through: a hover state from B that beats A's, a density choice worth porting, an optical-alignment fix the comparison made obvious. Most polish lived in step 1; this is the +1%. Lock after this pass.
-4. Write the winners into the spec's `### UX exploration` section (or a linked file when it runs long): chosen framing, rejected alternatives, why, and the path to the prototype.
-
-**The build links to the prototype** as the canonical source for interaction states. The spec's prose describes only what the prototype can't show (state machines, side effects, error semantics, server-side behavior). No re-describing the UX; the prototype is already the spec.
-
-**Real fixtures means real fixtures.** Domain text from the actual product, realistic volumes (50 items, not 3), every state the build will hit: empty, error, slow network, very-long content, very-short content, partial loads. Lorem ipsum and 3-item lists hide whole categories of failure.
-
-**Exit criteria (both must hold):**
-1. The spec's UX exploration section captures the chosen framing, rejected alternatives, and why.
-2. The user can articulate why the chosen framing wins without re-reading it. Not when you've made the case. When they've formed the opinion.
-
-The cost (one sandbox cycle) is paid upstream where UX decisions are still cheap.
+The prototype is the canonical source for interaction states; the spec's prose covers only what it can't show (state machines, side effects, error semantics, server behavior). Exit when the section is written and the user can say why the chosen framing wins without re-reading it.
 
 ### Map the file structure first
 
-Lock which files get created, modified, or tested before writing prose. This forces decomposition decisions early, when they're cheap, and gives the builder a clear map. The codebase fit research should inform this directly.
+Lock which files get created, modified, or tested before writing prose. This forces decomposition early, when it's cheap. Scale the spec to the task; skip sections that don't apply.
 
-**What you need (ask only what's still missing after exploration):**
-- What problem does this solve? (one sentence)
-- Who is this for?
-- What triggered this?
-- How will you know this is done? (acceptance criteria; suggest defaults from CLAUDE.md principles if the user isn't sure)
+Apply the project's principles while writing (the stress test catches what slips): simplest approach (#1)? real requirement (#2)? irreversible decisions (#5)? how it's verified (#8)? will the builder understand the structure (#9)? vertical slices, forced-split items pulled out (#11)?
 
-Scale the spec to the task. Small feature → short spec, skip sections that don't apply. New initiative → full context.
+### The spec format
 
-**Apply the project's engineering principles while writing. The stress-test will catch what slips, but design-time awareness is cheaper:**
-- Is this the simplest approach that solves the problem? (#1)
-- Are we building for a real requirement or an imaginary one? (#2)
-- Are any decisions irreversible (schema, public APIs, file formats)? Those deserve extra scrutiny. (#5)
-- How will we verify this works: tests, build checks, browser? (#8)
-- Will the builder understand why the code is structured this way? (#9)
-- Does this decompose into vertical slices, with anything on the forced-split list pulled into its own spec? (#11)
-
-**The spec format:**
-
-Each spec opens with YAML frontmatter (the machine-readable contract `/eng-spec` and `/eng-build` read) followed by the markdown body. Frontmatter shape:
+YAML frontmatter (the machine-readable contract `/eng-build` reads), then the markdown body:
 
 ```yaml
 ---
 title: "<human-readable>"
 status: drafting           # exactly one word: drafting | specced | building | built
-built: <YYYY-MM-DD>        # omit until /eng-build sets it (when status becomes built)
-summary: <2–4 sentence what + why>
-depends_on: [<specs that must be built and merged first, e.g. a forced-split migration spec>]
+built: <YYYY-MM-DD>        # omit until /eng-build sets it
+summary: <2-4 sentence what + why>
+depends_on: [<specs that must be built and merged first>]
 references: [<paths the spec leans on>]
 ---
 ```
 
-Frontmatter is load-bearing. `/eng-build` reads `status:`: `specced` starts a build, `building` resumes one, `built` halts as already built, anything else halts. It reads `depends_on:` and refuses to start until every listed spec shows `status: built` on the base branch. `status:` is exactly one word. History and narrative go in the body (`### Deviations`), never in the status field. Don't let the frontmatter drift from the body.
+`/eng-build` reads `status:`: `specced` starts a build, `building` resumes one, `built` halts, anything else halts. It reads `depends_on:` and refuses to start until every listed spec shows `status: built` on the base branch.
 
-Then the markdown body:
+**`status:` is exactly one word from that list and nothing else.** No dates, slice progress, measurements, or notes after it, not even in parentheses. A status line with anything after the word fails the build's check. History goes in `### Deviations`, progress goes in `## Current state`.
 
 ```
 ## Feature: [name]
 
 ### Outcome
-What this spec is trying to achieve, in your own words. The end goal that frames everything that follows. Not acceptance criteria (those come later), not a category. One or two concrete sentences answering "if this ships and works, what's better?"
-
-Concrete language anchors the rest of the spec to a real target. "First meaningful paint <2s on the dashboard, no layout shift during data load" beats "make it feel fast." "User completes checkout without hesitating on the payment-failed step" beats "improve checkout UX." Vague outcomes produce specs that drift; concrete ones produce specs that converge.
-
-A spec without an outcome is a spec searching for one. The rest of the body fills in for whatever's missing at the top.
+One or two concrete sentences: if this ships and works, what's better? "First meaningful paint <2s on the dashboard, no layout shift during data load," not "make it feel fast."
 
 ### Context
-Why this exists. The background, enough that someone reading this 3 months from now understands the motivation without asking anyone.
+Why this exists, enough that someone reading it in 3 months understands the motivation.
 
 ### What
-One-line description of what this feature does.
+One-line description.
 
 ### Who
-Who this is for and what they're doing when they encounter this.
+Who this is for and what they're doing when they hit it.
 
 ### User flow
-The steps a user takes. Happy path and sad path (errors, empty states, slow connections). For user-facing surfaces, annotate the four perception milestones (promise paint, first-evidence, first-actionable, full) with concrete T-values, and call out which actions gate on partial vs full state. Each milestone names what the user sees and what they can do at that moment.
+Happy path and sad path (errors, empty states, slow connections). For user-facing surfaces, annotate the four perception milestones with concrete T-values and what gates on partial vs full state.
 
 ### Interaction states
-*Include for features with UI. Skip for backend-only or refactors.*
-
-Document each distinct state the user can encounter and what triggers transitions between them. The goal: the builder never invents UX on the fly, because every state they need to handle is already decided.
-
-For each state: what the user sees, what causes it, and where it goes next. Use whatever format fits: a table, a list, a state diagram in words. What matters is that no state is left to the builder's imagination. Pay special attention to: what does "loading" look like? What does the user see when something fails? What happens on empty/first-use?
+*UI features only.* Every state the user can hit: what they see, what causes it, where it goes next. Loading, failure, and empty/first-use especially. The builder never invents UX on the fly.
 
 ### UX exploration
-*Include when the spec creates new UI (see UX exploration above). Skip otherwise.*
-
-Chosen framing, rejected alternatives, why, and the path to the prototype. The prototype is the canonical source for interaction states.
+*New UI only.* Chosen framing, rejected alternatives, why, path to the prototype.
 
 ### Acceptance criteria
 - [ ] [concrete, verifiable criterion]. Proof: [test name, command + expected result, or browser step]
 
-**Every criterion names its proof.** The test that covers it, the command and what it should print, or the browser step that shows it. The build reports each criterion ticked with that proof, and a tick without proof is not a pass, so a criterion that can't name a proof isn't done being written.
+**Every criterion names its proof.** The build reports each criterion ticked with that proof, and a tick without proof is not a pass, so a criterion that can't name a proof isn't done being written.
 
-**The vague-criterion test.** If a criterion contains words like *graceful*, *properly*, *as expected*, *fast*, *clean*, *intuitive*, it is not yet a criterion. Reframe to a measurable condition or delete it. This is the single highest-leverage check in the spec; vague acceptance is what lets a feature ship "done" while still being broken.
-
-When requirements are vague, reframe them into measurable conditions before writing criteria:
-```
-Requirement: "Make the dashboard faster"
-→ Dashboard LCP < 2.5s on 4G connection
-→ Initial data load < 500ms
-→ No layout shift during load (CLS < 0.1)
-Are these the right targets?
-```
-This turns fuzzy goals into things you can actually verify. Confirm the reframed criteria with the user before proceeding.
+**The vague-criterion test.** If a criterion contains *graceful*, *properly*, *as expected*, *fast*, *clean*, *intuitive*, it is not yet a criterion. Reframe to a measurable condition (confirm the target with the user) or delete it. This is the single highest-leverage check in the spec.
 
 ### Edge cases & risks
-The prioritized list of what actually matters. For each:
-- What could go wrong
-- How to handle it
-- What's explicitly not worth handling yet, and why
-
-For user-facing errors, be specific about the UX: what does the user see (toast, inline message, modal, chat message), what system action happens (retry, skip, abort), and how the user recovers. "Handle gracefully" is not a spec. It's a wish.
+Prioritized. For each: what could go wrong, how to handle it, what's explicitly not worth handling yet and why. For user-facing errors name what the user sees, what the system does (retry, skip, abort), and how they recover.
 
 ### Proposed approach
-- Existing code: relevant files and patterns already in use (reference real paths)
-- File structure: exact files to create or modify, following project conventions
-- Key decisions: what was chosen, what was rejected, and why (this is the decision record; future you will thank present you for writing the "why"). Label each decision **Type 1** (hard to reverse: schemas, public APIs, protocol choices, file formats that others will consume) or **Type 2** (reversible: naming, tool cardinality, internal ordering, anything a grep-and-edit fixes in an hour). Type 1 deserves extra scrutiny in the rationalization check; Type 2 can change during build without pulling the builder back to the spec table
-- Dependencies: what could block this (external APIs, other teams, migrations)
+- Existing code: relevant files and patterns (real paths)
+- File structure: exact files to create or modify
+- Key decisions: what was chosen, what was rejected, and why. Label each **Type 1** or **Type 2** (see Labels). Type 2 can change during build without pulling the builder back to the spec
+- Dependencies: what could block this
 
-**Code contracts** *(required when the spec introduces new exported functions on the capability path: anything an external caller, agent, or orchestrator might invoke)*: Specify the signature with named input + output types using the project's contract convention (Zod, Pydantic, serde, OpenAPI; check CLAUDE.md), plus a 2–3 line pseudocode body. The stress-test gate is verdict-blocking on this: a "TypeScript interface" or "we'll add validation later" doesn't count. Write the contract now; deferring to build is a Type 1 decision, and that's what reshape PRs are made of.
+**Code contracts** *(required for new exported functions on the capability path: anything an external caller, agent, or orchestrator might invoke)*: signature with named input + output types in the project's contract convention (Zod, Pydantic, serde, OpenAPI; check CLAUDE.md), plus a 2-3 line pseudocode body. A "TypeScript interface" or "validation later" doesn't count; the stress test blocks on it.
 
-**Data flow** *(include when the feature crosses 2+ system boundaries)*: Show how data moves from trigger to destination with a simple arrow chain like `user click → frontend handler → POST /api/foo → server handler → database → SSE event → frontend update`. Makes explicit who is responsible for what at each boundary. Prevents "I thought that happened on the other side."
+**Data flow** *(when the feature crosses 2+ system boundaries)*: an arrow chain like `user click → frontend handler → POST /api/foo → server handler → database → SSE event → frontend update`.
+
+### Performance architecture
+*Features with non-trivial data flow only.* The Phase 0 answers: where work happens, critical-path round trips (serial vs parallel), data arrival shape, caching boundary, optimistic vs pessimistic UI, stream failure behavior. `/eng-check` checks the code against this section.
 
 ### Assumptions
-The implementation assumptions confirmed at the end of Phase 0, one numbered line each (which module is extended, which patterns are followed, internal vs public surface, new vs modified table). The build re-reads this list, together with the Type 1 key decisions, after slice 1.
-
-### Rationalization check
-The stress-test gate runs the full rationalization scan with explicit action. Self-check before firing it: scan the draft for "we can always refactor later," "it's just a prototype," "we might need this someday," "everyone does it this way," "no time to do it right." Each phrase is a placeholder for an unmade decision. Name the decision now, or expect the gate to flag it.
+The implementation assumptions confirmed at the end of Phase 0, one numbered line each. The build re-reads these, with the Type 1 key decisions, after slice 1.
 
 ### Out of scope
 What this feature explicitly does NOT include.
 
 ### Deviations
-*Empty at spec time.* The builder appends one bullet per deviation from this spec: what changed, and the evidence that forced it (failing test, API response, what slice 1 revealed).
+*Empty at spec time.* The builder appends one bullet per deviation: what changed, and the evidence that forced it.
 ```
 
-## Stress-test (Principle #7): mandatory before lock, auto-loop until clean
+## Task breakdown
 
-`/eng-build` starts a build only on `status: specced` (and resumes one only at `status: building`), and only when the `## Stress-test verdict` heading is `ready to build`. The spec is saved to disk with `status: drafting` before the first stress-test fires. Iteration patches the file in place via `Edit`. The clean verdict promotes `status` to `specced` and embeds the verdict heading.
+Group tasks into slices. Each slice ends in one commit that builds and passes tests on its own, so the PR can be reviewed, bisected, and reverted slice by slice.
 
-Once the spec body and task breakdown are drafted, write the file to disk with `status: drafting` in the frontmatter. Then call the `Skill` tool with `skill: eng-stress-test` and pass the saved spec path or content inline, alongside the engineering principles you're checking against and the codebase paths/snippets you grounded the draft in. Saving before stress-test protects the spec from context compaction and lets iteration use precise `Edit` calls instead of full re-drafts. Same flow fires for any re-run after a material draft edit.
+```
+#### Slice 1: [name: the capability it delivers]
+- [ ] Task: [description]
+  - Acceptance: [what must be true when done, with its proof]
+  - Verify: [test command, build, browser check]
+  - Files: [created or modified]
+  - Depends: [tasks that must complete first, or "none"]
 
-`/eng-stress-test` walks the engineering principles + first-of-kind patterns and returns the verdict as a chat response. It does **not** modify any file. The response is one of two shapes:
+#### Slice 2: [name]
+- [ ] Task: ...
+```
 
-- **Clean verdict:** verdict is `ready to build`, optionally followed by a short "What's load-bearing in this spec" paragraph and a `Build-time items:` list of Type 2 concerns.
-- **Working verdict:** verdict is `address these first` or `rethink approach`, followed by 3–7 prioritized concerns.
+The `#### Slice N: <name>` headings are the whole mechanism: the build reads slices in order and the PR body's slice map is built from them.
 
-Every concern carries a label: **Type 1** (hard to undo once shipped: schemas, public contracts, data loss, security exposure, money) or **Type 2** (a grep-and-edit fix at build time with no lasting harm), plus **fact** when it contradicts something measured or verified, and **blocking** when the build can't start correctly without it resolved. The labels are what the loop triages on.
+**Order slice 1 to fail fast.** Slice 1 surfaces the riskiest assumption or the Type 1 decision most likely to be wrong: the unverified API behavior, the new schema, the streaming path. The build runs an assumptions check-in after slice 1, and a slice 1 that only builds the easy parts wastes it.
 
-**Auto-loop until clean.** Asking the user to approve each round is friction without judgment. The patches are spec edits the AI was already going to draft from prior context. Run the loop autonomously up to 3 patch rounds.
+One coder builds the slices in order. Parallelism happens only across separate specs linked by `depends_on:`, and only if the orchestration policy allows parallel coders.
 
-**Patch only what's crucial.** Crucial means Type 1, a contradiction of a measured or verified fact, or verdict-blocking. Reversible (Type 2) concerns don't earn extra patch rounds: anything a grep-and-edit fixes at build time can be fixed then. Don't run extra rounds chasing a spotless verdict. Quality still wins on irreversible things; this is about not gold-plating reversible ones.
+Break a task down further when its acceptance needs more than 3 bullets, it touches 2+ independent subsystems, its title has "and" in it, or its slice can't end in one green commit. For small features, one slice with 2-3 tasks is fine.
 
-1. **Triage the verdict by reversibility.** Sort its concerns into crucial (labeled Type 1, fact, or blocking) and Type 2.
-2. **Patch the crucial concerns via `Edit`.** Update the relevant sections: Outcome, What, User flow, Acceptance criteria, Edge cases, Key decisions, Assumptions, Performance architecture, Tasks. Each round is one or more `Edit` calls against the saved file; the file at any moment reflects the current draft. Track per round in a running ledger (concern title + section patched), needed for the end-of-loop digest.
-3. **Park the Type 2 concerns without patching.** For each, either keep it as a build-time item (one line on which slice or section handles it) or skip it with one line of reasoning. Both go in the ledger; the build-time items get embedded under the verdict at promotion.
-4. **Re-fire `/eng-stress-test`** against the updated file, only if step 2 patched something. New verdict returns in chat.
-5. **If the verdict is `ready to build`, or its only open concerns are Type 2**, exit the loop and continue to promotion + digest. A verdict whose open items are all reversible counts as clean enough to promote; its Type 2 items join the build-time list.
-6. **If the verdict is `address these first` with a crucial concern open**, return to step 1. Counts against the round budget. Rounds that would only touch Type 2 items never run, so they never count.
-7. **Otherwise, escalate to the user** (see escalation criteria below). Do not silently continue.
+Save body + task list to `specs/<feature-name>.md` (kebab-case) with `status: drafting`. From here the file is the durable artifact; iterate with `Edit`, not by re-drafting in chat.
 
-**Escalation criteria. Stop the loop and surface to the user when any of these hit:**
-- **Verdict is `rethink approach`.** The stress-test thinks the architecture is wrong, not the prose. That's a structural disagreement that needs the user, not another patch round.
-- **Round budget exhausted (3 patch rounds).** Three rounds of `address these first` on crucial concerns without converging usually means a concern is being papered over rather than fixed. Stop and ask.
-- **Two-round tripwire.** If the same crucial concern (same citation or same diagnosis) reappears across two consecutive rounds, the spec has a structural problem, not a wording problem. Polishing prose around an unsound design produces a clean verdict on a spec that still ships bugs. Stop and redo the design with the user.
+## Stress test (Principle #7): mandatory before lock
 
-When escalating, present: the unresolved concerns, how many rounds ran, what was patched in each, and the recommendation (`rethink approach` → redesign; max-rounds → which concern is sticky and why; tripwire → which concern repeated and what structural change might fix it).
+The builder shouldn't review their own plan. Spawn one fresh sub-agent with the `Agent` tool (it hasn't seen this conversation). Pass inline: the spec path or content, the engineering principles to check against, the codebase paths and snippets the draft is grounded in, and the stress-test instructions below. It returns a verdict in chat and never edits the file.
 
-**End-of-loop digest (clean exit).** When the loop converges to `ready to build`, produce a 2–4 line summary in chat covering:
-- How many rounds ran.
-- Each concern addressed, one phrase per concern, with the section it was patched into.
-- Type 2 items parked: how many became build-time items and how many were skipped (one phrase of reasoning each).
-- One line on what's load-bearing (lifted from the clean verdict, not re-derived).
+### Labels
 
-The digest is the audit trail. The user reads it in 5 seconds to confirm nothing landed they'd want to redirect, but it doesn't gate progression. Keep it terse.
+Used by Phase 0, Key decisions, the stress test, and the loop. Defined once here:
+- **Type 1**: hard to undo once shipped. Schemas, public contracts, protocol choices, file formats others consume, data loss or corruption, security exposure, money.
+- **Type 2**: a grep-and-edit fix at build time with no lasting harm. Naming, copy, tool cardinality, internal structure and ordering, minor edge-case handling, over-planning.
+- **fact**: the concern contradicts something measured or verified (official docs, a grep, a benchmark).
+- **blocking**: the build can't start correctly without it resolved (missing I/O contract, a criterion with no home or no proof, an outcome no criterion verifies, a bundled forced-split item).
 
-When the verdict is clean, promote `status: drafting` to `status: specced` in the frontmatter and embed the verdict heading, the load-bearing paragraph (if any), and the `Build-time items:` list (if any) in a single `Edit` call. Shape:
+**Crucial** = Type 1, fact, or blocking.
+
+### Stress-test instructions for the sub-agent
+
+You are a fresh pair of eyes. You did not write this spec and have no attachment to its decisions. Don't re-read CLAUDE.md or explore the codebase in general; the caller did that. Grep only where a check needs it (checks 5 and 8). If only a path was passed, read the file once.
+
+**High-yield checks, lead with these:**
+
+1. **Acceptance ↔ approach traceability.** Point each criterion to where the approach implements it. A criterion with no home is a gap; an approach file that maps to no criterion is scope creep. Every criterion names its proof (test name, command + expected result, or browser step); flag each one that doesn't.
+2. **Type 1 decisions.** Schemas, public API contracts, migrations, file formats others consume: explicit and locked, or hidden in "we'll figure it out"? Flag each one deferred to build. Cross-check `### Assumptions` against the approach: a contradicted assumption, or a Type 1 decision resting on an unconfirmed one, is verdict-affecting.
+3. **I/O contract on capability functions (blocking).** New exported functions on the capability path must name input + output contracts inline in the project's convention. This passes:
+   ```
+   runFoo(input: FooInput) → FooResult
+     FooInput  = Zod schema { jobId: string, mode: 'sync' | 'async', payload: JobPayload }
+     FooResult = Zod schema { status: 'ok', data: ResultData } | { status: 'error', code: ErrorCode, message: string }
+   ```
+   "TypeScript interface," "validation later," "typed inputs" on a Zod-everywhere project, or a contract deferred to build all fail. Skip for pure infra consumed inside the same library.
+4. **Edge cases that matter.** What hurts users or corrupts data if missed? External dependency failures (API down, partial migration, malformed LLM JSON, duplicate webhook delivery)? Concurrency? Where would a builder need to ask a follow-up? Security: unvalidated input, new routes without auth, leaking secrets?
+5. **First-of-kind patterns.** Grep for whether this spec is first to introduce one, and check its known failure mode. Examples (the project's CLAUDE.md may list its own): new agent skill (layering boundary, frontmatter, role/tools/output contract); new agent tool (`rationale: z.string()` dropped, description skipped, naming drift); a migration with a new pattern (`RETURNS TABLE`, RLS on a new table, partial unique index, NOT NULL backfill); cron (overlap idempotency, failure alerting); webhook handler (signature verified *before* body read); new MCP tool surface (inline spec-fetch, context-gap-shaped inputs, per-org rate limits). Flag first-of-kind even when handled well.
+6. **Performance architecture.** For user-perceived latency or non-trivial data flow, `### Performance architecture` must name every item from Phase 0. Missing or hand-waved is verdict-affecting. Flag API-behavior claims that read as memory rather than verified docs.
+7. **Outcome ↔ acceptance.** The Outcome needs a measurable verification path in the criteria ("first paint <2s" needs an LCP measurement). Vague criteria on a measurable outcome are verdict-affecting.
+8. **Slice order and split.** Slice 1 should surface the riskiest assumption; if not, name the slice that should go first. Flag any forced-split item bundled instead of split into its own spec. Don't push to split for size alone.
+
+**Principle pass (faster, raise only specific concerns):** simplicity (#1, cut concepts and dependencies, not lines), YAGNI (#2), designed-upfront abstractions (#3), quality (#4: assumptions treated as verified facts; scope cuts are fine, quality cuts compound), over-planned Type 2 decisions (#5), compounding (#6), verification (#8), ownership (#9), project shape (the "good" and "bad" columns of the project's CLAUDE.md).
+
+**Rationalization red flags.** "We can always refactor later," "it's just a prototype," "we might need this someday," "it's only a small addition," "everyone does it this way," "no time to do it right," "too late to change." Each hides an unmade decision. Name the decision. Type 1 means the verdict isn't clean; genuinely reversible means a legitimate Type 2 deferral.
+
+**Anti-rubber-stamp.** A first-pass clean read is suspicious unless the spec is small; re-read once. Report judgment calls with their label rather than dropping them. Passing a Type 1 issue too readily is worse than one more round; a Type 2 judgment call never holds back `ready to build`.
+
+**Specificity.** Every concern cites a section, line, AC#, task ID, or file. Concerns that could apply to any spec are noise; delete them. Don't repeat what the spec handles well or push complexity the task size doesn't need.
+
+**Output.** Label every concern (see Labels). The verdict follows from crucial concerns alone:
+- **Clean**: `**ready to build**` when no crucial concern is open. Type 2 concerns go under `Build-time items:`. Add a short "What's load-bearing in this spec" paragraph only when something would surprise a re-reader; default to omitting.
+- **Concerns**: `**address these first**` with 3-7 items, crucial first, Type 2 after.
+- **Rethink**: `**rethink approach**` when the architecture itself is wrong, not the prose.
+
+One bullet per concern: bold name, citation, label in brackets, then diagnosis + fix in one flow. No sub-fields, no narrated failure chains. List order is the priority; name a single verdict-blocking item in the header. First-of-kind flags go under `Flags:` in the same format. No passing-item roll call.
+
+```
+**address these first** · 2 concerns (1 crucial, 1 Type 2), 1 verdict-blocking (Type 1 backward compat)
+
+1. **Migration drops index without rebuild** (migration 0042, line 18) [Type 1 · blocking]. Old `idx_users_email` is dropped and not recreated; production queries fall back to seq scan. Fix: rebuild it in the same migration, concurrently if the table is large.
+2. **Invite-failure toast copy unspecified** (User flow, step 4) [Type 2]. Fix: pick the copy in the slice that owns the invite form.
+
+Flags:
+- **First-of-kind webhook handler** (T4). Verify signature is checked before body parsing.
+```
+
+### The loop (default mode)
+
+Run it autonomously, up to 3 patch rounds. Asking the user to approve each round is friction without judgment.
+
+1. Sort the verdict's concerns into crucial and Type 2.
+2. Patch the crucial ones in the saved file with `Edit`. Keep a ledger: concern + section patched.
+3. Park Type 2 ones without patching: a build-time item (one line on which slice handles it) or a skip (one line why).
+4. If step 2 patched anything, re-spawn a fresh stress-test sub-agent on the updated file.
+5. If the verdict is `ready to build`, or its only open concerns are Type 2, exit and promote.
+6. If a crucial concern is still open, go to step 1.
+
+**Escalate to the user** instead of continuing when the verdict is `rethink approach`, when 3 patch rounds haven't converged, or when the same crucial concern reappears in two consecutive rounds (a structural problem, not a wording one). Present the unresolved concerns, the rounds run, what each patched, and your recommendation.
+
+**Digest on clean exit:** 2-4 lines in chat: rounds run, each concern patched and where, Type 2 items parked vs skipped, and the load-bearing line from the verdict. It doesn't gate progression.
+
+**Promote** in a single `Edit`: `status: drafting` → `status: specced`, plus this block:
 
 ```
 ## Stress-test verdict
@@ -360,149 +342,16 @@ When the verdict is clean, promote `status: drafting` to `status: specced` in th
 
 Build-time items:
 - <Type 2 concern> (<cited section>). <which slice or section handles it at build time>
-``` Then move to spec lock. The `status: specced` file with one verdict heading is the contract; the build session reads only this.
-
-Do not commit the file until promotion is done. The commit captures the clean state, not the iteration trail.
-
-Do not write code until the verdict is clean.
-
-## Auto-spec on context pressure
-
-This is the safety net for any long session. When a session approaches its context limit, the AI auto-creates or updates the spec from accumulated decisions in the conversation, so re-priming after `/compact` or in a new session is fast and faithful.
-
-**Applies to all sessions, not just `/eng-spec` invocations.** Build sessions, debug sessions, design conversations: any session whose decisions would be lost to compaction. For sessions that started without a spec (debug, design), the spec is AI memory, materialized lazily.
-
-**Trigger conditions (any of):**
-- **Context window crosses 75%.** Buffer before auto-compact (~85–90%) so the write completes before the source conversation is collapsed. The AI tracks its own context-window usage; act on it proactively, don't wait for the user to notice.
-- **User invokes `/compact` or `/clear`.** Run the auto-spec write *before* the compaction, not after. After, the source conversation is gone.
-- **User says "save the context" or equivalent.** Verbal trigger overrides any threshold; fire immediately.
-- **Session-end signals from the runtime** (e.g., `SessionEnd` hook): catch genuine session ends, not just compaction.
-
-**First creation vs subsequent updates need different friction:**
-
-- **First creation.** Work was supposed to be single-session, but context filled up. The spec didn't exist yet. The AI now creates it for the first time, encoding the canonical decision set from the conversation. **Notify the user briefly with what's being encoded:**
-
-  ```
-  Creating spec at specs/<feature>.md. Context is approaching 75% and the work has outgrown one session. Capturing as canonical:
-  - Outcome: <one line>
-  - Locked decisions: <count, with one-phrase summaries>
-  - Open questions: <count>
-  Redirect now if anything looks wrong; otherwise proceeding.
-  ```
-
-  Don't block on user input. If the user wants to redirect, they will. If silence, proceed. The notification is the audit point: after `/compact` the source conversation is gone, so this is the user's only chance to catch a wrong encoding.
-
-- **Subsequent updates.** Spec already exists. Run silently, then drop a 3–4 line diff summary in chat:
-
-  ```
-  Spec updated: locked D7 (chose <X> over <Y>), marked AC3 resolved, added "behavior under stale auth token" to open questions.
-  ```
-
-  No permission ask, no blocking. User reads, redirects if needed, otherwise work continues.
-
-**Format: lean AI-memory shape.** Auto-spec writes produce the lean format below, not the heavy human-doc format from `## Spec writing`. The reader is the AI itself across boundaries; narrative sections are overhead.
-
-```yaml
----
-title: <human-readable>
-status: building          # auto-spec creates at building, not drafting: work is already in flight
-purpose: ai-memory        # signals lean format
-references: [<paths>]
----
 ```
 
-```
-## Outcome
-<one or two concrete sentences. What's better when this ships and works.>
+`/eng-build` starts only on `status: specced` with that heading reading `**ready to build**`. Don't commit the file until promotion is done, and don't write code until the verdict is clean.
 
-## Locked decisions
-- **D1**: <chose X over Y>. Why: <one-line reason>. Rejected: <one-phrase>.
-- **D2**: ...
+## Lock and hand off
 
-## Acceptance criteria
-- [ ] <concrete, verifiable>
-- [x] <ones already met>
+**Lock the spec once it's `specced`.** Specs you can't stop editing are specs no one builds from. After lock, changes happen as targeted edits during build, logged in `### Deviations` with the evidence, not as re-opened planning sessions.
 
-## File map
-- `path/to/file.ts`: <one line on purpose>
-- ...
+**Promote cross-phase Type 1 decisions.** If the project keeps a cross-phase decision log (check CLAUDE.md / AGENTS.md), confirm with the user and promote Type 1 decisions that affect later phases now, while they're fresh.
 
-## Current state
-<2–4 lines: what's built, what's next, any open thread (failing test, blocked decision, mid-refactor file).>
+**Offer the next step:** *"Spec ready at `specs/<feature>.md`. Run `/eng-build specs/<feature>.md` now, or come back when you're ready."* If `depends_on:` entries aren't built, name the one to do first. Don't auto-fire; the session boundary is intentional.
 
-## Open questions
-- <unresolved decision>
-- ...
-```
-
-That's it. No Context, no Who, no User flow as prose, no Interaction states section, no Rationalization check section. The AI doesn't need them; they're optimization for human readers who aren't reading.
-
-**What gets updated, not rewritten.** Subsequent updates patch sections that changed:
-- Locked decisions: append new entries, don't rewrite old ones (the audit trail matters).
-- Acceptance criteria: tick `[x]` on completed, append new criteria if discovered.
-- Current state: rewrite (this section is always a snapshot).
-- Open questions: remove resolved, append new.
-- Outcome and File map: rarely change; touch only on real shifts.
-
-**When a full-format spec already exists** (a build session running from a `specced` file): don't convert it to the lean format. Add or rewrite a `## Current state` section at the end of the spec (what's built, which slice is next, any open thread) and log any change from the spec in `### Deviations`. That section is the checkpoint a fresh session, or a fresh coder agent, resumes from.
-
-**The failure mode to watch.** Silent miscoding: the AI writes the wrong decision into "locked decisions" and the user doesn't catch it before `/compact` collapses the source conversation. Mitigation: every update shows the diff inline (above). If the diff line says "locked D7 (chose X over Y)" and you remember choosing Y over X, redirect immediately. Worth being a little paranoid about reading the diff lines.
-
-**No stress-test on auto-spec writes.** The lean format isn't the kind of artifact stress-test is designed for (no User flow to cross-check against acceptance, no full Edge cases section). The conversation already stress-tested the design implicitly through Phase 0 and back-and-forth. Auto-spec captures the result; it doesn't re-validate it.
-
-**When the spec graduates.** If accumulated work is being handed to a teammate or open-sourced, auto-spec's lean format may need expansion to the heavy format for human readers. That's a one-time conversion the user invokes explicitly: *"expand specs/<feature>.md to full format for review."* Default is lean; expansion is the exception.
-
-## Task breakdown
-
-Break the approved spec into discrete, buildable tasks, grouped into slices. A slice is one thin capability end-to-end (schema + API + UI for one flow). The build ships every slice in one session and one PR; each slice ends in one commit that builds and passes tests on its own, so the PR can be reviewed, bisected, and reverted slice by slice.
-
-```
-#### Slice 1: [name: the capability it delivers]
-- [ ] Task: [description]
-  - Acceptance: [what must be true when done, with its proof]
-  - Verify: [how to confirm: test command, build, browser check]
-  - Files: [which files will be created or modified]
-  - Depends: [which tasks must complete first, or "none" if independent]
-
-#### Slice 2: [name]
-- [ ] Task: ...
-```
-
-The `#### Slice N: <name>` headings are the whole mechanism. No extra frontmatter; the build reads the slices in order and the PR body's slice map is built from them.
-
-**Order slice 1 to fail fast.** Slice 1 surfaces the riskiest assumption or the Type 1 decision most likely to be wrong: the unverified API behavior, the new schema, the streaming path. The build runs an assumptions check-in after slice 1, and a slice 1 that only builds the easy parts wastes it.
-
-One coder builds the slices in order. Parallelism happens only across separate specs linked by `depends_on:` (e.g. two forced-split specs with no dependency on each other), and only if the orchestration policy allows parallel coders.
-
-**Slice vertically, not horizontally.** Each task should deliver a working, testable path through the feature, not a horizontal layer.
-
-Bad: Task 1 = all database tables, Task 2 = all API endpoints, Task 3 = all UI components, Task 4 = connect everything.
-Good: Task 1 = user can create account (schema + API + UI), Task 2 = user can log in, Task 3 = user can create a task.
-
-Vertical slices keep the feature working and testable at every step. Horizontal layers leave you with nothing testable until the last task.
-
-**When to break a task down further:**
-- You can't describe acceptance criteria in 3 or fewer bullets
-- It touches 2+ independent subsystems (e.g., auth and billing)
-- You wrote "and" in the task title (that's two tasks)
-- Its slice can't end in one commit that builds and passes tests on its own (split the slice)
-
-Guidelines:
-- Order tasks by dependency, then by risk: build foundations first, but put high-risk tasks early. Fail fast before investing in the easy parts
-- Each task should touch a small number of files (aim for ~5 or fewer)
-- Every task has a verify step; no task is "done" without proof
-- For small features, one slice with 2-3 tasks is fine. Don't over-decompose
-
-This task list becomes what `/eng-build` reads. The clearer it is, the less judgment the builder needs to apply.
-
-Save the spec file to disk with `status: drafting` in the frontmatter, body + task list together, at `specs/[feature-name].md` (kebab-case, create the directory if needed). The file is the durable artifact from this point on; iteration happens via `Edit`, not by re-drafting in conversation.
-
-**Fire the stress-test gate per the Stress-test section above.** Iteration patches the file in place. Once the verdict is clean, the final `Edit` promotes `status: drafting` to `status: specced` and embeds the verdict heading. The `status: specced` file is the contract between planning and execution; `/eng-build` won't start a new build on anything else.
-
-**Lock the spec once promoted to `status: specced`. Specs you can't stop editing are specs no one builds from.** Refinement loops that don't close cause spec drift; resist re-opening every time a new article or idea arrives. Define a lock point in the Out-of-scope section as `re-spec trigger: [criterion]`. Candidates: "first slice has been built," "non-AI reviewer has signed off," "no external input has changed the spec across N consecutive reads." Pick one per spec. Once locked, spec changes happen as targeted edits during build with commit messages explaining what evidence triggered the change. Not as re-opened planning sessions.
-
-**Promote cross-phase Type 1 decisions at lock time.** If the project maintains a living cross-phase decision log (check CLAUDE.md / AGENTS.md for the project's convention), scan the spec's Type 1 decisions before declaring lock. For any that affect later phases (schema changes, contract picks, protocol decisions, architectural commitments), confirm with the user and promote them to the log now. Lock-time catches what post-build promotion forgets: decisions are fresh, the spec hasn't shipped, the canonical text is still in flux. Type 2 (reversible) decisions stay inline only; not worth the log.
-
-**Offer the next step.** Once locked, surface the build kickoff: *"Spec ready at `specs/<feature>.md`. Run `/eng-build specs/<feature>.md` now, or come back when you're ready."* If the spec has `depends_on:` entries that aren't built yet, name the one to spec or build first. Don't auto-fire: the spec/build session boundary is intentional, but the user shouldn't have to guess the next command.
-
-**Handoff messages carry operational state only:** the skill invocation, the branch, and any tree caveats (uncommitted files, a dev server that must be running). Three lines is usually enough. The spec carries the rest; restating decisions in the handoff creates a second source that drifts.
+**Handoff messages carry operational state only:** the skill invocation, the branch, and tree caveats (uncommitted files, a dev server that must be running). The spec carries the rest; restating decisions creates a second source that drifts.
