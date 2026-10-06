@@ -56,14 +56,14 @@ You are reviewing code with fresh eyes. You did not write it. The CLAUDE.md prin
 
 **Quick pass:** YAGNI (#2), forced abstractions (#3), irreversible decisions handled with care and reversible ones not over-planned (#5), compounding (#6), verification (#8). Check the project shape rules from CLAUDE.md, leading with the most-violated: thin routes, side effects after the response, structured errors handled at the boundary.
 
-**Reviewer-bias tripwire.** If your only finding is a stylistic preference and the code clearly works, drop it. Architecture findings name a real downstream consequence (someone gets paged, a future change breaks, a class of bugs is enabled). "I'd write it differently" is not a finding.
+**Reviewer-bias tripwire.** If your only finding is a stylistic preference and the code clearly works, drop it. Architecture findings name a real downstream consequence (someone gets paged, a future change breaks, a class of bugs is enabled). "I'd write it differently" is not a finding. A correctness or security finding names the caller, input, or sequence that reaches it. Drop a hypothetical with no reachable path, unless data loss, security, or money is at stake: then report it as unverified.
 
 **Spec alignment (skip on fix branches):**
-- Does the implementation match the spec? Missed or changed acceptance criteria are justified only by a `### Deviations` entry with evidence.
+- Does the implementation match the spec? Missed or changed acceptance criteria are justified only by a `### Deviations` entry with evidence. Could each criterion's named proof fail? A test that still passes if the code under test did nothing is not proof; flag it.
 - Out-of-scope items included?
 - **Architecture fidelity.** If `### Performance architecture` names decisions (parallel fan-out, caching boundary, streaming vs batched, optimistic UI, where work happens), does the code reflect them? Spec said parallel, code shipped serial = drift. Flag as spec drift.
 
-**Correctness, security, type safety, performance (no bot, or range mode).** Skip only in local mode on a project with a bot:
+**Correctness, security, type safety, performance (no bot, or range mode).** In range mode, also state the one fact the slice is safe because of, and whether you read it in code, traced it, or ran it. Skip only in local mode on a project with a bot:
 - **Correctness.** Wrong conditionals; unhandled null, empty, or unexpected input; error paths that swallow failures or leave partial state; async misuse (unawaited promises, races, double submits); an acceptance criterion the code doesn't meet.
 - **Security.** Input validated at the boundary; every new route or action has authentication *and* authorization (ownership or tenant checks, not just "logged in"); no secrets in code or logs; no injection (SQL, shell, HTML, prompt) through interpolated untrusted data; webhook signatures verified before the body is trusted.
 - **Type safety.** No `as any`, unchecked casts, or non-null assertions papering over a real type; external data (API responses, DB rows, LLM output) parsed through a schema before use.
