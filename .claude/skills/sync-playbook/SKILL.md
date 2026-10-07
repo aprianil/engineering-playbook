@@ -2,6 +2,8 @@
 name: sync-playbook
 description: Sync the engineering playbook, deep dives, and skills from Obsidian and ~/.claude/skills/ to the engineering-playbook GitHub repo. Updates README if needed.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep
+metadata:
+  internal: true
 ---
 
 Sync the playbook, deep dives, and skills to the `engineering-playbook` GitHub repo.

@@ -30,15 +30,17 @@ This is a living document — I'm still early in this journey. It grows as I lea
 - **[Open Source Maintainership.md](<Open Source Maintainership.md>)** — building trust, community design, release mechanics, saying no — for a product person's first open source project
 - **[Designing Frontends for Performance.md](<Designing Frontends for Performance.md>)** — three decisions that determine ~90% of frontend performance — rendering location, data arrival, bundle size
 
-**Skills (Claude Code slash commands):**
+**Skills (work in Claude Code, Cursor, Codex & most other coding agents):**
 
-Install the skills into your project with one command:
+Install them with one command:
 
 ```bash
-npx degit aprianil/engineering-playbook/.claude/skills .claude/skills
+npx skills add aprianil/engineering-playbook
 ```
 
-Or copy the `.claude/skills/` folder manually. Once in your project, the skills are available immediately.
+It asks which skills you want & whether they go in this project or everywhere (`-g`). Just want one? Add `--skill deslop`.
+
+Or copy the `.claude/skills/` folder by hand. Either way they work right away.
 
 | Phase | Skill | What it does |
 |---|---|---|
