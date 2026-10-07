@@ -5,13 +5,13 @@
 ---
 
 > [!info]- Context for AI (Claude Code)
-> This note is part of the [[Engineering Learnings & Playbook]] system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook — don't duplicate what's already there.
+> This note is part of the [[Engineering Learnings & Playbook]] system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook, so don't duplicate what's already there.
 
 ---
 
 ## What Is a Race Condition
 
-A race condition happens when your code assumes things will happen in a certain order, but they don't. Two operations "race" each other — and the wrong one wins.
+A race condition happens when your code assumes things will happen in a certain order, but they don't. Two operations "race" each other, and the wrong one wins.
 
 They're especially common when vibe coding because you're moving fast and not thinking about "what if this happens twice" or "what if the response comes back late."
 
@@ -29,7 +29,7 @@ Click 2 → POST /api/charge → processing...
 Both succeed → user charged twice
 ```
 
-**Fix — disable the button:**
+**Fix: disable the button.**
 
 ```jsx
 function PayButton() {
@@ -53,24 +53,46 @@ function PayButton() {
 }
 ```
 
-**Belt and suspenders — also protect the backend:**
+**Belt and suspenders: also protect the backend.**
 
 ```javascript
 // Make the operation idempotent with a unique key
 app.post('/api/charge', async (req, res) => {
-  const { idempotencyKey, amount } = req.body
+  const { idempotencyKey, amount, paymentMethodId } = req.body
 
-  // Check if this exact request was already processed
-  const existing = await db.charges.findByKey(idempotencyKey)
-  if (existing) return res.json(existing)  // return same result, don't charge again
+  // 1. Claim the key first. The table has a UNIQUE constraint on
+  //    idempotency_key, so if two requests race, only one insert succeeds.
+  try {
+    await db.charges.insert({ idempotencyKey, status: 'processing' })
+  } catch (err) {
+    if (err.code !== '23505') throw err  // 23505 = Postgres unique violation
+    // Same key again: return the first request's record, don't charge again
+    const existing = await db.charges.findByKey(idempotencyKey)
+    return res.json(existing)
+  }
 
-  const charge = await stripe.charges.create({ amount })
-  await db.charges.save({ idempotencyKey, result: charge })
-  res.json(charge)
+  // 2. Charge. Passing the same key to Stripe means a retry of this
+  //    exact call returns the first PaymentIntent instead of a new one.
+  const paymentIntent = await stripe.paymentIntents.create(
+    {
+      amount,
+      currency: 'usd',
+      payment_method: paymentMethodId,
+      confirm: true,
+      automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
+    },
+    { idempotencyKey }
+  )
+
+  // 3. Store the result for any duplicate that arrives later
+  await db.charges.update(idempotencyKey, { status: 'done', result: paymentIntent })
+  res.json(paymentIntent)
 })
 ```
 
-The frontend sends a unique key per action. If the same key arrives twice, the backend returns the first result instead of processing again. This is called **idempotency** — doing something twice has the same result as doing it once.
+The frontend sends a unique key per action. If the same key arrives twice, the backend returns the first result instead of processing again. This is called **idempotency**: doing something twice has the same result as doing it once.
+
+Why insert first instead of "check, then save"? If you look up the key and save it later, two requests can both find nothing before either one saves, and both charge. That's the same race, one level down. The unique constraint makes the database the referee: exactly one insert wins. (Real code also marks the row `failed` if the charge throws, so the user can retry with a fresh key.)
 
 ---
 
@@ -90,7 +112,7 @@ Request 1 returns → shows results for "b" (overwrites again!) ✗
 
 User searched for "bil" but sees results for "b."
 
-**Fix — track the latest request:**
+**Fix: track the latest request.**
 
 ```javascript
 let latestRequestId = 0
@@ -104,7 +126,7 @@ async function search(query) {
   if (requestId === latestRequestId) {
     setResults(data)
   }
-  // Otherwise discard — a newer request already won
+  // Otherwise discard: a newer request already won
 }
 ```
 
@@ -141,27 +163,30 @@ User A's work is gone. No error. No warning.
 
 This is called the **lost update problem**.
 
-**Fix — optimistic concurrency with version numbers:**
+**Fix: optimistic concurrency with version numbers.**
 
 ```javascript
 async function saveDocument(docId, content, loadedVersion) {
-  const current = await db.documents.findById(docId)
+  // One statement: only write if nobody else has bumped the version
+  const result = await db.query(
+    `UPDATE documents
+        SET content = $1, version = version + 1
+      WHERE id = $2 AND version = $3`,
+    [content, docId, loadedVersion]
+  )
 
-  if (current.version !== loadedVersion) {
+  if (result.rowCount === 0) {
     throw new Error(
       "This document was edited by someone else since you opened it. " +
       "Please refresh to see their changes before saving."
     )
   }
-
-  await db.documents.update(docId, {
-    content,
-    version: loadedVersion + 1
-  })
 }
 ```
 
 User B's save now fails with a helpful message instead of silently destroying User A's work. The `version` field is the guard.
+
+The check and the write have to be one statement. If you read the version first and update after, two saves can both pass the check before either writes. With `WHERE version = $3`, the database does both in one step, and the loser updates 0 rows.
 
 ---
 
@@ -172,11 +197,13 @@ User navigates away from a page before an API call finishes. The response arrive
 ```
 User opens billing page → API call starts
 User navigates to dashboard → billing component unmounts
-API returns → tries to setState on unmounted billing component
-React warning or unexpected behavior
+API returns → tries to setState on a component that's gone
+Wasted work, or an old response lands on top of fresh data
 ```
 
-**Fix — same cleanup pattern as the search example:**
+React 18 removed the old "can't update state on an unmounted component" warning, so nothing tells you this happened. The cleanup still matters: the request keeps running for nothing, and if the component remounts or the effect re-runs, a stale response can overwrite newer data.
+
+**Fix: same cleanup pattern as the search example.**
 
 ```jsx
 useEffect(() => {
@@ -213,24 +240,34 @@ useEffect(() => {
 }, [])
 ```
 
-`AbortController` doesn't just ignore the result — it actually cancels the network request, saving bandwidth and server resources.
+`AbortController` doesn't just ignore the result. It actually cancels the network request, saving bandwidth and server resources.
+
+On client-heavy pages, a data-fetching library like TanStack Query or SWR handles #2 and #4 for you. Results are cached per query key, so an old response can't overwrite the results for a newer query, and TanStack Query hands your fetch a `signal` so it can cancel requests nobody needs anymore.
 
 ---
 
 ### 5. Multiple Rapid State Updates
 
-Clicking a counter button very fast, or toggling something rapidly:
+Separate clicks each get fresh state, because React re-renders between them. The bug shows up when updates share one old snapshot: several updates in the same handler, or an update that runs after an `await` while the user kept clicking.
 
 ```javascript
-// Bug — each click reads the CURRENT state, not the latest
-const handleLike = () => {
-  setLikes(likes + 1)  // if likes is 0 and you click 3 times fast,
-                        // all three read likes as 0, result is 1 not 3
+// Bug: several updates in one handler all read the same snapshot
+const handleTripleLike = () => {
+  setLikes(likes + 1)
+  setLikes(likes + 1)  // likes is still the old value here,
+  setLikes(likes + 1)  // so likes goes up by 1, not 3
 }
 
-// Fix — use the function form to read the LATEST state
-const handleLike = () => {
-  setLikes(prev => prev + 1)  // each update builds on the previous one
+// Bug: setState after an await uses a stale closure
+const handleLike = async () => {
+  await api.like(postId)  // user clicks again while this is in flight
+  setLikes(likes + 1)     // both clicks saw likes = 0, both write 1
+}
+
+// Fix: use the function form so each update builds on the latest state
+const handleLike = async () => {
+  await api.like(postId)
+  setLikes(prev => prev + 1)
 }
 ```
 
@@ -250,7 +287,7 @@ When building or reviewing code, ask:
 - What happens if the user clicks this very fast?
 ```
 
-These are the questions from the playbook's "While Building" checklist — "What happens when this input is empty/null/unexpected?" and "What else does this change touch?" Race conditions are the timing version of those questions.
+These are the questions from the playbook's "While Building" checklist: "What happens when this input is empty/null/unexpected?" and "What else does this change touch?" Race conditions are the timing version of those questions.
 
 ---
 
@@ -258,9 +295,9 @@ These are the questions from the playbook's "While Building" checklist — "What
 
 | Problem | Pattern | Implementation |
 |---------|---------|---------------|
-| Double submit | Disable + idempotency | Disable button on click, idempotency key on backend |
+| Double submit | Disable + idempotency | Disable button on click, unique idempotency key on backend (and to Stripe) |
 | Stale responses | Request tracking | Increment a counter or use `cancelled` flag in useEffect |
-| Lost updates | Optimistic concurrency | Version number on the record, check before saving |
+| Lost updates | Optimistic concurrency | Version number on the record, checked in the same `UPDATE` that writes |
 | Update after unmount | Cleanup on unmount | `cancelled` flag or `AbortController` in useEffect |
 | Rapid state updates | Functional updates | `setState(prev => ...)` instead of `setState(value)` |
 
@@ -279,4 +316,4 @@ Before shipping a feature, take 30 seconds and ask: **"What if two of these happ
 
 ---
 
-*Race conditions are timing bugs. The code is "correct" — it just assumes things happen in order. The fix is always the same: don't assume order, verify it.*
+*Race conditions are timing bugs. The code is "correct". It just assumes things happen in order. The fix is always the same: don't assume order, verify it.*

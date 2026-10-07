@@ -1,17 +1,17 @@
 # Debugging Mindset
 
-> A systematic approach to fixing bugs — so you spend less time guessing and more time understanding.
+> A systematic approach to fixing bugs, so you spend less time guessing and more time understanding.
 
 ---
 
 > [!info]- Context for AI (Claude Code)
-> This note is part of the [[Engineering Learnings & Playbook]] system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook — don't duplicate what's already there.
+> This note is part of the [[Engineering Learnings & Playbook]] system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook, so don't duplicate what's already there.
 
 ---
 
 ## The Core Problem
 
-When something breaks, the instinct is to start changing code — move things around, add console.logs, try random fixes. This is guessing. It sometimes works, but it wastes time and often creates new problems.
+When something breaks, the instinct is to start changing code: move things around, add console.logs, try random fixes. This is guessing. It sometimes works, but it wastes time and often creates new problems.
 
 Senior engineers debug differently. They **understand first, then fix.** The fix is usually the easy part. Finding the real cause is the skill.
 
@@ -38,13 +38,13 @@ Error messages contain more information than most people extract.
 
 ```
 What to look for:
-- The error type — what category of problem is this?
-- The message — what does it say in plain English?
-- The file and line number — where exactly did it break?
-- The stack trace — what was the chain of calls that led here?
+- The error type: what category of problem is this?
+- The message: what does it say in plain English?
+- The file and line number: where exactly did it break?
+- The stack trace: what was the chain of calls that led here?
 ```
 
-A stack trace reads bottom-to-top. The bottom is where the journey started. The top is where it crashed. The interesting part is usually in the middle — where *your* code called something that broke.
+In JavaScript (and Java), a stack trace reads bottom-to-top. The bottom is where the journey started. The top is where it crashed. Python flips the order: it prints "most recent call last", so the crash is at the bottom. Either way, the interesting part is usually in the middle, where *your* code called something that broke.
 
 ### Step 3: Narrow the Search
 
@@ -65,7 +65,7 @@ Ask yourself:
 
 ### Step 4: Form Hypotheses (Plural)
 
-Before changing any code, state what you think is happening. Not one guess — three to five.
+Before changing any code, state what you think is happening. Not one guess. Three to five.
 
 ```
 "I think this could be:
@@ -75,9 +75,9 @@ Before changing any code, state what you think is happening. Not one guess — t
 ..."
 ```
 
-One hypothesis feels efficient but is usually a trap. The first plausible cause is often wrong, and if you commit to it you'll spend an hour proving yourself right instead of finding the real bug. Listing 3-5 keeps you honest — you're now comparing explanations instead of defending one.
+One hypothesis feels efficient but is usually a trap. The first plausible cause is often wrong, and if you commit to it you'll spend an hour proving yourself right instead of finding the real bug. Listing 3-5 keeps you honest. You're now comparing explanations instead of defending one.
 
-Then test them. Add console.logs or breakpoints that can confirm or reject several at once — one well-placed log answers multiple questions if you pick the spot carefully.
+Then test them. Add console.logs or breakpoints that can confirm or reject several at once. One well-placed log answers multiple questions if you pick the spot carefully.
 
 For each hypothesis, mark it CONFIRMED, REJECTED, or INCONCLUSIVE based on what the logs show.
 
@@ -90,14 +90,20 @@ Don't fall in love with your first guess.
 ### Step 5: Fix and Verify
 
 ```
+- Write a guard test that reproduces the bug. Run it, watch it fail
 - Make the smallest change that fixes the bug
-- Revert any speculative guards or defensive code you added while testing rejected hypotheses — debugging shouldn't leave the code more defensive than it started
+- Run the guard test again, watch it pass. Keep both runs as proof
+- Revert any speculative guards or defensive code you added while testing rejected hypotheses. Debugging shouldn't leave the code more defensive than it started
 - Verify the bug is gone (reproduce steps from Step 1)
 - Check that you didn't break anything else
-- Understand WHY the fix works — not just that it works
+- Understand WHY the fix works, not just that it works
 ```
 
 That last point is critical. If you can't explain why your fix works, you might be masking the bug, not fixing it.
+
+The guard test is the proof. It fails before the fix, passes after, and stays in the suite so the bug can't quietly come back. It's the same loop `/eng-build` runs on any unexpected error: reproduce, root cause, guard test, show both runs.
+
+**When you're stuck.** If you've worked through your hypotheses and the root cause is still unclear, stop grinding in the same context. Hand the problem to two fresh agents in parallel (say, a deep-reasoner and a second fresh agent). Give each the error evidence and the repro steps, but not each other's answers. Then compare their diagnoses. A second independent take beats a third lap in a context that's already biased toward your first guess.
 
 ---
 
@@ -105,33 +111,33 @@ That last point is critical. If you can't explain why your fix works, you might 
 
 ### Console / Logging
 ```javascript
-// Bad — tells you nothing useful
+// Bad: tells you nothing useful
 console.log("here")
 console.log(data)
 
-// Better — labeled, specific, tells you where and what
+// Better: labeled, specific, tells you where and what
 console.log("[BillingPage] user data:", userData)
 console.log("[API /billing] request body:", req.body)
 console.log("[useBilling] state after update:", newState)
 ```
 
 ### Browser DevTools
-- **Console tab** — see errors and your logs
-- **Network tab** — see every API request and response (status codes, payloads, timing)
-- **Elements tab** — inspect what's actually rendered vs what you expected
-- **Sources tab** — set breakpoints and step through code line by line
+- **Console tab**: see errors and your logs
+- **Network tab**: see every API request and response (status codes, payloads, timing)
+- **Elements tab**: inspect what's actually rendered vs what you expected
+- **Sources tab**: set breakpoints and step through code line by line
 
 ### Git as a Debugging Tool
 ```
-git log --oneline -20          — what changed recently?
-git diff                       — what have I changed right now?
-git diff HEAD~3                — what changed in the last 3 commits?
-git blame path/to/file         — who changed each line, and when?
-git bisect                     — binary search through commit history
+git log --oneline -20          # what changed recently?
+git diff                       # what have I changed right now?
+git diff HEAD~3                # what changed in the last 3 commits?
+git blame path/to/file         # who changed each line, and when?
+git bisect                     # binary search through commit history
                                  to find when the bug was introduced
 ```
 
-`git bisect` is powerful when you know "this worked last week but doesn't now" — it helps you find the exact commit that broke it.
+`git bisect` is powerful when you know "this worked last week but doesn't now". It helps you find the exact commit that broke it.
 
 ### Claude Code as a Debugging Partner
 ```
@@ -171,9 +177,9 @@ Recognizing these saves time because you'll know where to look:
 | "It's broken, let me try things" | "It's broken, let me understand why" |
 | Changes code, hopes it works | Forms hypothesis, verifies, then fixes |
 | Looks at the line that errored | Traces the full path that led to the error |
-| Feels frustrated and stuck | Treats it as a puzzle — each clue narrows the search |
+| Feels frustrated and stuck | Treats it as a puzzle: each clue narrows the search |
 | Fixes the symptom | Fixes the root cause |
-| Deletes the console.logs immediately | Keeps useful logging for future debugging |
+| Deletes the console.logs immediately | Promotes useful ones to proper `logger` calls (see [[Logging in Production]]) |
 
 ---
 
@@ -194,10 +200,9 @@ Log the interesting ones in your [[Engineering Learnings & Playbook]] Learnings 
 
 ## Resources
 
-- "Debugging: The 9 Indispensable Rules" by David Agans — short, practical book on systematic debugging. The rules apply to any kind of debugging, not just code.
-- Chrome DevTools docs (developer.chrome.com/docs/devtools) — official guide. The Network and Sources tabs are worth learning well.
-- "How to Debug" by John Regehr (blog.regehr.org) — a computer science professor's take on debugging methodology. More technical but the thinking process is universal.
-- "The Art of Debugging" section in "A Philosophy of Software Design" by John Ousterhout — connects debugging skills to code design. Poorly designed code is harder to debug.
+- "Debugging: The 9 Indispensable Rules" by David Agans: short, practical book on systematic debugging. The rules apply to any kind of debugging, not just code.
+- Chrome DevTools docs (developer.chrome.com/docs/devtools): official guide. The Network and Sources tabs are worth learning well.
+- "How to Debug" by John Regehr (blog.regehr.org): a computer science professor's take on debugging methodology. More technical but the thinking process is universal.
 
 ---
 

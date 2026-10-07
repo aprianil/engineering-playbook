@@ -5,13 +5,13 @@
 ---
 
 > [!info]- Context for AI (Claude Code)
-> This note is part of the [[Engineering Learnings & Playbook]] system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook — don't duplicate what's already there.
+> This note is part of the [[Engineering Learnings & Playbook]] system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook, so don't duplicate what's already there.
 
 ---
 
 ## Your Advantage
 
-You sit between product and engineering. Most people only speak one language. You're learning to speak both. That's not a weakness — it's a superpower in the making.
+You sit between product and engineering. Most people only speak one language. You're learning to speak both. That's not a weakness. It's a superpower in the making.
 
 You don't need to know every technical detail. You need to know enough to:
 - Ask questions that lead to better decisions
@@ -27,40 +27,40 @@ You don't need to memorize a glossary. But understanding these concepts lets you
 
 ### When Discussing Features
 ```
-Scope          — how much work is included in this feature
-Edge case      — unusual situation that might break the expected flow
-Happy path     — the flow when everything goes right
-Sad path       — what happens when something goes wrong
-Blocker        — something that prevents progress
-Dependency     — something this work relies on to function
+Scope:           how much work is included in this feature
+Edge case:       unusual situation that might break the expected flow
+Happy path:      the flow when everything goes right
+Sad path:        what happens when something goes wrong
+Blocker:         something that prevents progress
+Dependency:      something this work relies on to function
 ```
 
 ### When Discussing Architecture
 ```
-Frontend       — what the user sees and interacts with
-Backend/API    — the server that processes requests and returns data
-Database       — where data is stored permanently
-State          — data that the app holds temporarily (in memory)
-Middleware     — code that runs between the request and the response
-Endpoint       — a specific URL the API responds to
-Schema         — the shape/structure of data
+Frontend:        what the user sees and interacts with
+Backend/API:     the server that processes requests and returns data
+Database:        where data is stored permanently
+State:           data that the app holds temporarily (in memory)
+Middleware:      code that runs between the request and the response
+Endpoint:        a specific URL the API responds to
+Schema:          the shape/structure of data
 ```
 
 ### When Discussing Quality
 ```
-Tech debt      — shortcuts taken now that need fixing later
-Refactor       — restructuring code without changing behavior
-Breaking change — a change that causes existing features to stop working
-Regression     — something that used to work but doesn't anymore
-Idempotent     — doing something twice has the same result as doing it once
+Tech debt:       shortcuts taken now that need fixing later
+Refactor:        restructuring code without changing behavior
+Breaking change: a change that causes existing features to stop working
+Regression:      something that used to work but doesn't anymore
+Idempotent:      doing something twice has the same result as doing it once
 ```
 
 ### When Discussing Performance
 ```
-Latency        — how long it takes to respond
-Load           — how much traffic/usage the system handles
-Caching        — storing results so you don't recalculate every time
-Rate limiting  — preventing too many requests in a short time
+Latency:         how long it takes to respond
+Load:            how much traffic/usage the system handles
+Caching:         storing results so you don't recalculate every time
+Rate limiting:   preventing too many requests in a short time
 ```
 
 You don't need to use these words perfectly. Understanding them when you hear them is enough.
@@ -70,6 +70,8 @@ You don't need to use these words perfectly. Understanding them when you hear th
 ## How to Ask Good Technical Questions
 
 The pattern: **context → observation → question**
+
+It works for briefing agents too. Give the agent the context, what you saw, and one specific question, and you get a sharper answer back.
 
 ### Good Examples
 
@@ -161,14 +163,14 @@ These questions don't require deep technical knowledge. They require product thi
 ### What to Do When You Don't Understand
 
 ```
-1. Say so — "I want to make sure I understand this correctly..."
-2. Paraphrase — "So what you're saying is [your understanding], right?"
-3. Ask for analogies — "Can you compare this to something I'd recognize?"
-4. Ask about impact — "I don't fully get the technical details, but
+1. Say so: "I want to make sure I understand this correctly..."
+2. Paraphrase: "So what you're saying is [your understanding], right?"
+3. Ask for analogies: "Can you compare this to something I'd recognize?"
+4. Ask about impact: "I don't fully get the technical details, but
    help me understand: what does this mean for the user?"
 ```
 
-Not understanding is fine. Pretending to understand is not — it leads to bad decisions.
+Not understanding is fine. Pretending to understand is not. It leads to bad decisions.
 
 ---
 
@@ -176,27 +178,27 @@ Not understanding is fine. Pretending to understand is not — it leads to bad d
 
 | Product Language | Engineering Translation |
 |-----------------|----------------------|
-| "The page feels slow" | "Latency is high — what's the load time? What's the bottleneck?" |
+| "The page feels slow" | "Latency is high. What's the load time? What's the bottleneck?" |
 | "Can we just add this field?" | "What data model changes are needed? Does this require a migration?" |
-| "Users are confused by this flow" | "The state management might need rethinking — where is the user getting lost?" |
+| "Users are confused by this flow" | "The state management might need rethinking. Where is the user getting lost?" |
 | "We need this by Friday" | "What scope fits the timeline? What can we cut vs what's essential?" |
-| "Make it look like this design" | "Here's the design — what's straightforward and what might need a different approach technically?" |
+| "Make it look like this design" | "Here's the design. What's straightforward and what might need a different approach technically?" |
 
 | Engineering Language | Product Translation |
 |---------------------|-------------------|
 | "This will create tech debt" | "We're taking a shortcut that we'll need to fix later" |
-| "It's a breaking change" | "Existing users will be affected — things they rely on might stop working" |
-| "We need to refactor first" | "The current code structure makes this change risky or slow — we should clean it up first" |
+| "It's a breaking change" | "Existing users will be affected: things they rely on might stop working" |
+| "We need to refactor first" | "The current code structure makes this change risky or slow, so we should clean it up first" |
 | "It's not idempotent" | "If this runs twice, it could cause duplicate charges/emails/records" |
-| "There's a race condition" | "Two things are happening at the same time and the order matters — sometimes it goes wrong" |
+| "There's a race condition" | "Two things are happening at the same time and the order matters. Sometimes it goes wrong" |
 
 ---
 
 ## Resources
 
-- "The Manager's Path" by Camille Fournier — chapters on working with engineers and understanding technical decisions. Written for managers but directly applicable to product/design people working closely with engineering.
-- "Talking with Tech Leads" by Patrick Kua — interviews with senior engineers about how they communicate and make decisions. Helps you understand how they think.
-- "An Elegant Puzzle" by Will Larson — about engineering organizations and how decisions flow. Useful for understanding the bigger picture of why engineers prioritize what they do.
+- "The Manager's Path" by Camille Fournier: chapters on working with engineers and understanding technical decisions. Written for managers but directly applicable to product/design people working closely with engineering.
+- "Talking with Tech Leads" by Patrick Kua: interviews with senior engineers about how they communicate and make decisions. Helps you understand how they think.
+- "An Elegant Puzzle" by Will Larson: about engineering organizations and how decisions flow. Useful for understanding the bigger picture of why engineers prioritize what they do.
 
 ---
 

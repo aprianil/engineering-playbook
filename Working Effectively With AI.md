@@ -1,14 +1,14 @@
 # Working Effectively With AI
 
-> A deep dive from the [[Engineering Learnings & Playbook]]. How to work with AI coding tools — and how to evolve your approach as models get more capable.
+> A deep dive from the [[Engineering Learnings & Playbook]]. How to work with AI coding tools, and how to evolve your approach as models get more capable.
 
 ---
 
 ## The Core Mental Model
 
-AI is a multiplier, not a replacement. It multiplies what you already know — your engineering judgment, your understanding of the problem, your taste. Good judgment in, good code out.
+AI is a multiplier, not a replacement. It multiplies what you already know: your engineering judgment, your understanding of the problem, your taste. Good judgment in, good code out.
 
-**You own the what and the why. The model figures out the how.** Your job is to set the goal, provide the right context and tools, define what "done" looks like, and judge the result. The model's job is to get there — and increasingly, it's better at choosing its own path than following yours.
+**You own the what and the why. The model figures out the how.** Your job is to set the goal, provide the right context and tools, define what "done" looks like, and judge the result. The model's job is to get there, and increasingly, it's better at choosing its own path than following yours.
 
 This mental model should evolve as models do. The less you need to choreograph, the more you should focus on being clear about the outcome. Don't hold onto scaffolding that models have outgrown.
 
@@ -16,7 +16,7 @@ This mental model should evolve as models do. The less you need to choreograph, 
 
 ## Context Engineering
 
-The quality of AI output is directly tied to the quality of context it can access. This isn't just about prompting — it's about how you structure your project and what tools you give the model.
+The quality of AI output is directly tied to the quality of context it can access. This isn't just about prompting. It's about how you structure your project and what tools you give the model.
 
 ### Project Structure = AI Context
 
@@ -32,7 +32,9 @@ One-liner: the same things that make code maintainable for humans make it naviga
 
 ### CLAUDE.md / Rules Files
 
-A rules file (CLAUDE.md, guidelines.md, agent.md — depends on the tool) is the single highest-leverage thing you can set up. AI reads it at the start of every session. Think of it as onboarding documentation for AI.
+A rules file is the single highest-leverage thing you can set up. AI reads it at the start of every session. Think of it as onboarding documentation for AI.
+
+Two names matter now. **AGENTS.md** is the cross-tool standard (stewarded by the Linux Foundation's Agentic AI Foundation), read by Codex, Cursor and most other agents. **CLAUDE.md** is Claude Code's own file, and Claude Code also falls back to AGENTS.md when there's no CLAUDE.md.
 
 What to include:
 - What the project is and who it's for
@@ -41,21 +43,29 @@ What to include:
 - Important commands (dev, build, test)
 - What to watch out for (gotchas, quirks)
 
-Write it once, benefit every session. See Part 0 of the playbook for the template.
+Write it once, benefit every session. Run `/eng-init` to generate one (see Part 0 of the playbook).
 
 ### Give Tools, Not Answers
 
 Instead of pasting documentation into prompts, give the model a way to fetch what it needs. Instead of describing your database schema, give it access to query it. Instead of explaining what the UI looks like, give it a browser tool.
 
 - **Documentation pointers** in CLAUDE.md (URLs the model can fetch when needed) beat pasted docs that fill the context window
-- **MCPs** (Model Context Protocol) extend what the model can see and do — browser tools, dev tools, database access, doc fetchers
-- **File access** — a well-structured codebase the model can explore is better than a long description of the codebase
+- **MCPs** (Model Context Protocol) extend what the model can see and do: browser tools, dev tools, database access, doc fetchers
+- **Skills** package a repeatable workflow (a review checklist, a spec format) into a slash command the model loads only when it's needed
+- **Subagents** run a task in a fresh context window, so a big search or a review doesn't flood the main session, and the reviewer starts without the builder's bias
+- **Hooks** run your own scripts automatically before or after the model's actions, like linting on every edit or blocking a commit when tests fail. Rules the model can forget become checks it can't skip
+- **Plugins** bundle skills, subagents, hooks and MCP servers into one install, so a whole setup travels between projects
+- **File access**: a well-structured codebase the model can explore is better than a long description of the codebase
 
 The principle: the model should be able to get the context it needs, when it needs it. Don't try to front-load everything. Give it tools to discover.
 
 ---
 
 ## Communicating Intent
+
+### Spec Before Code
+
+For anything bigger than a fix, write down what you're building before anyone writes code: the outcome, acceptance criteria that each name a proof, what's out of scope. The spec is what the build works from and what the review checks the diff against. This is the idea behind `/eng-spec`. A fix is different: the bug is the spec.
 
 ### Goal + Constraints > Step-by-Step Instructions
 
@@ -64,7 +74,7 @@ Give the model a clear goal and the constraints it should respect. Let it figure
 **What works:**
 - A clear description of the outcome you want
 - Constraints that matter (what not to break, what conventions to follow, what's out of scope)
-- Acceptance criteria — how you'll know it's done
+- Acceptance criteria: how you'll know it's done
 - Access to the codebase, docs, and tools it needs
 
 **What you can let go of:**
@@ -72,27 +82,36 @@ Give the model a clear goal and the constraints it should respect. Let it figure
 - Breaking the task into micro-steps for the model (break it down for *your* thinking, but you don't need to hand-feed each step)
 - Over-specifying implementation details the model can figure out from context
 
-The difference between "AI is useless" and "AI is incredible" is still about how well you communicate — but the communication is shifting from "how to do it" to "what done looks like."
+The difference between "AI is useless" and "AI is incredible" is still about how well you communicate. But the communication is shifting from "how to do it" to "what done looks like."
 
 ### Decomposition Is a Thinking Tool, Not an AI Limitation
 
 Breaking problems down is fundamental engineering. If you can't decompose a task, you don't understand it well enough. That hasn't changed.
 
-What's changed: you don't need to spoon-feed each piece to the model sequentially. Decompose to sharpen *your* thinking, then give the model the full picture and let it execute. The model can handle more than you think — and the gap between what it can handle now vs six months ago is large.
+What's changed: you don't need to spoon-feed each piece to the model sequentially. Decompose to sharpen *your* thinking, then give the model the full picture and let it execute. The model can handle more than you think, and the gap between what it can handle now vs six months ago is large.
 
 ---
 
 ## Verification
 
-The model should always have a way to prove its work. This is timeless — it doesn't change as models improve.
+The model should always have a way to prove its work. This is timeless. It doesn't change as models improve.
 
-- **Tests** — generate them or write them, then make sure they pass
-- **Running the app** — browser, preview, dev server
-- **CLI commands** — build, lint, type check
-- **CI/CD pipelines** — automated verification on push
-- **Visual verification** — browser tools (Playwright, etc.) catch what code-level tests miss, especially for front-end work
+- **Tests**: generate them or write them, then make sure they pass
+- **Running the app**: browser, preview, dev server
+- **CLI commands**: build, lint, type check
+- **CI/CD pipelines**: automated verification on push
+- **Visual verification**: browser tools (Playwright, etc.) catch what code-level tests miss, especially for front-end work
 
 If the model generates the tests, verify the tests too. Trust but verify.
+
+### The Builder Shouldn't Be the Reviewer
+
+The session that wrote the code is the worst one to judge it. It knows what it meant, so it reads what it meant. Hand the review to something with fresh eyes:
+
+- **Fresh reviewer subagents.** `/deslop` and `/eng-check` each spawn a new agent that never saw the build, with only the diff and the project rules.
+- **PR review bots** (Codex, CodeRabbit and others) read every commit on the PR. Let them own correctness and keep your own review on architecture.
+
+You still read the result yourself. Fresh reviewers catch more, but you're the one who owns what ships.
 
 ### Spotting AI-Generated UI
 
@@ -116,8 +135,8 @@ If you're using AI to build UI and the result looks like it could be any app, it
 
 Rich Sutton's Bitter Lesson: general methods that leverage computation always win over hand-engineered solutions. Applied to working with AI:
 
-- **Don't over-orchestrate.** Fancy multi-step workflows with strict sequencing almost always lose to giving the model the goal and letting it work. A year ago you needed the scaffolding. Now you mostly don't.
-- **Invest in context, not choreography.** A good CLAUDE.md, a clean project structure, and the right tools will outlast any clever prompting technique. Models change fast — your project structure and principles don't.
+- **Don't micromanage the steps.** Prompting the model through step 1, then step 2, then step 3 almost always loses to giving it the goal and letting it work. A year ago you needed that scaffolding. Now you mostly don't. A light process around the work still wins, though: plan it, let the model build it, have someone else review it. That's structure for your judgment, not choreography for the model.
+- **Invest in context, not choreography.** A good CLAUDE.md, a clean project structure, and the right tools will outlast any clever prompting technique. Models change fast. Your project structure and principles don't.
 - **Let go of what models outgrow.** If you're still doing something because "that's how you work with AI," test whether it's still necessary. The model from six months ago is not the model you're using today.
 - **The general approach wins.** Clear goals, good tools, clean context, strong verification. This works regardless of which model or which tool. Specific prompting tricks are brittle and expire.
 

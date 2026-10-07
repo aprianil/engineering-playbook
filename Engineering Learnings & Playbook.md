@@ -1,6 +1,6 @@
 # Engineering Learnings & Playbook
 
-> A living document for building engineering taste and judgment — from a designer and product builder who ships code, toward thinking like a staff engineer.
+> A living document for building engineering taste and judgment, from a designer and product builder who ships code, toward thinking like a staff engineer.
 
 ---
 
@@ -11,15 +11,15 @@
 >
 > **How to edit this file:**
 >
-> - Timeless over trendy. This is the #1 rule. Principles should last. Resources, tools, and specific technology choices are perishable — they belong in deep dive notes, not the playbook. The playbook holds the thinking, not the tools.
+> - Timeless over trendy. This is the #1 rule. Principles should last. Resources, tools, and specific technology choices are perishable. They belong in deep dive notes, not the playbook. The playbook holds the thinking, not the tools.
 > - Follow the playbook's own principles. Simplicity first. Don't bloat it.
 > - Don't add sections preemptively. Add them when there's a real learning to capture.
 > - No rigid rules. Guidelines that flex beat hard rules that fight you.
 > - Walk me through your thinking before making edits. I want to approve the reasoning first.
 > - Check for internal conflicts before adding anything new. Don't let new advice contradict existing principles.
 > - Tone: practical, direct, written for a designer/product builder. Not academic, not CS-heavy.
-> - Only use the principles and learnings documented here when writing or editing code in my projects. Don't guess or invent new philosophy — work with what's in this file.
-> - **This playbook is the root, not the container.** When a topic needs a deep dive, suggest creating a new .md file in this vault (flat structure, no subfolders — all files live at the vault root) and link to it from here using `[[Note Name]]`. Keep the playbook as a clean hub that links out — don't let it grow into a textbook.
+> - Only use the principles and learnings documented here when writing or editing code in my projects. Don't guess or invent new philosophy. Work with what's in this file.
+> - **This playbook is the root, not the container.** When a topic needs a deep dive, suggest creating a new .md file in this vault (flat structure, no subfolders, all files live at the vault root) and link to it from here using `[[Note Name]]`. Keep the playbook as a clean hub that links out. Don't let it grow into a textbook.
 
 ---
 
@@ -29,7 +29,7 @@
 - I understand the development lifecycle end-to-end through production
 - What I'm building now: the judgment to know what good code looks like, how to separate concerns, how to think about system design, and how to keep things simple and maintainable
 
-**The goal isn't to become a computer science expert. It's to develop the engineering eye — so I can shape better products, maintain code confidently, and avoid breaking things or creating unnecessary complexity.**
+**The goal isn't to become a computer science expert. It's to develop the engineering eye, so I can shape better products, maintain code confidently, and avoid breaking things or creating unnecessary complexity.**
 
 **Deep dives (linked notes):**
 
@@ -42,24 +42,25 @@
 | [[Testing - When and What to Test]] | What's worth testing, what's not, and how to think about it |
 | [[Communicating Technically With Engineers]] | Asking the right questions, translating between product and engineering |
 | [[Logging in Production]] | Production logging is permanent code, not debugging leftovers |
-| [[Race Conditions]] | Timing bugs when things happen at the same time — common when vibe coding |
-| [[Working Effectively With AI]] | How to communicate with AI coding tools — prompting, context engineering, and verification |
-| [[Code Review - What to Look For and How to Do It]] | Google's code review guide distilled — what to look for, how to comment, speed, handling pushback |
-| [[Choosing a Tech Stack]] | Reference stack for web apps (2026) — boring, AI-fluent, zero-ops. Perishable — revisit when tools change |
-| [[Anatomy of a Well-Structured Feature]] | Seven timeless patterns for how a feature should be structured across layers — validated across five production codebases |
-| [[Building Engineering Taste]] | Reading path for developing the eye — from code quality vocabulary to systems thinking |
-| [[Open Source Maintainership]] | Building trust, community design, release mechanics, saying no — for a product person's first open source project |
-| [[Designing Frontends for Performance]] | Three decisions that determine ~90% of frontend performance — rendering location, data arrival, bundle size. The rest is footnotes |
+| [[Race Conditions]] | Timing bugs when things happen at the same time, common when vibe coding |
+| [[Working Effectively With AI]] | How to communicate with AI coding tools: prompting, context engineering, and verification |
+| [[Code Review - What to Look For and How to Do It]] | Google's code review guide distilled: what to look for, how to comment, speed, handling pushback |
+| [[Choosing a Tech Stack]] | Reference stack for web apps (2026): boring, AI-fluent, zero-ops. Perishable, revisit when tools change |
+| [[Anatomy of a Well-Structured Feature]] | Seven timeless patterns for how a feature should be structured across layers, validated across five production codebases |
+| [[Building Engineering Taste]] | Reading path for developing the eye, from code quality vocabulary to systems thinking |
+| [[Open Source Maintainership]] | Building trust, community design, release mechanics, saying no. For a product person's first open source project |
+| [[Designing Frontends for Performance]] | Three decisions that determine ~90% of frontend performance: rendering location, data arrival, bundle size. The rest is footnotes |
+| [[How the Skills Work Together]] | One feature walked through the full skill cycle, from spec to merge |
 
 ---
 
 ## Part 0: Before You Write a Line of Code
-The structure you set up before coding determines how clean or messy everything gets — for you, for your team, and for AI tools like Claude Code. This is the equivalent of an architect drawing the floor plan before laying bricks. Skip this, and you'll spend more time fighting your own codebase than building features.
+The structure you set up before coding determines how clean or messy everything gets, for you, for your team, and for AI tools like Claude Code. This is the equivalent of an architect drawing the floor plan before laying bricks. Skip this, and you'll spend more time fighting your own codebase than building features.
 
 Clean structure has a double purpose now: **humans can navigate it, and AI can reason about it.** When Claude Code reads your project, it loads files into a context window. Scattered code = noisy context = worse AI suggestions. Focused, well-separated code = clean context = AI that actually helps.
 
 ### The Core Idea: Organize by What It Does, Not What It Is
-Most beginners organize code by file type — all components in one folder, all hooks in another, all utils in another. This feels tidy but falls apart fast because when you work on a feature, your files are scattered everywhere.
+Most beginners organize code by file type: all components in one folder, all hooks in another, all utils in another. This feels tidy but falls apart fast because when you work on a feature, your files are scattered everywhere.
 
 Senior engineers organize by feature. Everything related to one feature lives together. You open one folder, you see the full picture.
 
@@ -76,8 +77,8 @@ Avoid this (organized by type):
   formatCurrency.ts
   formatDate.ts
 
-Do this instead (organized by feature — this is what a mature project looks like, not what you start with. See "How Features Grow" below for the progression):
-/app/api             ← API routes (thin — validate input, delegate to lib/)
+Do this instead (organized by feature: this is what a mature project looks like, not what you start with. See "How Features Grow" below for the progression):
+/app/api             ← API routes (thin: validate input, delegate to lib/)
   /billing
     route.ts         ← validates, calls lib/billing/, returns response
   /user
@@ -99,7 +100,7 @@ Do this instead (organized by feature — this is what a mature project looks li
     /components
       UserProfile.tsx
     useUser.tsx
-/components          ← shared, generic (Button, Form, Table — no business logic)
+/components          ← shared, generic (Button, Form, Table, no business logic)
   /ui
     Button.tsx
     Form.tsx
@@ -109,20 +110,20 @@ Do this instead (organized by feature — this is what a mature project looks li
 ```
 
 **Three layers, each with a clear job:**
-- `app/api/billing/` — thin route. Validates input, delegates to `lib/billing/`, returns response. No business logic here.
-- `lib/billing/` — business logic. The actual work. Reusable from any entry point (API route, background job, CLI script).
-- `features/billing/` — feature-specific UI. Components, hooks, types. Composes shared components with feature-specific behavior.
-- `components/` — shared, generic UI. Used across multiple features. Knows nothing about any business domain.
+- `app/api/billing/`: thin route. Validates input, delegates to `lib/billing/`, returns response. No business logic here.
+- `lib/billing/`: business logic. The actual work. Reusable from any entry point (API route, background job, CLI script).
+- `features/billing/`: feature-specific UI. Components, hooks, types. Composes shared components with feature-specific behavior.
+- `components/`: shared, generic UI. Used across multiple features. Knows nothing about any business domain.
 
-A component starts in its feature folder. It only "graduates" to shared when you discover it's genuinely needed by multiple features — not before (Principle #3).
+A component starts in its feature folder. It only "graduates" to shared when you discover it's genuinely needed by multiple features, not before (Principle #3).
 
-**Dependencies flow one direction:** `components/` → `features/` → `app/` (routes/pages). Features never import from each other. `lib/` is available to any layer — it's pure logic with no UI dependencies. This keeps the blast radius small — changes to billing can't break user.
+**Dependencies flow one direction:** `components/` → `features/` → `app/` (routes/pages). Features never import from each other. `lib/` is available to any layer, since it's pure logic with no UI dependencies. This keeps the blast radius small: changes to billing can't break user.
 
 **Feature names mirror across layers:** if the feature is "billing," you'll find `app/api/billing/`, `lib/billing/`, `features/billing/`, and `useBilling.ts`. You always know where to look.
 
 When you're working on billing, you touch three predictable locations. Context stays clean. No jumping across 6 folders to understand one feature.
 
-This also means when AI helps you with billing, it reads the billing folders and gets the full picture — no noise from unrelated features polluting the context.
+This also means when AI helps you with billing, it reads the billing folders and gets the full picture, no noise from unrelated features polluting the context.
 
 ### Choosing Your Stack
 Before you organize folders, you pick your tools. Apply the innovation token model:
@@ -130,9 +131,9 @@ Before you organize folders, you pick your tools. Apply the innovation token mod
 Technology selection
 - Am I spending innovation tokens on product or infrastructure?
 - Is AI fluent in this technology? (adoption = training data = better AI help)
-- Do I know this tool's failure modes — or am I about to discover them?
+- Do I know this tool's failure modes, or am I about to discover them?
 - Can I solve this with what I already have before adding something new?
-- Ship first, switch later — portability concerns before users are a procrastination vector.
+- Ship first, switch later: portability concerns before users are a procrastination vector.
 ```
 
 See [[Choosing a Tech Stack]] for a reference stack applying these principles.
@@ -143,25 +144,25 @@ Before starting any new project, answer these:
 Structure
 - What are the 3-5 core features? Each one gets folders in lib/, features/, and app/api/.
 - What's truly shared across features? That goes in /components.
-- Where does business logic live? In lib/{feature}/ — not in API routes.
+- Where does business logic live? In lib/{feature}/, not in API routes.
 - Where does state live? As close to where it's used as possible.
 - What's my naming convention? Pick one, write it down, stick to it.
 - What framework conventions already exist? Use them before inventing your own.
 
 File discipline
 - Is each file focused on one thing? (Shorter is usually better, but a readable 300-line file beats a 50-line file that imports from 8 others)
-- Would someone — or AI — understand this file without reading 3 other files first?
+- Would someone, or AI, understand this file without reading 3 other files first?
 
 AI-readiness
 - Do I have a rules file (CLAUDE.md or equivalent) at the project root?
 - Are my conventions written down so I don't repeat myself every session?
 - When I give AI a task, am I being specific enough that it doesn't have to guess the implementation?
 - Does AI have a way to verify its own work (tests, build, lint, browser)?
-- Am I breaking work into small, scoped tasks — or asking AI to do too much at once?
+- Is the work cut into vertical slices (one thin capability end-to-end, one green commit each), so the whole feature can ship as one PR?
 ```
 
 ### The "Screaming Architecture" Test
-Open your project folder. If a stranger looked at just the folder names, would they know what your app *does*? If they see `/features/billing`, `/features/onboarding`, `/features/dashboard` — they get it. If they see `/components`, `/utils`, `/hooks` — they know nothing about the product.
+Open your project folder. If a stranger looked at just the folder names, would they know what your app *does*? If they see `/features/billing`, `/features/onboarding`, `/features/dashboard`, they get it. If they see `/components`, `/utils`, `/hooks`, they know nothing about the product.
 
 Your folder structure should scream the product, not the framework.
 
@@ -178,7 +179,7 @@ Step 2 (it grows, now split):
     BillingPage.tsx
     useBilling.tsx
 
-Step 3 (more complexity — split across layers):
+Step 3 (more complexity: split across layers):
 /app/api/billing
   route.ts              ← thin: validates, delegates to lib/
 /lib/billing
@@ -191,176 +192,105 @@ Step 3 (more complexity — split across layers):
   useBilling.tsx         ← hook that calls the API
 ```
 
-The rule: split when a file does too many things, not before. This is Principle #3 in action — discover the structure, don't over-design it upfront. Start with one file in `/features`. When it needs an API route and business logic, split across layers.
+The rule: split when a file does too many things, not before. This is Principle #3 in action: discover the structure, don't over-design it upfront. Start with one file in `/features`. When it needs an API route and business logic, split across layers.
 
-Once a feature has multiple files across layers (route, logic, hooks), there are seven patterns that keep it clean as it grows. See [[Anatomy of a Well-Structured Feature]] for the full breakdown — thin routes, shared schemas, auth wrappers, and more.
+Once a feature has multiple files across layers (route, logic, hooks), there are seven patterns that keep it clean as it grows. See [[Anatomy of a Well-Structured Feature]] for the full breakdown: thin routes, shared schemas, auth wrappers, and more.
 
-### Setting Up CLAUDE.md — Your AI Onboarding Doc
-A `CLAUDE.md` file at the project root is the first thing Claude Code reads when it enters your project. Think of it as a briefing doc — it tells AI who this project is, how it's built, and what rules to follow. Without it, you'll repeat the same context every conversation.
+### Setting Up CLAUDE.md: Your AI Onboarding Doc
+A `CLAUDE.md` file at the project root is the first thing Claude Code reads when it enters your project. Think of it as a briefing doc. It tells AI who this project is, how it's built, and what rules to follow. Without it, you'll repeat the same context every conversation.
 
 **One `CLAUDE.md` at the root is all you need.** Don't create multiple until a project genuinely grows into a complex monorepo. Keep it simple.
 
-**What to put in your CLAUDE.md:**
-```markdown
-# Project Name
+**Don't write it by hand. Run `/eng-init`.** It asks what the project is, the stack and the gotchas, scans the repo, then generates the file: the engineering principles up top, Do / Don't / Ask first rules, how features are structured, PR guidelines, an Agent workflow block (who codes, whether a review bot exists, what's safety-critical), commands, and doc links for your stack. It also adds hooks that lint on edit and typecheck + test before commit. The skill is the template, so there's no second copy here to drift.
 
-## What this is
-One-line description of the product and who it's for.
+**AGENTS.md** is the cross-tool version of the same idea (Codex, Cursor and others read it). Claude Code has read AGENTS.md natively since 2.1.277 (Sept 2026) when no CLAUDE.md exists, so a project that already has an AGENTS.md doesn't need a second file.
 
-## Tech stack
-- Framework: [e.g. Next.js, app router]
-- Styling: [e.g. Tailwind CSS]
-- Database: [e.g. Supabase, Postgres]
-- Language: [e.g. TypeScript]
-
-## Project structure
-/app/api     — API routes (thin — validate input, delegate to lib/)
-/lib         — business logic, organized by feature (e.g. lib/billing/)
-/components  — shared UI components (no business logic)
-/features    — feature-specific UI (components + hooks + types per feature)
-
-## How features are structured
-- API routes validate input and delegate — no business logic in route files
-- Business logic lives in lib/{feature}/ — reusable from any entry point
-- Schemas (Zod) defined once, shared between frontend and backend
-- Auth handled via a shared wrapper — not copy-pasted per route
-- Background work (webhooks, emails, analytics) runs after the response
-- Errors use a custom AppError class with codes — handled once at the boundary
-
-## Do
-- Validate all input at the API boundary with Zod schemas
-- Keep route files thin — delegate to lib/
-- Use the auth wrapper on every protected route
-- Name features consistently across layers (api/billing/, lib/billing/, use-billing.ts)
-- Run tests/build/lint to verify changes — don't just trust the code
-- Comments explain *why*, not *what* — if the code needs a comment to explain what it does, the code isn't clear enough
-- Use early returns to reduce nesting: `if (!user) return null;`
-- Use descriptive errors with context: `Unable to create invoice: User ${userId} has no payment method`
-
-## Don't
-- Put business logic in API routes or layout files
-- Copy-paste auth checks into individual routes
-- Return raw database types to the frontend — transform first
-- Skip input validation — even for internal APIs
-- Let AI write code without a way to verify it works
-- Use `as any` — find the real type instead
-- Commit secrets, API keys, or .env files
-- Add comments that restate the code (e.g. `// Get the user` above `getUser()`)
-
-## Ask first
-- Adding new dependencies (each one is a maintenance commitment)
-- Changing the database schema (hard to reverse)
-- Deleting files (might be someone's in-progress work)
-- Changes that touch more than one feature boundary
-
-## Conventions
-- Naming: PascalCase for components, camelCase for functions/hooks
-- Imports: use @/ alias for root-level imports
-- Components: split when they do too much — favor readability over line count
-- Errors: throw AppError with a code, never raw strings
-
-## Commands
-- npm run dev — start dev server
-- npm run build — production build
-- npm run test — run tests
-
-## PR guidelines
-- One responsibility per PR. A big PR is fine when it's built in vertical slices (one working commit per slice) with a short slice map in the description
-- Split into separate PRs only when a piece has its own gate: a data migration, a change to auth, payments or deploys themselves, or a refactor riding along with a feature
-- Fix type errors before test failures — types are often the root cause
-
-## When stuck
-- Ask a clarifying question before making large speculative changes
-- Propose a short plan for complex tasks before coding
-- Fix type errors first — they often cause cascading test failures
-- If something seems wrong, investigate before deleting — it may be intentional
-
-## What to watch out for
-- [Any known gotchas, quirks, or things that break easily]
-```
-
-This takes 5 minutes to write and pays off in every AI session. Claude Code will follow these conventions automatically instead of guessing.
+It pays off in every AI session. Claude Code follows these conventions instead of guessing.
 
 ### Working With AI Coding Tools
 Beyond rules files, there are principles that make AI consistently useful. These apply regardless of which tool you use.
 
-**Goal + constraints, not step-by-step instructions** — give the model a clear outcome, the constraints it should respect, and access to the tools it needs. Let it figure out the path. Don't choreograph its execution — models are increasingly better at choosing their own approach than following yours.
+**Goal + constraints, not step-by-step instructions**: give the model a clear outcome, the constraints it should respect, and access to the tools it needs. Let it figure out the path. Don't choreograph its execution. Models are increasingly better at choosing their own approach than following yours.
 
-**Context mindset** — every time you structure a file or name a function, you're writing for a future AI session that needs to understand this code fast. Clean naming, small files, and co-located features make AI assistance dramatically better. The same things that make code maintainable for humans make it navigable for AI.
+**Context mindset**: every time you structure a file or name a function, you're writing for a future AI session that needs to understand this code fast. Clean naming, small files, and co-located features make AI assistance dramatically better. The same things that make code maintainable for humans make it navigable for AI.
 
-**Give tools, not answers** — instead of pasting docs into prompts, give the model a URL it can fetch. Instead of describing the UI, give it a browser tool. Let the model pull context when it needs it rather than front-loading everything.
+**Give tools, not answers**: instead of pasting docs into prompts, give the model a URL it can fetch. Instead of describing the UI, give it a browser tool. Let the model pull context when it needs it rather than front-loading everything.
 
-**Verify, don't trust** — the model should always have a way to prove its work: tests, build commands, browser checks, CI/CD. This is timeless regardless of how capable models get.
+**Verify, don't trust.** The model should always have a way to prove its work: tests, build commands, browser checks, CI/CD. This is timeless regardless of how capable models get.
 
-**Decompose for your thinking, not the model's** — breaking problems down is fundamental engineering. But you don't need to hand-feed each step to the model. Decompose to sharpen your understanding, then give the model the full picture.
+**Decompose for your thinking, not the model's**: breaking problems down is fundamental engineering. But you don't need to hand-feed each step to the model. Decompose to sharpen your understanding, then give the model the full picture.
 
-**Let go of what models outgrow** — techniques that were necessary a year ago may be unnecessary scaffolding today. If something feels like hand-holding, test whether the model still needs it.
+**Let go of what models outgrow**: techniques that were necessary a year ago may be unnecessary scaffolding today. If something feels like hand-holding, test whether the model still needs it.
 
 See [[Working Effectively With AI]] for the full deep dive on context engineering, tool-first thinking, and verification.
 
 **Claude Code-specific practices:**
 
-**Skills** — repeatable commands you can trigger with a slash. `/commit` writes a proper commit message. You can create custom skills for things you do often. Think of them as shortcuts that keep you in flow.
+**Skills**: repeatable commands you can trigger with a slash. `/commit` (from the commit-commands plugin) writes a proper commit message. You can create custom skills for things you do often. Think of them as shortcuts that keep you in flow.
 
-Custom skills built for this playbook (lives in `.claude/skills/` — the standard Claude Code location):
-- `/eng-init` — scaffolds a CLAUDE.md in any project with the engineering principles from this playbook baked in. Run once per project. Team-friendly — any contributor benefits from it.
-- `/eng-spec` — planning session. Captures context (who, why, what triggered this), defines user flow and acceptance criteria, and saves a spec file. Then a fresh sub-agent stress-tests it until it's ready to build. `/eng-spec stress <path>` runs just the stress test on any spec or plan. No code gets written — just thinking.
-- `/eng-build` — execution session. Reads a spec file and builds from it. Clean context, clear instructions. The spec is the contract. When something breaks unexpectedly, it runs the debug loop (reproduce, 3-5 hypotheses, root cause, fix, guard test) and resumes. It ends with a Capture step that writes anything non-obvious to `docs/solutions/`.
-- `/eng-check` — reviews code against the engineering principles in the project's CLAUDE.md. Auto-triggers when you ask Claude to review code.
-- `/sync-playbook` — syncs the playbook and deep dive files from Obsidian to GitHub.
+Custom skills built for this playbook (they live in `~/.claude/skills/`, and anyone can install them with `npx skills add aprianil/engineering-playbook`):
+- `/eng-init`: scaffolds a CLAUDE.md in any project with the engineering principles from this playbook baked in. Run once per project. Team-friendly, any contributor benefits from it.
+- `/eng-spec`: planning session. Triages first (a fix skips the spec, the bug is the spec), then captures context, user flow and acceptance criteria (each with a proof), and saves a spec file. A fresh sub-agent stress-tests it until it's ready to build. `/eng-spec stress <path>` runs just the stress test on any spec or plan. No code gets written, just thinking.
+- `/eng-build`: execution session. Builds the whole spec in one session and one PR, slice by slice, one green commit per slice. When something breaks unexpectedly, it runs the debug loop (reproduce, 3-5 hypotheses, root cause, fix, guard test) and resumes. After merge, a Capture step saves anything non-obvious to `docs/solutions/`.
+- `/eng-check`: a fresh sub-agent reviews the code against the project's CLAUDE.md. Three modes: local diff before you push (the default), a commit range mid-build (`/eng-check <sha>..<sha>`, for risky slices), and the PR merge gate (`/eng-check <PR#>`), which weighs the review bot's findings and returns ship or fix-then-ship.
+- `/deslop`: a fresh sub-agent strips AI slop from the branch (dead defensive checks, `as any`, single-use helpers, comment and prose noise). Runs right before merge.
+- `/sync-playbook`: syncs the playbook, the deep dives and the skills from Obsidian and `~/.claude/skills/` to the GitHub repo.
 
-**Hooks** — automated actions that run before or after tool calls. For example, a hook that runs your linter every time Claude Code edits a file. This catches quality issues automatically without you having to remember.
+**How the work gets split:** the orchestrator plans, reads every diff and judges. One long-lived coder agent writes the code and stays alive across slices so it keeps its context. Reviewers are always fresh agents that never saw the build, and safety-critical code (anything that can type into, close or restart what you're using) gets a second fresh review that hasn't seen the first verdict. See [[How the Skills Work Together]] for one feature walked through the whole cycle.
+
+**Hooks**: automated actions that run before or after tool calls. For example, a hook that runs your linter every time Claude Code edits a file. This catches quality issues automatically without you having to remember.
 
 **Essential resources:**
-- [Bulletproof React](https://github.com/alan2207/bulletproof-react) — the single best reference for React project structure. Study the folder layout and read the docs explaining each decision.
-- [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code) — official docs on CLAUDE.md, skills, hooks, and best practices.
+- [Bulletproof React](https://github.com/alan2207/bulletproof-react): the single best reference for React project structure. Study the folder layout and read the docs explaining each decision.
+- [Claude Code documentation](https://code.claude.com/docs): official docs on CLAUDE.md, skills, hooks, and best practices.
 
 > [!tip]- Further reading
-> - [Screaming Architecture](https://blog.cleancoder.com/uncle-bob/2011/09/30/Screaming-Architecture.html) by Robert Martin — short blog post, 5 min read
-> - [Next.js Project Structure docs](https://nextjs.org/docs/getting-started/project-structure)
-> - [T3 Stack](https://create.t3.gg) — study the scaffolded project and its docs
-> - [Feature-Sliced Design](https://feature-sliced.design) — read the overview only
+> - [Screaming Architecture](https://blog.cleancoder.com/uncle-bob/2011/09/30/Screaming-Architecture.html) by Robert Martin: short blog post, 5 min read
+> - [Next.js Project Structure docs](https://nextjs.org/docs/app/getting-started/project-structure)
+> - [T3 Stack](https://create.t3.gg): study the scaffolded project and its docs
+> - [Feature-Sliced Design](https://feature-sliced.design): read the overview only
 > - [Shadcn/ui source code](https://github.com/shadcn-ui/ui)
 
 ---
 
 ## Part 1: The Mindset Shifts
-Senior isn't about code. It's about how you think — and more specifically, how you approach problems.
+Senior isn't about code. It's about how you think, and more specifically, how you approach problems.
 
 Going from shipping code to engineering well is less about leveling up your code and more about leveling up your thinking.
 
 ### Most of the Work Happens Before and After Writing Code
-The hard part of engineering isn't typing code — it's thinking clearly before and after.
+The hard part of engineering isn't typing code. It's thinking clearly before and after.
 
 - **Plan thoroughly before writing code.** An hour of planning saves days of rework. Explore the problem, challenge assumptions, stress-test the design. When you sit down to build, the path should be clear.
 - **Review to catch issues and capture learnings.** Review is half the 80%, not an afterthought. Fresh eyes catch what the builder can't.
-- **Codify knowledge so it's reusable.** Conventions, principles, and learnings that compound should be written down — in CLAUDE.md, in playbooks, in specs. Knowledge that stays in your head helps once. Knowledge that's codified helps every future session.
-- **Keep quality high so future changes are easy.** The goal of quality isn't perfection — it's speed. Clean code changes fast. Messy code fights you.
+- **Codify knowledge so it's reusable.** Conventions, principles, and learnings that compound should be written down: in CLAUDE.md, in playbooks, in specs. Knowledge that stays in your head helps once. Knowledge that's codified helps every future session.
+- **Keep quality high so future changes are easy.** The goal of quality isn't perfection. It's speed. Clean code changes fast. Messy code fights you.
 - **Complexity is incremental.** No single decision makes a codebase complex. It's hundreds of small "just this once" compromises that compound. The same way conventions compound positively, shortcuts compound negatively.
-- **The invisible work is engineering.** Specs, structure, conventions, context setup — the work that makes execution feel easy. If you spent a day on that and wrote zero code, you still shipped. This is glue work — it doesn't look like building, but nothing gets built well without it.
+- **The invisible work is engineering.** Specs, structure, conventions, context setup: the work that makes execution feel easy. If you spent a day on that and wrote zero code, you still shipped. This is glue work. It doesn't look like building, but nothing gets built well without it.
 
-The ratio shifts by context — a small UI tweak doesn't need 80% planning, and a new system touching core infrastructure might need 90%. The principle behind the ratio is more durable than the numbers: **thinking is cheaper than fixing.**
+The ratio shifts by context. A small UI tweak doesn't need 80% planning, and a new system touching core infrastructure might need 90%. The principle behind the ratio is more durable than the numbers: **thinking is cheaper than fixing.**
 
-**9 principles to internalize:**
-1. **Aim for simplicity.** Simple = readable, changeable, few things to think about. Simple is not the same as easy — a framework can be easy to start with but complex to change. Prefer deep over shallow: a good function has a simple interface and does a lot behind it. A self-contained 200-line file is simpler than a 50-line file that imports from 8 others.
-2. **YAGNI — You Aren't Going To Need It.** Don't build for requirements that don't exist yet. You are bad at predicting the future.
+**11 principles to internalize:**
+1. **Aim for simplicity.** Simple = readable, changeable, few things to think about. Simple is not the same as easy: a framework can be easy to start with but complex to change. Prefer deep over shallow: a good function has a simple interface and does a lot behind it. A self-contained 200-line file is simpler than a 50-line file that imports from 8 others.
+2. **YAGNI: You Aren't Going To Need It.** Don't build for requirements that don't exist yet. You are bad at predicting the future.
 3. **Discover abstractions, don't design them.** Wait until the pattern repeats before extracting. Premature abstraction is worse than duplication.
-4. **Never trade quality for speed.** What you build should be correct and verified. If you need to move faster, build less, not worse. Shortcuts are fine if deliberate and documented — "I'll fix it later" without a ticket is a wish.
-5. **Type 1 vs Type 2 decisions.** Type 1 = hard to reverse (database schema, public APIs) — proceed carefully. Type 2 = reversible (UI, naming, library choice) — just decide. Most decisions are Type 2.
+4. **Never trade quality for speed.** What you build should be correct and verified. If you need to move faster, build less, not worse. Shortcuts are fine if deliberate and documented. "I'll fix it later" without a ticket is a wish.
+5. **Type 1 vs Type 2 decisions.** Type 1 = hard to reverse (database schema, public APIs), so proceed carefully. Type 2 = reversible (UI, naming, library choice), so just decide. Most decisions are Type 2.
 6. **Invest in what compounds.** If it makes the next 10 sessions better, add it now. If it's a one-time need, add it when you need it.
-7. **The builder shouldn't be the reviewer.** Fresh eyes catch what the author can't. Have someone — or a separate agent — challenge your work before you commit.
-8. **Verify, don't trust.** Every change needs a way to prove it works — tests, build, lint, browser. Applies to your own code and AI-generated code equally.
+7. **The builder shouldn't be the reviewer.** Fresh eyes catch what the author can't. Have someone (or a separate agent) challenge your work before you commit.
+8. **Verify, don't trust.** Every change needs a way to prove it works: tests, build, lint, browser. Applies to your own code and AI-generated code equally.
 9. **Own what you ship.** If you can't explain why the code is structured this way, you don't understand it enough to maintain it. AI types, you think.
-10. **Context before action.** Load and understand the relevant context before starting any work -- specs, code, architecture, constraints. Not everything, just what's relevant. Five minutes of context loading prevents hours of rework from wrong assumptions.
+10. **Context before action.** Load and understand the relevant context before starting any work: specs, code, architecture, constraints. Not everything, just what's relevant. Five minutes of context loading prevents hours of rework from wrong assumptions.
+11. **Decompose into vertical slices, ship whole.** One spec, one build session, one PR by default, and inside it each vertical slice (schema + API + UI for one flow) is one commit that builds and passes tests on its own, so the PR can be reviewed, bisected and reverted slice by slice. Split into a separate spec and PR only for work with its own gate (a migration, a change to auth, payments or deploys themselves, a refactor riding along).
 
 **Essential resources:**
-- "A Philosophy of Software Design" by John Ousterhout — the best book on simplicity and complexity in code. Short, practical. Start here.
-- [The Grug Brained Developer](https://grugbrain.dev) — funny, brutally honest essay on fighting complexity. 20 minutes.
-- [Goodbye, Clean Code](https://overreacted.io/goodbye-clean-code/) by Dan Abramov — the moment he realized premature abstraction was worse than duplication. 5 min read.
+- "A Philosophy of Software Design" by John Ousterhout: the best book on simplicity and complexity in code. Short, practical. Start here.
+- [The Grug Brained Developer](https://grugbrain.dev): funny, brutally honest essay on fighting complexity. 20 minutes.
+- [Goodbye, Clean Code](https://overreacted.io/goodbye-clean-code/) by Dan Abramov: the moment he realized premature abstraction was worse than duplication. 5 min read.
 
 > [!tip]- Further reading
-> - [Simple Made Easy](https://www.infoq.com/presentations/Simple-Made-Easy/) by Rich Hickey (~60 min) — deeper take on why simple and easy are not the same
-> - Jeff Bezos' 2015 shareholder letter on Type 1 vs Type 2 decisions — the original framing
+> - [Simple Made Easy](https://www.infoq.com/presentations/Simple-Made-Easy/) by Rich Hickey (~60 min): deeper take on why simple and easy are not the same
+> - Jeff Bezos' 2015 shareholder letter on Type 1 vs Type 2 decisions, the original framing
 
 ---
 
@@ -369,15 +299,16 @@ These are the checklists that build judgment over time. Come back to these every
 
 ### Before Building
 ```
+- Is this a fix or a feature? For a fix, the bug is the spec: reproduce, root cause, guard test, review. No spec ceremony.
 - What problem am I actually solving? For whom?
 - What triggered this work? (customer feedback, bug, internal idea, strategic decision)
 - Do I understand the existing codebase enough to plan? (folder structure, relevant files, patterns already in use)
-- What does "done" look like?
+- What does "done" look like? Does every acceptance criterion name its proof, and could that proof actually fail?
 - What's the simplest thing that could work?
 - Is this reversible? (Type 1 vs Type 2 decision)
-- Have I captured enough context that someone else — or AI — could build this without asking me 20 questions?
+- Have I captured enough context that someone else, or AI, could build this without asking me 20 questions?
 - Can I sketch the structure before writing code?
-- What's my folder structure philosophy — and why?
+- What's my folder structure philosophy, and why?
 ```
 
 ### While Building
@@ -418,7 +349,8 @@ Side Effects
 PR Hygiene
 - Is the PR focused on one thing? If it's big, is it built in vertical slices, one working commit each, so I can read it slice by slice?
 - Is anything riding along that has its own gate (a migration, an auth or payment change, a refactor)? That goes in its own PR.
-- Does the commit history tell a story?
+- Does the commit history tell a story? Merge with `--rebase` so the slice commits survive on main (squash loses per-slice revert).
+- Did review findings get fixed inline? A follow-up issue for a small fix costs more than the fix, because the next session has to reload all the context. Defer only what needs its own scope.
 ```
 
 ### After Shipping
@@ -427,15 +359,16 @@ PR Hygiene
 - What trade-off did I make? What did I choose, what did I reject, and why?
 - What would I do differently with hindsight?
 - What did I learn that changes how I build next time?
+- Can I make this mistake impossible or loud instead of writing it down? Structure first, then a type, then a lint, then a test. A doc comes last, for what can't be enforced.
 ```
 
 **Essential resource:**
-- [Google's Code Review Developer Guide](https://google.github.io/eng-practices/review/reviewer/) — the actual guide Google uses for code reviews. The "What to look for in a code review" section is gold.
+- [Google's Code Review Developer Guide](https://google.github.io/eng-practices/review/reviewer/): the actual guide Google uses for code reviews. The "What to look for in a code review" section is gold.
 
 > [!tip]- Further reading
 > - [How to Make Your Code Reviewer Fall in Love with You](https://mtlynch.io/code-review-love/) by Michael Lynch
-> - "The Checklist Manifesto" by Atul Gawande — why checklists work in high-stakes fields
-> - "On Writing Software Well" by DHH (YouTube playlist) — experienced dev thinking out loud
+> - "The Checklist Manifesto" by Atul Gawande: why checklists work in high-stakes fields
+> - "On Writing Software Well" by DHH (YouTube playlist): experienced dev thinking out loud
 
 ---
 
@@ -448,10 +381,10 @@ Reference this when building or reviewing code. If something looks like the righ
 | Each file has a clear, single responsibility | One file doing five different things |
 | Naming tells you what something does without reading the body | `handleClick2`, `tempFunc`, `data2` |
 | Related code lives together, unrelated code is separated | Utility functions scattered across random files |
-| Dependencies flow one direction — features don't import from each other | Feature A imports from Feature B which imports from Feature C — tangled web |
+| Dependencies flow one direction (features don't import from each other) | Feature A imports from Feature B which imports from Feature C, a tangled web |
 | Small, focused functions that do one thing | 200-line functions with nested if/else chains |
-| Changes are surgical -- only what the task requires. Orphaned imports/vars from your changes cleaned up | Drive-by "improvements" to adjacent code, reformatting untouched lines, cleaning up pre-existing dead code nobody asked about |
-| API routes are thin — validate and delegate to business logic in `lib/` | All logic crammed into the route file (validation, database calls, side effects) |
+| Changes are surgical, only what the task requires. Orphaned imports/vars from your changes cleaned up | Drive-by "improvements" to adjacent code, reformatting untouched lines, cleaning up pre-existing dead code nobody asked about |
+| API routes are thin: validate and delegate to business logic in `lib/` | All logic crammed into the route file (validation, database calls, side effects) |
 
 ### Error Handling & Logging
 | Good | Bad |
@@ -460,7 +393,7 @@ Reference this when building or reviewing code. If something looks like the righ
 | Errors are caught and handled with useful feedback | `try/catch` that swallows errors silently |
 | User sees a helpful message when something fails | Raw stack trace or silent failure |
 | Production logs with context: who, what, where, why it failed | `console.log("here")` scattered everywhere |
-| Structured logs with labels: `[POST /api/billing] Failed { userId, error }` | Unlabeled `console.log(data)` — no idea which flow it belongs to |
+| Structured logs with labels: `[POST /api/billing] Failed { userId, error }` | Unlabeled `console.log(data)`, no idea which flow it belongs to |
 | Request IDs to trace one user's journey across the system | Logs from all users mixed together with no way to filter |
 | Sensitive data (passwords, tokens, card numbers) never logged | Full credentials dumped into logs |
 
@@ -469,20 +402,21 @@ See [[Logging in Production]] for deeper guidance.
 ### Auth & Security
 | Good | Bad |
 |------|-----|
-| Auth enforced in one place (middleware) | Auth check copy-pasted in every route |
+| Auth through a shared wrapper, plus checks near data access (ownership, tenant) | Auth check copy-pasted in every route, or enforced only in middleware (that's how CVE-2025-29927 bypassed it) |
 | Inputs validated at the API boundary | User content rendered without sanitization |
 | Dependencies audited regularly | `npm audit` with critical vulnerabilities ignored |
+| Untrusted text (user input, scraped pages, tool output) kept marked as data when it goes into a prompt; LLM output parsed and checked before it's trusted | User content pasted straight into prompts; LLM output rendered as HTML, run, or trusted for permissions (prompt injection) |
 
 ### API Design
 | Good | Bad |
 |------|-----|
 | Consistent naming, proper HTTP status codes | Mixed conventions, everything returns 200 |
 | Validates input at the boundary with a shared schema (Zod, etc.) | No validation, or manual if-checks scattered through the route |
-| One schema defines the contract — shared by frontend and backend | Frontend and backend disagree on field names, types drift silently |
+| One schema defines the contract, shared by frontend and backend | Frontend and backend disagree on field names, types drift silently |
 | Designed for backward compatibility | Breaking changes deployed with no warning |
 | New fields are additive and optional | Existing fields changed or removed, breaking consumers |
 
-**Hyrum's Law:** with enough users of an API, every observable behavior becomes a de facto contract, whether you documented it or not. Error message text, response ordering, timing quirks — if someone can observe it, someone depends on it. Design implication: be intentional about what you expose. Don't leak implementation details. Plan for how you'll deprecate things, because removing anything is harder than you think.
+**Hyrum's Law:** with enough users of an API, every observable behavior becomes a de facto contract, whether you documented it or not. Error message text, response ordering, timing quirks: if someone can observe it, someone depends on it. Design implication: be intentional about what you expose. Don't leak implementation details. Plan for how you'll deprecate things, because removing anything is harder than you think.
 
 ### Deployment & Shipping
 | Good | Bad |
@@ -492,17 +426,17 @@ See [[Logging in Production]] for deeper guidance.
 | Deploy, verify, rollback in under 5 minutes | Rollback means reverting and redeploying for 20 minutes |
 
 **Essential resource:**
-- [Naming Things in Code](https://www.youtube.com/@CodeAesthetic) by CodeAesthetic (YouTube, ~8 min) — short video that clicks immediately. You'll start seeing bad naming everywhere after this.
+- [Naming Things in Code](https://www.youtube.com/@CodeAesthetic) by CodeAesthetic (YouTube, ~8 min): short video that clicks immediately. You'll start seeing bad naming everywhere after this.
 
 > [!tip]- Further reading
-> - "Clean Code" by Robert C. Martin — early chapters on naming and functions only. Later chapters get dogmatic.
-> - [The Wrong Abstraction](https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction) by Sandi Metz — duplication is cheaper than the wrong abstraction
-> - [Cal.com GitHub repo](https://github.com/calcom/cal.com) — well-structured Next.js app to browse
+> - "Clean Code" by Robert C. Martin: early chapters on naming and functions only. Later chapters get dogmatic.
+> - [The Wrong Abstraction](https://sandimetz.com/blog/2016/1/20/the-wrong-abstraction) by Sandi Metz: duplication is cheaper than the wrong abstraction
+> - [Cal.com GitHub repo](https://github.com/calcom/cal.com): well-structured Next.js app to browse
 
 ---
 
 ## Part 4: The Trade-Off Muscle
-This is the core skill. Not "always choose quality" or "always ship fast" — it's knowing when to switch gears.
+This is the core skill. Not "always choose quality" or "always ship fast." It's knowing when to switch gears.
 
 | Situation | Lean Toward |
 |-----------|-------------|
@@ -514,62 +448,62 @@ This is the core skill. Not "always choose quality" or "always ship fast" — it
 | Choosing a tech stack for a new project | Boring. Pick the most adopted, most documented, most AI-fluent option. Save innovation tokens for the product. |
 | Tempted to add a new tool or service | First ask: "How would we solve this with what we already have?" Only add if the unnatural acts are truly unbearable. |
 | Task that needs your judgment (design, architecture, tradeoffs) | Do it yourself. This is where you compound. |
-| Task that's mechanical execution (boilerplate, migrations, formatting) | Delegate. Your judgment isn't needed here — your attention is the scarce resource. |
+| Task that's mechanical execution (boilerplate, migrations, formatting) | Delegate. Your judgment isn't needed here. Your attention is the scarce resource. |
 | High-frequency writes + collaboration + offline-first feel | Consider local-first sync engines. Otherwise, optimistic UI + streaming gets you ~80% of the perceived-speed win at 5% of the complexity. See [[Designing Frontends for Performance]]. |
 
 **Essential resource:**
-- [Choose Boring Technology](https://boringtechnology.club) by Dan McKinley — why you should default to proven, boring tools. Every new technology has a cost. You get a limited number of "innovation tokens."
+- [Choose Boring Technology](https://boringtechnology.club) by Dan McKinley: why you should default to proven, boring tools. Every new technology has a cost. You get a limited number of "innovation tokens."
 
 > [!tip]- Further reading
-> - "Thinking in Bets" by Annie Duke — every architecture choice is a bet under uncertainty
-> - "The Thirty Percent Rule" by Kris Brandow — balancing tech debt vs feature work
-> - "Accelerate" by Nicole Forsgren — research on what makes engineering teams fast
+> - "Thinking in Bets" by Annie Duke: every architecture choice is a bet under uncertainty
+> - "The Thirty Percent Rule" by Kris Brandow: balancing tech debt vs feature work
+> - "Accelerate" by Nicole Forsgren: research on what makes engineering teams fast
 
 ---
 
 ## Part 5: The Practice Loop
-Taste isn't learned from reading — it's forged through build, judge, break, learn, repeat.
+Taste isn't learned from reading. It's forged through build, judge, break, learn, repeat.
 
 | Practice | What It Builds |
 |----------|---------------|
-| Build something real, end-to-end | Systems thinking — see how pieces connect |
-| Review your own code using the Part 2 checklists | Self-critique — catch your own blind spots with a concrete framework |
-| Read great codebases | Pattern recognition — absorb what "great" feels like |
+| Build something real, end-to-end | Systems thinking: see how pieces connect |
+| Review your own code using the Part 2 checklists | Self-critique: catch your own blind spots with a concrete framework |
+| Read great codebases | Pattern recognition: absorb what "great" feels like |
 | Write down why you made each decision | Forces you to articulate *why*, not just *what* |
 | Do post-mortems on your own failures | Not just what broke, but *why* it broke |
-| Teach or explain what you built | The biggest brain move isn't building the hardest thing — it's explaining the simple thing well |
-| Ask: which principle or skill didn't apply to anything I built recently? | Pruning — cut what's dead weight, update what's drifted, add what's missing |
+| Teach or explain what you built | The biggest brain move isn't building the hardest thing. It's explaining the simple thing well |
+| Ask: which principle or skill didn't apply to anything I built recently? | Pruning: cut what's dead weight, update what's drifted, add what's missing |
 
 **Start with one codebase (browse, don't study):**
-- [Bulletproof React](https://github.com/alan2207/bulletproof-react) — the architecture reference. Study how it's structured, then look at code.
+- [Bulletproof React](https://github.com/alan2207/bulletproof-react): the architecture reference. Study how it's structured, then look at code.
 
 > [!tip]- More codebases and people to follow
 > **Codebases:**
-> - [Cal.com](https://github.com/calcom/cal.com) — real product, well-structured Next.js app
-> - [Shadcn/ui](https://github.com/shadcn-ui/ui) — clean component library
-> - [T3 Stack](https://create.t3.gg) — full-stack TypeScript template
+> - [Cal.com](https://github.com/calcom/cal.com): real product, well-structured Next.js app
+> - [Shadcn/ui](https://github.com/shadcn-ui/ui): clean component library
+> - [T3 Stack](https://create.t3.gg): full-stack TypeScript template
 >
 > **People:**
-> - [Dan Abramov](https://overreacted.io) — React fundamentals
-> - [Kent C. Dodds](https://kentcdodds.com) — testing and React patterns
-> - [Theo Browne](https://www.youtube.com/@t3dotgg) — full-stack trade-offs
-> - [CodeAesthetic](https://www.youtube.com/@CodeAesthetic) — short visual videos on code quality
-> - [Fireship](https://www.youtube.com/@Fireship) — fast visual explainers
-> - [The Primeagen](https://www.youtube.com/@ThePrimeagen) — senior engineer thinking out loud
+> - [Dan Abramov](https://overreacted.io): React fundamentals
+> - [Kent C. Dodds](https://kentcdodds.com): testing and React patterns
+> - [Theo Browne](https://www.youtube.com/@t3dotgg): full-stack trade-offs
+> - [CodeAesthetic](https://www.youtube.com/@CodeAesthetic): short visual videos on code quality
+> - [Fireship](https://www.youtube.com/@Fireship): fast visual explainers
+> - [The Primeagen](https://www.youtube.com/@ThePrimeagen): senior engineer thinking out loud
 
 ---
 
 ## Part 6: Recommended Learning Path
-A suggested progression — start wherever feels right, skip what you've already absorbed, revisit as you grow:
+A suggested progression. Start wherever feels right, skip what you've already absorbed, revisit as you grow:
 
 ### Phase 1: Build the Eye
-You're already shipping code — this is about adding a judgment layer on top.
+You're already shipping code. This is about adding a judgment layer on top.
 - [ ] Read "A Philosophy of Software Design" by John Ousterhout
 - [x] Read "The Grug Brained Developer" (grugbrain.dev)
 - [x] Read "Goodbye, Clean Code" by Dan Abramov
 - [x] Watch "Naming Things in Code" by CodeAesthetic (8 min)
-- [x] Browse Bulletproof React repo — folder structure first, code second
-- [ ] Write a CLAUDE.md for your current project (template in Part 0)
+- [x] Browse Bulletproof React repo: folder structure first, code second
+- [ ] Generate a CLAUDE.md for your current project with `/eng-init` (see Part 0)
 
 ### Phase 2: Understand the System
 Zoom out to see how pieces connect.
@@ -592,10 +526,10 @@ Judgment becomes instinct through repetition.
 >
 > **Format:**
 > ```
-> ### YYYY-MM-DD — [tag] Sticky headline
+> ### YYYY-MM-DD [tag] Sticky headline
 > - Bullet points with enough context to stand on their own months later
 > - Include the "why" or an example when the concept isn't self-explanatory
-> - Not paragraphs, not over-simplified — enough depth to recall, concise enough to scan
+> - Not paragraphs, not over-simplified. Enough depth to recall, concise enough to scan
 > ```
 >
 > **Tags:** `[structure]` `[debugging]` `[tradeoff]` `[naming]` `[patterns]` `[git]` `[testing]` `[communication]` `[simplicity]` `[review]` or whatever fits.
@@ -606,190 +540,180 @@ Judgment becomes instinct through repetition.
 > - Headlines should be memorable phrases that capture the core lesson
 > - When this section gets long, split it into its own `[[Engineering Learnings Log]]` file
 
-### 2026-04-10 — [frontend] useEffect is the seed of the next infinite loop
-- `useEffect` was meant for "sync with an external system on mount." Teams reach for it to mirror state, relay events, and chain updates — and each of those is solvable with a clearer primitive. Every misuse is a future race condition, infinite loop, or "why did this run?" debugging session.
-- The React team's own [You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect) guide says the same thing. Factory went further: ban direct `useEffect`, expose only a named `useMountEffect` wrapper for the rare legitimate case. That's the move that makes the rule stick — a single escape hatch you have to consciously opt into.
+### 2026-04-10 [frontend] useEffect is the seed of the next infinite loop
+- `useEffect` was meant for "sync with an external system on mount." Teams reach for it to mirror state, relay events, and chain updates, and each of those is solvable with a clearer primitive. Every misuse is a future race condition, infinite loop, or "why did this run?" debugging session.
+- The React team's own [You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect) guide says the same thing. Factory went further: ban direct `useEffect`, expose only a named `useMountEffect` wrapper for the rare legitimate case. That's the move that makes the rule stick: a single escape hatch you have to consciously opt into.
 - Five replacements: (1) derive state, don't sync it; (2) use a query library for fetching; (3) event handlers for user actions; (4) `useMountEffect` for mount-only external sync; (5) `key` for reset, not dependency choreography.
-- This matters more with AI coding. Agents reach for `useEffect` by default — it "looks right," it compiles, and failure modes only surface under specific timing. A hard rule turns a judgment call into a mechanical check. Structural guardrails compound; style preferences don't.
+- This matters more with AI coding. Agents reach for `useEffect` by default. It "looks right," it compiles, and failure modes only surface under specific timing. A hard rule turns a judgment call into a mechanical check. Structural guardrails compound; style preferences don't.
 - Full pattern in [[Designing Frontends for Performance]] under "Prefer derivation over synchronization." Also connects to [[Race Conditions]].
 
-### 2026-04-10 — [frontend] Performance is architecture, not tuning
+### 2026-04-10 [frontend] Performance is architecture, not tuning
 - Three decisions determine ~90% of frontend performance: where rendering happens (server vs client), when data arrives (parallel vs waterfall, streamed vs blocking), and how much JS ships to the browser. Everything else is a footnote.
-- Get these three right and you rarely need micro-optimization. Get them wrong and no amount of `useMemo` saves you. This reframes performance as a design question, not a tuning phase — which matches "most of the work happens before writing code."
+- Get these three right and you rarely need micro-optimization. Get them wrong and no amount of `useMemo` saves you. This reframes performance as a design question, not a tuning phase, which matches "most of the work happens before writing code."
 - Apply in order: eliminate waterfalls → reduce bundle size → reconsider server/client boundary → optimistic UI → measure real users → only then re-render optimization. Most teams do this in reverse and burn a week moving nothing.
-- Perceived speed ≠ real speed. Optimistic UI, streaming skeletons, and instant navigation make slow things feel fast. This is the principle behind local-first's appeal — and it's achievable without adopting a sync engine.
+- Perceived speed ≠ real speed. Optimistic UI, streaming skeletons, and instant navigation make slow things feel fast. This is the principle behind local-first's appeal, and it's achievable without adopting a sync engine.
 - Deep dive: [[Designing Frontends for Performance]]. Captures the full mental model and the apply-in-this-order stack.
 
-### 2026-03-31 — [patterns] Fresh eyes, hard questions, and knowing when to prescribe
-- Principle #7 (builder shouldn't be the reviewer) is a general pattern, not just for specs. Every step that judges work benefits from fresh context -- cleanup, code review, QA verification, spec challenge. The agent that built it has sunk cost bias. A fresh agent reads the output cold and catches what the builder rationalizes.
-- Challengers should ask questions, not prescribe fixes. When the stress-test outputs "suggested fix," it's mixing two responsibilities. The challenger surfaces what matters. The person with full context decides what to do. Changed eng-stress-test to output "a specific question that would resolve it" -- cleaner separation, better results downstream.
+### 2026-03-31 [patterns] Fresh eyes, hard questions, and knowing when to prescribe
+- Principle #7 (builder shouldn't be the reviewer) is a general pattern, not just for specs. Every step that judges work benefits from fresh context: cleanup, code review, QA verification, spec challenge. The agent that built it has sunk cost bias. A fresh agent reads the output cold and catches what the builder rationalizes.
+- Challengers should ask questions, not prescribe fixes. When the stress-test outputs "suggested fix," it's mixing two responsibilities. The challenger surfaces what matters. The person with full context decides what to do. Changed eng-stress-test (now `/eng-spec stress`) to output "a specific question that would resolve it". Cleaner separation, better results downstream.
 - Prescriptive vs principled has a clean test: "could the agent reasonably do it differently and be right?" If no, prescribe it (review order, severity labels, diff target). If yes, state the principle and let judgment flex (what counts as a blocker, when to approve, how to handle a trade-off). Mechanical decisions get rules. Judgment calls get principles.
 
-### 2026-03-30 — [patterns] Verify, don't trust + Own what you ship
+### 2026-03-30 [patterns] Verify, don't trust + Own what you ship
 - Added two new principles after stress-testing the existing seven. Both fill gaps that are especially important when building with AI.
-- "Verify, don't trust" was already implicit everywhere (tests, build, lint, browser checks) but never stated as a principle. Making it explicit means it applies consistently — to your own code, to AI-generated code, to dependencies.
+- "Verify, don't trust" was already implicit everywhere (tests, build, lint, browser checks) but never stated as a principle. Making it explicit means it applies consistently: to your own code, to AI-generated code, to dependencies.
 - "Own what you ship" captures the difference between using AI well and being a middleman. If you can't explain the code, you can't maintain it. Understanding compounds; copy-pasting doesn't. This is what separates "AI-assisted" from "AI-dependent."
-- Also tightened all 9 principles to bold one-liner + max 2 sentences. Same format as the AEO playbook's 11 principles — scannable (read the bold) and deep (read the explanation when needed).
+- Also tightened all 9 principles to bold one-liner + max 2 sentences. Same format as the AEO playbook's 11 principles: scannable (read the bold) and deep (read the explanation when needed).
 
-### 2026-03-30 — [tradeoff] Most of the work happens before and after writing code
-- The hard part of engineering isn't typing code — it's thinking clearly before and after. Plan thoroughly, review to catch issues, codify knowledge, keep quality high so future changes are easy.
-- Maps to the skill workflow: `/eng-spec` (explore + spec) and `/eng-stress-test` + `/eng-check` + `/deslop` (review) are where the bulk of the value lives. `/eng-build` (execution) should feel like the easy part.
+### 2026-03-30 [tradeoff] Most of the work happens before and after writing code
+- The hard part of engineering isn't typing code. It's thinking clearly before and after. Plan thoroughly, review to catch issues, codify knowledge, keep quality high so future changes are easy.
+- Maps to the skill workflow: `/eng-spec` (explore + spec) and `/eng-stress-test` (now `/eng-spec stress`) + `/eng-check` + `/deslop` (review) are where the bulk of the value lives. `/eng-build` (execution) should feel like the easy part.
 - The balance shifts by context: small UI tweak needs less planning. New system touching core infrastructure needs almost all thinking. The framing is directional, not a formula.
-- This is why the exploration mode in `/eng-spec` matters — rushing past "what are we actually building?" to get to code faster is the most expensive mistake.
+- This is why the exploration mode in `/eng-spec` matters. Rushing past "what are we actually building?" to get to code faster is the most expensive mistake.
 - If execution feels hard, the planning was incomplete. If review finds too many issues, the planning was rushed.
 
-### 2026-03-30 — [patterns] Invest in what compounds, defer what doesn't
-- The filter for when to add something upfront vs later: "will this make the next 10 sessions better, or just this one?" If it compounds — conventions, principles, structure — add it now. If it's a one-time need, add it when you need it.
+### 2026-03-30 [patterns] Invest in what compounds, defer what doesn't
+- The filter for when to add something upfront vs later: "will this make the next 10 sessions better, or just this one?" If it compounds (conventions, principles, structure), add it now. If it's a one-time need, add it when you need it.
 - This is YAGNI applied to context and process, not just code. Don't preload AI skills with context that's only relevant later. Don't add abstractions until the pattern repeats. Don't scaffold for hypothetical contributors.
 - Examples: engineering principles in CLAUDE.md compound (every session benefits). An open source section in `/eng-init` doesn't compound until you're actually maintaining an open source project. A stress-test step in `/eng-spec` compounds (every spec benefits from challenge).
-- The same principle applies to what you feed AI. Every piece of context in a skill or rules file has a cost — it takes up space and attention. Only include what earns its keep across many uses.
+- The same principle applies to what you feed AI. Every piece of context in a skill or rules file has a cost. It takes up space and attention. Only include what earns its keep across many uses.
 
-### 2026-03-30 — [review] The builder shouldn't be the reviewer
-- The agent that writes a spec has blind spots about its own assumptions — same reason code reviews exist. Asking it to stress-test its own work produces weaker challenges than a fresh agent that reads the spec cold.
-- Built this into `/eng-spec`: after writing the spec, it spawns a separate sub-agent (`/eng-stress-test`) that reads the spec with no knowledge of how it was written. The sub-agent loads CLAUDE.md and explores the codebase independently, then challenges the design.
+### 2026-03-30 [review] The builder shouldn't be the reviewer
+- The agent that writes a spec has blind spots about its own assumptions, same reason code reviews exist. Asking it to stress-test its own work produces weaker challenges than a fresh agent that reads the spec cold.
+- Built this into `/eng-spec`: after writing the spec, it spawns a separate sub-agent (`/eng-stress-test`, now `/eng-spec stress`) that reads the spec with no knowledge of how it was written. The sub-agent loads CLAUDE.md and explores the codebase independently, then challenges the design.
 - This is a general principle, not just an AI workflow trick. It applies to code reviews, design critiques, spec reviews, and QA. The author's sunk cost and familiarity create blind spots that only fresh eyes can catch.
-- The sub-agent pattern in Claude Code: the parent agent spawns a child with the Agent tool. The child gets its own fresh context window — no inherited reasoning or bias. It only knows what it reads.
+- The sub-agent pattern in Claude Code: the parent agent spawns a child with the Agent tool. The child gets its own fresh context window, with no inherited reasoning or bias. It only knows what it reads.
 
-### 2026-03-29 — [patterns] Goal + tools + constraints > step-by-step orchestration
-- Anthropic's own advice: don't box the model in. Give it tools, give it a goal, let it figure out the path. A year ago you needed scaffolding and strict workflows. Now you mostly don't — and the gap keeps widening.
+### 2026-03-29 [patterns] Goal + tools + constraints > step-by-step orchestration
+- Anthropic's own advice: don't box the model in. Give it tools, give it a goal, let it figure out the path. A year ago you needed scaffolding and strict workflows. Now you mostly don't, and the gap keeps widening.
 - This is the Bitter Lesson applied to AI-assisted coding. General methods (clear goals, good tools, clean context) always outperform hand-engineered orchestration (step 1 → step 2 → step 3 workflows).
-- What to hold onto: decomposition is still fundamental engineering — but it's a *thinking* tool for humans, not a limitation of the model. Decompose to sharpen your understanding, then give the model the full picture.
-- What to let go of: prescriptive prompt structures (Task/Background/Do not), micro-step choreography in skills, breaking tasks down *for the model's sake*. These were training wheels. Test whether they're still needed — they probably aren't.
+- What to hold onto: decomposition is still fundamental engineering, but it's a *thinking* tool for humans, not a limitation of the model. Decompose to sharpen your understanding, then give the model the full picture.
+- What to let go of: prescriptive prompt structures (Task/Background/Do not), micro-step choreography in skills, breaking tasks down *for the model's sake*. These were training wheels. Test whether they're still needed. They probably aren't.
 - The durable investments: CLAUDE.md (conventions), project structure (context engineering), tool access (MCPs, browser, docs), verification (tests, build, visual checks), acceptance criteria (definition of done). These work regardless of model generation.
 - Updated `/eng-build` to reflect this: goal + constraints + verify, not step-by-step execution instructions. Updated [[Working Effectively With AI]] deep dive with tool-first thinking and the Bitter Lesson framing.
 
-### 2026-03-27 — [structure] Seven patterns of a well-structured feature
-- Navigated five production codebases using the deep dive method. Same seven patterns appeared in every mature codebase regardless of language or framework. One codebase (Papermark) showed what happens when the patterns aren't partially applied — working product, but growing friction from duplicated auth, fat routes, and no shared schemas. Cal.com was the most disciplined — they codified these patterns as explicit engineering rules in their `CLAUDE.md` and `agents/rules/` directory.
+### 2026-03-27 [structure] Seven patterns of a well-structured feature
+- Navigated five production codebases using the deep dive method. Same seven patterns appeared in every mature codebase regardless of language or framework. One codebase (Papermark) showed what happens when the patterns aren't partially applied: working product, but growing friction from duplicated auth, fat routes, and no shared schemas. Cal.com was the most disciplined. They codified these patterns as explicit engineering rules in their `CLAUDE.md` and `agents/rules/` directory.
 - **Seven timeless patterns:**
-- **1. Thin routes, thick logic.** API routes should only validate input and delegate to business logic that lives separately. Routes are the receptionist, not the doctor. This keeps logic reusable — the same function can be called from an API route, a CSV import, or a background job.
+- **1. Thin routes, thick logic.** API routes should only validate input and delegate to business logic that lives separately. Routes are the receptionist, not the doctor. This keeps logic reusable: the same function can be called from an API route, a CSV import, or a background job.
 - **2. One schema as the contract.** Define the shape of your data once. Frontend and backend both reference it. No drift, no "the API changed but the form didn't." Catches mismatches at build time instead of production. Every language has its version: Zod (JS), Django Serializers (Python), etc.
-- **3. Wrap cross-cutting concerns, don't copy them.** Auth, permissions, error handling — anything every route needs should be handled once in a wrapper or base class, not duplicated per file. You'll never accidentally ship an unprotected route. Security by structure, not by memory.
-- **4. Mirror feature names across layers.** If the feature is "issues," it should be `views/issue/`, `serializers/issue.py`, `services/issue/`, and `store/issue/`. Predictable naming means you always know where to look — no searching. This is feature-based architecture (3/25 learning) applied one level deeper.
-- **5. Side effects happen after the response.** Webhooks, analytics, notifications, audit logs — the user doesn't wait for work they didn't ask for. Every codebase separates this: `waitUntil` (JS), `.delay()` (Python/Celery), background queues. Respond first, do housekeeping after.
-- **6. Structured errors, handled at the boundary.** Define custom error types with codes, throw them anywhere, handle them once at the top. Individual routes don't format error responses — one central handler does. Every mature codebase has this.
-- **7. Wiring files do zero logic.** Routers, URL configs, layouts, providers — these files compose pieces together but contain no business logic themselves. They read like a table of contents for the codebase.
-- These don't directly improve UX — users don't care about your file structure. They compound into speed: a clean codebase means week 12 of building feels as fast as week 1. A messy one slows you down ~5% every week until you're fighting your own code more than building features.
-- **Comparison across five codebases:**
+- **3. Wrap cross-cutting concerns, don't copy them.** Auth, permissions, error handling: anything every route needs should be handled once in a wrapper or base class, not duplicated per file. You'll never accidentally ship an unprotected route. Security by structure, not by memory.
+- **4. Mirror feature names across layers.** If the feature is "issues," it should be `views/issue/`, `serializers/issue.py`, `services/issue/`, and `store/issue/`. Predictable naming means you always know where to look, no searching. This is feature-based architecture (3/25 learning) applied one level deeper.
+- **5. Side effects happen after the response.** Webhooks, analytics, notifications, audit logs: the user doesn't wait for work they didn't ask for. Every codebase separates this: `waitUntil` (JS), `.delay()` (Python/Celery), background queues. Respond first, do housekeeping after.
+- **6. Structured errors, handled at the boundary.** Define custom error types with codes, throw them anywhere, handle them once at the top. Individual routes don't format error responses. One central handler does. Every mature codebase has this.
+- **7. Wiring files do zero logic.** Routers, URL configs, layouts, providers, `proxy.ts` (`middleware.ts` before Next 16). These files compose pieces together but contain no business logic themselves. They read like a table of contents for the codebase.
+- These don't directly improve UX. Users don't care about your file structure. They compound into speed: a clean codebase means week 12 of building feels as fast as week 1. A messy one slows you down ~5% every week until you're fighting your own code more than building features.
+- The comparison table across all five codebases lives in [[Anatomy of a Well-Structured Feature]].
 
-| Principle | Dub (Next.js) | Documenso (Remix) | Papermark (Next.js) | Plane (Django+React) | Cal.com (Next.js) |
-|---|---|---|---|---|---|
-| 1. Thin routes | `withWorkspace` → `lib/api/` | `authenticatedProcedure` → `lib/server-only/` | Fat routes (all logic inline) | ViewSet → serializer + ORM | tRPC → Services → Repositories |
-| 2. Schema as contract | Zod in `lib/zod/schemas/` | Zod in `.types.ts` per route | Partial (some Zod, mostly manual) | Django Serializers | Zod DTOs at every boundary |
-| 3. Auth wrapped once | `withWorkspace` wrapper | `authenticatedProcedure` | Copy-pasted per route | `BaseViewSet` + `@allow_permission` | tRPC procedures + page-level checks |
-| 4. Feature name mirroring | `api/links/`, `lib/api/links/`, `use-links.ts` | `document-router/`, `lib/server-only/envelope/`, `trpc.document.*` | SWR hooks yes, backend inconsistent | `views/issue/`, `serializers/issue.py`, `services/issue/`, `store/issue/` | `features/bookings/` with repositories, services, hooks, components |
-| 5. Side effects after response | `waitUntil()` | `triggerWebhook()` | `waitUntil()` | `.delay()` (Celery) | Trigger.dev tasks |
-| 6. Structured errors | `DubApiError` with codes | `AppError` with `AppErrorCode` | `TeamError`/`DocumentError` (basic) | `BaseViewSet.handle_exception()` | `ErrorWithCode` + factory methods, auto-converted by middleware |
-| 7. Wiring = zero logic | `middleware.ts`, route files | `router.ts` files | `middleware.ts`, layouts | `urls.py` | `_app.ts`, routers, layouts |
-
-### 2026-03-26 — [review] "I'll fix it later" is a wish, not a decision
-- Work piles up every week — there's always something more urgent. If a shortcut isn't tracked with a ticket and a plan for when to address it, it's never getting fixed. Six months later, nobody remembers why it was done that way, and now it's "just how it works."
-- The difference: "I'll clean this up later" (wish) vs "TODO: refactor auth flow — ticket #142, targeting next sprint" (decision). Principle #4 says shortcuts are fine if deliberate and documented. The documentation is what makes it a decision.
+### 2026-03-26 [review] "I'll fix it later" is a wish, not a decision
+- Work piles up every week, and there's always something more urgent. If a shortcut isn't tracked with a ticket and a plan for when to address it, it's never getting fixed. Six months later, nobody remembers why it was done that way, and now it's "just how it works."
+- The difference: "I'll clean this up later" (wish) vs "TODO: refactor auth flow, ticket #142, targeting next sprint" (decision). Principle #4 says shortcuts are fine if deliberate and documented. The documentation is what makes it a decision.
 - This shows up most in code review. When someone says "I'll fix it in a follow-up PR," that follow-up almost never lands. If it matters enough to mention, it matters enough to fix now or track properly.
 
-### 2026-03-26 — [patterns] Context engineering includes doc pointers — teach the AI where to look, not what to know
+### 2026-03-26 [patterns] Context engineering includes doc pointers: teach the AI where to look, not what to know
 - AI agents hallucinate less when they know where to find authoritative information. Adding framework doc URLs to CLAUDE.md is cheap context that prevents expensive mistakes.
 - Lightweight pointers > stuffing docs into context. A URL costs one line; pasting full docs fills the context window fast. The AI can `WebFetch` when it actually needs something.
 - Built this into `/eng-init` as a lookup table of common stacks (React, Next.js, Supabase, Tailwind, etc.). User says their stack, skill auto-populates the right doc URLs. Unknown tech → ask for the URL.
-- The behavioral nudge matters: "look these up before guessing" tells the AI to verify rather than assume. It's the same reason senior devs keep docs bookmarked — not because they don't know, but because they verify.
-- This is perishable info (URLs can change, frameworks evolve) but it lives in the right place: per-project CLAUDE.md, not the timeless playbook. Follows the "timeless over trendy" rule — principles in the playbook, tool-specific references in project config.
+- The behavioral nudge matters: "look these up before guessing" tells the AI to verify rather than assume. It's the same reason senior devs keep docs bookmarked. Not because they don't know, but because they verify.
+- This is perishable info (URLs can change, frameworks evolve) but it lives in the right place: per-project CLAUDE.md, not the timeless playbook. Follows the "timeless over trendy" rule: principles in the playbook, tool-specific references in project config.
 
-### 2026-03-25 — [tradeoff] Choose boring technology — spend innovation tokens on product, not infrastructure
+### 2026-03-25 [tradeoff] Choose boring technology, spend innovation tokens on product, not infrastructure
 - Dan McKinley's "Innovation Token" model: you have ~3 tokens for novel, unproven technology choices. Spend them on what makes your product different, not on your stack.
-- Boring tech = known failure modes. The advantage isn't that it's good — it's that you know why it's bad. New tech means months discovering problems that boring tech already has on record.
+- Boring tech = known failure modes. The advantage isn't that it's good. It's that you know why it's bad. New tech means months discovering problems that boring tech already has on record.
 - The real cost is operation, not development. The ongoing cost to run a technology in production almost always outweighs the initial development convenience. You're choosing a tool for years, not a sprint.
-- The mastery paradox: "You should use the tool you hate the most — because you hate it because you know the most about it." Engineers bail during the hard middle, creating a graveyard of half-mastered tools.
+- The mastery paradox: "You should use the tool you hate the most, because you hate it because you know the most about it." Engineers bail during the hard middle, creating a graveyard of half-mastered tools.
 - Boring tech + AI = unfair advantage. AI is most fluent in widely-adopted, heavily-documented technologies. The most popular stack is the stack where AI helps you most.
-- The heuristic for new tools: (1) How would we solve this with what we already have? (2) What "unnatural acts" does that require? (3) Only if truly unbearable, add something new — and commit to replacing the old thing, not running both.
+- The heuristic for new tools: (1) How would we solve this with what we already have? (2) What "unnatural acts" does that require? (3) Only if truly unbearable, add something new, and commit to replacing the old thing, not running both.
 - Applied to stack selection: Next.js, TypeScript, Supabase (Postgres), Tailwind + shadcn/ui, Vercel. Five pieces, nothing redundant. Every innovation token saved for product.
 - Ship first, switch later. The cost of worrying about portability before you have users is higher than the cost of migrating when you actually need to.
 
-### 2026-03-25 — [patterns] AI is a multiplier — good habits in, good code out
+### 2026-03-25 [patterns] AI is a multiplier: good habits in, good code out
 - AI multiplies what you already know. If you don't understand the problem, AI won't solve it for you.
-- The 3-section prompt pattern: (1) Task — detailed technical description, (2) Background — docs, files, screenshots, links, (3) Do not — what AI shouldn't touch or change. This dramatically improves output quality.
-- Break big tasks into small ones for AI. AI is good at small, scoped tasks. If you can't break it down, you don't understand the problem yet — and that's not an AI trick, that's fundamental engineering.
+- (superseded: see 2026-03-29) The 3-section prompt pattern: (1) Task: detailed technical description, (2) Background: docs, files, screenshots, links, (3) Do not: what AI shouldn't touch or change. This dramatically improves output quality.
+- (superseded: see 2026-03-29, the skills now default to one spec, one build, one PR in vertical slices) Break big tasks into small ones for AI. AI is good at small, scoped tasks. If you can't break it down, you don't understand the problem yet, and that's not an AI trick, that's fundamental engineering.
 - Use rules files (CLAUDE.md, guidelines.md) so AI remembers project context across sessions. Write it once, benefit every session.
-- Always give AI a way to verify its work — tests, browser, CLI, CI/CD. Don't let it just write code blindly.
-- Don't let AI think for you. Let it type for you. The moment you outsource your thinking, you're not applying any skill — you're just a middleman.
+- Always give AI a way to verify its work: tests, browser, CLI, CI/CD. Don't let it just write code blindly.
+- Don't let AI think for you. Let it type for you. The moment you outsource your thinking, you're not applying any skill. You're just a middleman.
 - See [[Working Effectively With AI]] for the full deep dive.
 
-### 2026-03-25 — [structure] Feature-based architecture is context engineering for AI
-- Bulletproof React's structure isn't just clean for humans — it controls what AI sees, which controls the quality of what it produces.
+### 2026-03-25 [structure] Feature-based architecture is context engineering for AI
+- Bulletproof React's structure isn't just clean for humans. It controls what AI sees, which controls the quality of what it produces.
 - Three-ring dependency model: Shared (generic components) → Features (self-contained business slices) → App (routes that compose features). Dependencies only flow inward, never the reverse.
 - A component lives in `src/components/` only if it's used by multiple features with no domain-specific behavior. The moment it needs a feature's API hook or business type, it belongs in that feature's `components/` folder.
 - Feature isolation = safer AI edits. Because features can't import from each other, AI edits to one feature can't accidentally break another.
 - When scoping AI tasks: feature work → middle ring, shared UI changes → inner ring, new pages → outer ring. Each task has a clear, bounded scope.
 - Components "graduate" to shared only when you discover they're needed in multiple places. Principle #3 in action.
 
-### 2026-03-25 — [naming] Name things for the reader, not the writer
-- Don't abbreviate — `buildingPermit` over `bldPrmt`. You read code far more than you write it.
-- Don't put the type in the name — `users` not `userList`. The type system handles that.
-- Don't repeat context — `user.getName()` not `user.getUserName()`.
-- Match name length to scope — short names for tiny scopes (`i` in a loop), descriptive names for wide scopes (functions used across the codebase).
-- If you can't name it simply, it's doing too much — struggling to name a function is a design smell. Same principle as the "and" test for components.
+### 2026-03-25 [naming] Name things for the reader, not the writer
+- Don't abbreviate: `buildingPermit` over `bldPrmt`. You read code far more than you write it.
+- Don't put the type in the name: `users` not `userList`. The type system handles that.
+- Don't repeat context: `user.getName()` not `user.getUserName()`.
+- Match name length to scope: short names for tiny scopes (`i` in a loop), descriptive names for wide scopes (functions used across the codebase).
+- If you can't name it simply, it's doing too much. Struggling to name a function is a design smell. Same principle as the "and" test for components.
 - One-liner: good naming means the next person (or AI) doesn't have to read the body to understand what something does.
 
-### 2026-03-25 — [simplicity] "Clean" code that's hard to change isn't clean — it's just tidy
-- Dan Abramov's "Goodbye, Clean Code" — he refactored a colleague's duplicated animation code into a shared abstraction. It looked cleaner. His boss reverted it.
-- The duplication wasn't accidental — each block needed to evolve independently for different product requirements. The "clean" version coupled unrelated things together, making every future change risky.
-- The trap: code that *looks* the same isn't always *the same*. The real question is "will these things change for the same reason?" — not "do they look similar right now?"
-- This reinforces Grug Brain and Sandi Metz's "Wrong Abstraction" — duplication is cheap to fix later, but a bad abstraction is expensive to undo because everything depends on it.
-- One-liner: clean code that's hard to change isn't clean — it's just tidy.
+### 2026-03-25 [simplicity] "Clean" code that's hard to change isn't clean, it's just tidy
+- Dan Abramov's "Goodbye, Clean Code": he refactored a colleague's duplicated animation code into a shared abstraction. It looked cleaner. His boss reverted it.
+- The duplication wasn't accidental. Each block needed to evolve independently for different product requirements. The "clean" version coupled unrelated things together, making every future change risky.
+- The trap: code that *looks* the same isn't always *the same*. The real question is "will these things change for the same reason?" Not "do they look similar right now?"
+- This reinforces Grug Brain and Sandi Metz's "Wrong Abstraction": duplication is cheap to fix later, but a bad abstraction is expensive to undo because everything depends on it.
+- One-liner: clean code that's hard to change isn't clean. It's just tidy.
 
-### 2026-03-23 — [structure] When to split a component — the "and" test
+### 2026-03-23 [structure] When to split a component: the "and" test
 - If you describe a component and use the word "and," each "and" is a split point. "This shows the billing form AND payment history AND plan comparison" → three components.
 - Other signals: scrolling a lot in one file, big conditional renders (admin vs user), passing props through components that don't use them, copy-pasting JSX chunks, useEffects doing unrelated work.
-- You mostly detect it by the pain it causes — but the "and" test catches it before the pain.
+- You mostly detect it by the pain it causes, but the "and" test catches it before the pain.
 - When vibe coding, you won't notice. That's why CLAUDE.md should tell AI to flag growing components proactively.
 
-### 2026-03-23 — [patterns] Concurrency in practice — simpler than it sounds
-- Concurrency is when multiple things happen at the same time. In JavaScript, it's mostly about managing async operations — not threads or mutexes.
-- `Promise.all` for parallel fetches — load multiple independent data sources at once instead of one by one.
-- Disable buttons after click to prevent double submits — especially for payments and form submissions.
+### 2026-03-23 [patterns] Concurrency in practice: simpler than it sounds
+- Concurrency is when multiple things happen at the same time. In JavaScript, it's mostly about managing async operations, not threads or mutexes.
+- `Promise.all` for parallel fetches: load multiple independent data sources at once instead of one by one.
+- Disable buttons after click to prevent double submits, especially for payments and form submissions.
 - Version numbers on data to prevent one user silently overwriting another's changes (optimistic concurrency).
-- Ignore stale responses in search/autocomplete — track a request ID, only use the latest result.
-- Background job queues for anything slow (emails, PDFs, image processing) — respond to the user immediately, do the work later.
+- Ignore stale responses in search/autocomplete: track a request ID, only use the latest result.
+- Background job queues for anything slow (emails, PDFs, image processing): respond to the user immediately, do the work later.
 - You don't need to learn thread safety or semaphores. These 5 patterns cover 95% of product concurrency.
 
-### 2026-03-23 — [patterns] Production logging is part of the feature, not debugging leftovers
+### 2026-03-23 [patterns] Production logging is part of the feature, not debugging leftovers
 - Two kinds of logs: debugging logs (temporary, delete before shipping) and production logs (permanent, shipped intentionally).
-- Production logs tell you what happened when you weren't there. The API response serves the user — the logs serve you at 3am.
+- Production logs tell you what happened when you weren't there. The API response serves the user. The logs serve you at 3am.
 - Good logs have: a label (`[POST /api/billing]`), context (userId, plan), and the outcome (success or error with reason).
-- Request IDs tie all logs from one user's action together — essential when multiple users are hitting the app.
+- Request IDs tie all logs from one user's action together, essential when multiple users are hitting the app.
 - Never log secrets, passwords, tokens, or credit card numbers.
 - Start simple: `log(level, context, message, data)`. Move to a proper logging library when you outgrow it.
 
-### 2026-03-23 — [structure] Locality of Behavior > Separation of Concerns (most of the time)
+### 2026-03-23 [structure] Locality of Behavior > Separation of Concerns (most of the time)
 - Locality of Behavior (LoB): everything needed to understand one behavior lives in one place. Separation of Concerns (SoC): code grouped by what it *is* (styles, logic, validation) across multiple files.
 - LoB wins most of the time. If you need to open 5 files to understand what happens when a user clicks a button, you've over-separated.
 - The test: "If I change this behavior, how many files do I need to touch?" If 1 → good locality. If 5 → over-separated.
 - Separate only when code is genuinely reusable across features (auth middleware, formatCurrency) or when a file gets unreadably long doing very different things.
-- This is context engineering for AI too — when Claude Code reads a file with good locality, it gets the full picture in one read. Scattered code means more files loaded into context, more noise, worse AI output.
-- Tailwind CSS is LoB applied to styling — styles on the element, not in a separate file. Same principle.
+- This is context engineering for AI too. When Claude Code reads a file with good locality, it gets the full picture in one read. Scattered code means more files loaded into context, more noise, worse AI output.
+- Tailwind CSS is LoB applied to styling: styles on the element, not in a separate file. Same principle.
 - Feature-based folder structure (Part 0) is LoB applied to project organization. This principle runs through everything.
 
-### 2026-03-23 — [simplicity] Duplication is cheaper than the wrong abstraction
+### 2026-03-23 [simplicity] Duplication is cheaper than the wrong abstraction
 - Before extracting shared code, ask: "Will these two things change for the same reason?" If yes → extract. If no or unsure → keep them separate.
-- You can always extract later once the real pattern reveals itself. But un-doing a bad abstraction is painful — by then everything depends on it.
+- You can always extract later once the real pattern reveals itself. But un-doing a bad abstraction is painful. By then everything depends on it.
 - Example: two features both fetch user data. Looks like duplication, but billing needs invoices and dashboard needs projects. A shared `getUser(options)` couples them through a function neither truly owns.
 - Principle #3: discover abstractions, don't design them.
 
-### 2026-03-23 — [patterns] Refactor small, respect working code
+### 2026-03-23 [patterns] Refactor small, respect working code
 - Refactor when the mess is actively slowing you down, not just because it looks ugly.
-- Before removing "unnecessary" code, check `git blame` to understand why it was added. Someone may have already learned the hard way why it's there (Chesterton's Fence — don't tear down a fence until you understand why it was built).
-- One refactor per PR. Keep the system working at every step. Never refactor and add features at the same time — if something breaks, you won't know which change caused it.
+- Before removing "unnecessary" code, check `git blame` to understand why it was added. Someone may have already learned the hard way why it's there (Chesterton's Fence: don't tear down a fence until you understand why it was built).
+- One refactor per PR. Keep the system working at every step. Never refactor and add features at the same time. If something breaks, you won't know which change caused it.
 - Working imperfect code that's survived production has more value than a "perfect" rewrite that hasn't.
 
-### 2026-03-23 — [testing] Integration tests > unit tests
+### 2026-03-23 [testing] Integration tests > unit tests
 - Most unit tests break on every refactor and don't tell you if the system actually works. They test pieces in isolation, but bugs happen at the seams between pieces.
-- Integration tests are the sweet spot — they test real user flows (submit form → API processes → response returns) and survive internal restructuring because they test behavior, not implementation details.
+- Integration tests are the sweet spot. They test real user flows (submit form → API processes → response returns) and survive internal restructuring because they test behavior, not implementation details.
 - When deciding what to test, ask: "If I could only write one test for this feature, what would it be?" That's your integration test. Write it first.
 - Unit tests are still worth it for pure logic with edge cases (calculations, formatting, business rules).
 - "Write tests. Not too many. Mostly integration."
 
 ---
 
-*Come back to this often. The questions won't change — but the ability to answer them gets sharper every time I build something real.*
+*Come back to this often. The questions won't change, but the ability to answer them gets sharper every time I build something real.*
 
 ---
 
-*Resources last reviewed: 2026-03-22. Principles are timeless. Resources, tools, and people recommendations may age — revisit when something feels outdated.*
+*Resources last reviewed: 2026-10-08. Principles are timeless. Resources, tools, and people recommendations may age. Revisit when something feels outdated.*

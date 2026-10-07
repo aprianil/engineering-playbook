@@ -1,11 +1,11 @@
 # Git Workflow Fundamentals
 
-> A practical guide to commits, branches, and PRs — the mechanics of shipping code as a team.
+> A practical guide to commits, branches, and PRs: the mechanics of shipping code as a team.
 
 ---
 
 > [!info]- Context for AI (Claude Code)
-> This note is part of the [[Engineering Learnings & Playbook]] system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook — don't duplicate what's already there.
+> This note is part of the [[Engineering Learnings & Playbook]] system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook, so don't duplicate what's already there.
 
 ---
 
@@ -17,7 +17,7 @@ Git isn't just version control. It's a **communication tool**. Your commits tell
 
 ## Commits: The Building Blocks
 
-A commit is a snapshot of your changes with a message explaining why. Good commits make everything else easier — reviewing, debugging, reverting.
+A commit is a snapshot of your changes with a message explaining why. Good commits make everything else easier: reviewing, debugging, reverting.
 
 ### What Makes a Good Commit
 
@@ -39,9 +39,9 @@ Bad commit:
 
 ```
 Format:
-[short summary of what and why — under 72 characters]
+[short summary of what and why, aim for 50 characters, 72 max]
 
-[optional longer explanation if needed]
+[optional longer explanation if needed, wrapped at 72 characters]
 
 Examples:
 "Add input validation to billing form to prevent empty submissions"
@@ -55,7 +55,7 @@ Not helpful:
 "asdf"
 ```
 
-The summary should tell someone scanning `git log` what happened and why — without opening the diff.
+The summary should tell someone scanning `git log` what happened and why, without opening the diff.
 
 ### How Often to Commit
 
@@ -64,6 +64,9 @@ The summary should tell someone scanning `git log` what happened and why — wit
 - Don't wait until everything is done
 - Don't commit every single line change either
 - Think of it like saving chapters, not saving every sentence
+- When building in slices: each slice's last commit must build and
+  pass tests on its own, so the PR can be bisected and reverted
+  slice by slice
 ```
 
 ---
@@ -80,7 +83,7 @@ main (or master)
         └── your changes live here until merged
 ```
 
-- `main` is the source of truth — what's deployed or ready to deploy
+- `main` is the source of truth: what's deployed or ready to deploy
 - Feature branches are where you do your work
 - When your work is done and reviewed, it gets merged into main
 
@@ -101,7 +104,7 @@ The prefix tells you the type of work. The rest tells you what it's about. Anyon
 
 ```
 - Create a new branch for each piece of work
-- Keep branches short-lived — days, not weeks
+- Keep branches short-lived: days, not weeks
 - Delete branches after they're merged
 - Pull from main regularly to avoid big merge conflicts later
 - Don't work directly on main
@@ -116,11 +119,11 @@ A PR is not just "please merge my code." It's a request for feedback, a record o
 ### What Makes a Good PR
 
 ```
-- Small and focused — one feature, one fix, one change
+- Focused: one feature, one fix, or one change
 - Has a clear description: what changed, why, how to test it
 - Includes screenshots for UI changes
 - Links to the related issue or ticket if there is one
-- The commit history tells a readable story
+- The commit history tells a readable story (one commit per slice)
 ```
 
 ### PR Description Template
@@ -139,19 +142,28 @@ A PR is not just "please merge my code." It's a request for feedback, a record o
 [Before/after if applicable]
 
 ## Notes
-[Anything the reviewer should know — trade-offs, things to watch for, follow-up work]
+[Anything the reviewer should know: trade-offs, things to watch for, follow-up work]
 ```
 
-### Small PRs Win
+### Small Commits Win (the PR Can Be Big)
 
-| Small PR | Big PR |
+The old rule was "keep PRs small." With agents building a whole feature in one session, the unit that matters is the commit. `/eng-build` ships one spec as one PR, built slice by slice, and each slice is one green commit that builds and passes tests on its own.
+
+| Green slice commits | One big blob of changes |
 |----------|--------|
-| Easy to review — reviewer stays focused | Reviewer gets overwhelmed, skims, misses issues |
-| Easy to revert if something breaks | Reverting means losing everything, even the good parts |
-| Merges cleanly, fewer conflicts | High chance of merge conflicts |
-| Ships faster — less back and forth | Sits open for days waiting for review |
+| Easy to review: the reviewer reads one slice at a time | Reviewer gets overwhelmed, skims, misses issues |
+| Easy to revert: undo one slice, keep the rest | Reverting means losing everything, even the good parts |
+| Easy to bisect: every commit builds and passes | A broken middle commit hides where the bug came in |
 
-If your PR touches more than 10-15 files, ask yourself: can this be split?
+A large PR is fine when it has a slice map in the description (one line per slice: name, commit range, where the risk sits) and green per-slice commits. A large PR with neither is the one to push back on.
+
+Some changes still get their own PR, however small. `/eng-build` stops and asks when a build hits one of these:
+- A schema migration with backfill, or any destructive or irreversible data change
+- A change to the auth, payments, or publish/deploy mechanism itself (code that only *uses* them is fine)
+- An acceptance criterion that depends on a post-deploy action
+- A cross-repo change
+- A refactor riding along with the feature
+- A change to something someone is actively running, where the restart or deploy is its own gate
 
 ---
 
@@ -159,37 +171,46 @@ If your PR touches more than 10-15 files, ask yourself: can this be split?
 
 ### Daily Workflow
 ```bash
-git status                    — what's changed?
-git add [file]                — stage specific files for commit
-git commit -m "message"       — commit staged changes
-git push                      — push your branch to remote
-git pull                      — get latest changes from remote
+git status                    # what's changed?
+git add [file]                # stage specific files for commit
+git commit -m "message"       # commit staged changes
+git push                      # push your branch to remote
+git pull                      # get latest changes from remote
 ```
 
 ### Branching
 ```bash
-git checkout -b feature/name  — create and switch to new branch
-git checkout main             — switch back to main
-git merge main                — merge main into your current branch
-git branch -d feature/name    — delete a branch after merge
+git switch -c feature/name    # create and switch to new branch
+git switch main               # switch back to main
+git merge main                # merge main into your current branch
+git branch -d feature/name    # delete a branch after merge
 ```
+
+### Working in Parallel
+```bash
+git worktree add -b feature/billing ../app-billing   # new folder, new branch, same repo
+git worktree list                                    # see every worktree
+git worktree remove ../app-billing                   # clean up after merge
+```
+
+A worktree is a second checkout of the same repo in its own folder, on its own branch. This is how parallel agents avoid colliding: each one works in its own worktree, so two agents never edit the same files on disk or fight over which branch is checked out.
 
 ### Investigating
 ```bash
-git log --oneline -20         — see recent commits (compact)
-git diff                      — see unstaged changes
-git diff --staged             — see staged changes (about to commit)
-git blame path/to/file        — see who changed each line and when
-git stash                     — temporarily shelve changes
-git stash pop                 — bring shelved changes back
+git log --oneline -20         # see recent commits (compact)
+git diff                      # see unstaged changes
+git diff --staged             # see staged changes (about to commit)
+git blame path/to/file        # see who changed each line and when
+git stash                     # temporarily shelve changes
+git stash pop                 # bring shelved changes back
 ```
 
 ### Undoing Things
 ```bash
-git checkout -- [file]        — discard unstaged changes in a file
-git reset HEAD [file]         — unstage a file (keep the changes)
-git revert [commit]           — create a new commit that undoes a previous one
-                                (safe — doesn't rewrite history)
+git restore [file]            # discard unstaged changes in a file
+git restore --staged [file]   # unstage a file (keep the changes)
+git revert [commit]           # create a new commit that undoes a previous one
+                              # (safe, doesn't rewrite history)
 ```
 
 A note on destructive commands: `git reset --hard`, `git push --force`, and `git clean -f` can permanently lose work. Understand what they do before using them. When in doubt, ask.
@@ -201,13 +222,14 @@ A note on destructive commands: `git reset --hard`, `git push --force`, and `git
 ```
 1. Pull latest main
 2. Create a branch from main
-3. Do your work — commit as you go in logical steps
+3. Do your work, commit as you go in logical steps
 4. Push your branch
 5. Open a PR with a clear description
-6. Address review feedback — push new commits
-7. Merge when approved
+6. Address review feedback, push new commits
+7. Merge when approved: gh pr merge --rebase, so each slice commit
+   survives on main (squash collapses them and loses per-slice revert)
 8. Delete the branch
-9. Pull latest main — start again
+9. Pull latest main, start again
 ```
 
 ---
@@ -225,7 +247,7 @@ const title = "Home"
 ```
 
 To resolve:
-1. Read both versions — understand what each person intended
+1. Read both versions. Understand what each person intended
 2. Decide which to keep (or combine both)
 3. Remove the conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`)
 4. Test that it works
@@ -240,12 +262,12 @@ To avoid conflicts:
 
 ## Resources
 
-- "Git Immersion" (gitimmersion.com) — hands-on, step-by-step git tutorial. Good for building comfort with the commands.
-- "Oh Shit, Git!?" (ohshitgit.com) — plain-English solutions for common git mistakes. Bookmark this for when things go wrong.
-- "How to Write a Git Commit Message" by Chris Beams (cbbeams.com) — the definitive post on commit message conventions. Short and practical.
-- Atlassian Git Tutorials (atlassian.com/git/tutorials) — well-written visual guides for branching, merging, and workflows.
-- "Git Flight Rules" (github.com/k88hudson/git-flight-rules) — a comprehensive FAQ for "I did X, how do I fix it?" Useful as a reference.
+- "Git Immersion" (gitimmersion.com): hands-on, step-by-step git tutorial. Good for building comfort with the commands.
+- "Oh Shit, Git!?" (ohshitgit.com): plain-English solutions for common git mistakes. Bookmark this for when things go wrong.
+- "How to Write a Git Commit Message" by Chris Beams (cbea.ms/git-commit): the definitive post on commit message conventions. Seven rules, including a 50-character subject and a body wrapped at 72. Short and practical.
+- Atlassian Git Tutorials (atlassian.com/git/tutorials): well-written visual guides for branching, merging, and workflows.
+- "Git Flight Rules" (github.com/k88hudson/git-flight-rules): a comprehensive FAQ for "I did X, how do I fix it?" Useful as a reference.
 
 ---
 
-*Git is the language teams use to coordinate their work. Learn it well enough that it disappears — you think about your changes, not the commands.*
+*Git is the language teams use to coordinate their work. Learn it well enough that it disappears. You think about your changes, not the commands.*

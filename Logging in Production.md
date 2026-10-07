@@ -5,25 +5,25 @@
 ---
 
 > [!info]- Context for AI (Claude Code)
-> This note is part of the [[Engineering Learnings & Playbook]] system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook — don't duplicate what's already there.
+> This note is part of the [[Engineering Learnings & Playbook]] system. Follow the same editing principles: simplicity first, walk through thinking before editing, no bloat, practical tone for a designer/product builder. This file is a deep dive linked from the playbook, so don't duplicate what's already there.
 
 ---
 
 ## Two Kinds of Logging
 
-**Debugging logs** — temporary. Add them to find a bug, delete them before shipping:
+**Debugging logs** are temporary. Add them to find a bug, delete them before shipping:
 ```javascript
 console.log("here")        // ← remove before shipping
 console.log(data)           // ← remove before shipping
 ```
 
-**Production logs** — permanent. Part of the codebase, shipped intentionally:
+**Production logs** are permanent. Part of the codebase, shipped intentionally:
 ```javascript
 logger.info("[billing] Subscription created", { userId, plan, subscriptionId })
 logger.error("[billing] Payment failed", { userId, error: err.message })
 ```
 
-Production logs run every time a real user hits your code. They exist so you can understand what happened when something breaks — without being there when it happened.
+Production logs run every time a real user hits your code. They exist so you can understand what happened when something breaks, without being there when it happened.
 
 ---
 
@@ -66,12 +66,12 @@ In production, you usually see `info`, `warn`, and `error`. Turn on `debug` only
 ## Bad vs Good Logging
 
 ```javascript
-// Bad — tells you nothing
+// Bad: tells you nothing
 console.log("here")
 console.log(data)
 console.log("working")
 
-// Good — labeled, contextual, traceable
+// Good: labeled, contextual, traceable
 logger.info("[POST /api/billing] Request received", { userId: req.user.id })
 logger.info("[POST /api/billing] Validating input", { plan: body.plan })
 logger.error("[POST /api/billing] Failed", { userId: req.user.id, error: err.message })
@@ -83,7 +83,7 @@ The good version tells you: which endpoint, what action, who was involved, and w
 
 ## Logging in Real Code
 
-Production logging is woven into the business logic — it's part of the feature, not an afterthought:
+Production logging is woven into the business logic. It's part of the feature, not an afterthought:
 
 ```javascript
 export async function POST(req) {
@@ -121,15 +121,16 @@ The API response serves the user. The logs serve you when something goes wrong.
 When multiple users hit your app at the same time, their logs mix together. A request ID ties all logs from one action together:
 
 ```javascript
-// Middleware that tags every request
-function addRequestId(req, res, next) {
-  req.requestId = crypto.randomUUID()
-  next()
-}
+export async function POST(req) {
+  // One ID per request, created at the top of the route handler
+  const requestId = crypto.randomUUID()
+  const { userId, plan } = await req.json()
 
-// Every log includes it
-logger.info(`[${req.requestId}] [billing] Upgrade requested`, { userId })
-logger.info(`[${req.requestId}] [billing] Upgrade successful`, { subscriptionId })
+  // Every log includes it
+  logger.info("[billing] Upgrade requested", { requestId, userId, plan })
+  // ...
+  logger.info("[billing] Upgrade successful", { requestId, subscriptionId })
+}
 ```
 
 User reports an issue → you find their request ID → filter logs → see the entire journey. No noise from other users.
@@ -156,11 +157,13 @@ logger.error({
 
 With structured logs you can query: "Show me all card_expired errors this week" or "How many billing failures in the last 24 hours?"
 
+One gotcha: argument order depends on the library. The examples in this note use `logger.info(message, data)`. pino puts the object first: `logger.info({ userId, plan }, "[billing] Upgrade requested")`. Check your library's signature before copying examples.
+
 ---
 
 ## Logging AI Calls
 
-AI calls are expensive, non-deterministic, and hard to debug. Regular code gives the same output for the same input — you can reproduce bugs easily. AI doesn't. The same prompt can return different responses every time. Without logs, you can't investigate what went wrong.
+AI calls are expensive, non-deterministic, and hard to debug. Regular code gives the same output for the same input, so you can reproduce bugs easily. AI doesn't. The same prompt can return different responses every time. Without logs, you can't investigate what went wrong.
 
 ### What to log for AI calls
 
@@ -171,7 +174,7 @@ const startTime = Date.now()
 logger.info("[ai] Generating summary", {
   requestId,
   userId,
-  model: "claude-sonnet-4-6",
+  model: MODEL_ID,
   promptTemplate: "billing-summary-v2",
   inputLength: userContent.length
 })
@@ -182,6 +185,9 @@ logger.info("[ai] Summary generated", {
   userId,
   inputTokens: response.usage.input_tokens,
   outputTokens: response.usage.output_tokens,
+  cacheReadTokens: response.usage.cache_read_input_tokens,
+  cacheWriteTokens: response.usage.cache_creation_input_tokens,
+  stopReason: response.stop_reason,
   latency: Date.now() - startTime,
   estimatedCost: calculateCost(response.usage)
 })
@@ -200,7 +206,8 @@ logger.error("[ai] Summary failed", {
 | What | Why |
 |------|-----|
 | Prompt template name (or a summary) | See what triggered a bad response |
-| Token usage (input + output) | Track costs before you get a surprise bill |
+| Token usage (input, output, cache reads, cache writes) | Track costs before you get a surprise bill. Cache reads and cache writes are billed at different rates than regular input, so log them separately |
+| Stop reason | `max_tokens` means the answer got cut off. Without this you only see a weird half-response |
 | Latency | Know if AI calls are slowing down the user experience |
 | Model used | Compare quality and cost between models |
 | Estimated cost per request | Set budget alerts, catch runaway spending |
@@ -211,9 +218,9 @@ logger.error("[ai] Summary failed", {
 
 Without logging, end of month: "$2,400 Anthropic bill" and nobody knows which feature or which users caused it. With logging, you can query: "Which feature costs the most?" "Which users generate the most tokens?" "Is our prompt too long?"
 
-### Logging prompts — be careful
+### Logging prompts: be careful
 
-Log which prompt template was used and the input length, but don't log full user content if it contains personal data. Use debug level for full prompts — only in dev when investigating issues.
+Log which prompt template was used and the input length, but don't log full user content if it contains personal data. Use debug level for full prompts, only in dev when investigating issues.
 
 ```javascript
 // Safe for production
@@ -222,7 +229,7 @@ logger.info("[ai] Request", {
   inputLength: userContent.length
 })
 
-// Debug only — not in production if content has personal data
+// Debug only, not in production if content has personal data
 logger.debug("[ai] Full prompt", { prompt })
 ```
 
@@ -243,7 +250,7 @@ try {
 }
 ```
 
-This tells you how often users get the degraded experience — and whether your AI integration is reliable enough.
+This tells you how often users get the degraded experience, and whether your AI integration is reliable enough.
 
 ---
 
@@ -252,9 +259,11 @@ This tells you how often users get the degraded experience — and whether your 
 | Environment | Where | Tool |
 |-------------|-------|------|
 | Development | Terminal | `console.log` is fine |
-| Production | Logging service (searchable, stored) | Vercel Logs, Axiom, Logtail / Better Stack, Datadog |
+| Production | Logging service (searchable, stored) | Vercel Logs, Axiom, Better Stack (formerly Logtail), Datadog |
 
 The key: production logs need to be searchable. If you can only read them by SSHing into a server and running grep, that's a problem.
+
+Vercel's built-in runtime logs are only kept for 1 hour on Hobby and 1 day on Pro (30 days with the Observability Plus add-on). By the time a user reports a bug, the logs are often gone. So a separate log service matters more than it looks. Send logs there with a Vercel Log Drain or the service's own SDK.
 
 ---
 
@@ -276,4 +285,4 @@ Label, context, data. When you outgrow this, move to a proper logging library. B
 
 ---
 
-*Logging is like insurance — boring to set up, invaluable when you need it. The 3am production bug that takes 5 minutes to find instead of 5 hours? That's what good logging buys you.*
+*Logging is like insurance: boring to set up, invaluable when you need it. The 3am production bug that takes 5 minutes to find instead of 5 hours? That's what good logging buys you.*
