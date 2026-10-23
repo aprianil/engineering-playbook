@@ -162,7 +162,7 @@ Here is what was built:
 Edge cases to watch for:
 [paste edge cases from spec]
 
-Your job is to verify the feature works and try to break it. Test the happy path first, then try edge cases: empty inputs, rapid clicks, unexpected values, browser back button, refresh mid-flow. Check the console messages for runtime errors and the network requests for failed or 4xx/5xx calls: a UI can render fine while logging errors or silently failing.
+Your job is to verify the feature works and try to break it. Order: happy path, then every edge case listed above (each one has a proof in the spec, run that proof), then your own ad hoc probes: empty inputs, rapid clicks, unexpected values, browser back button, refresh mid-flow. Check the console messages for runtime errors and the network requests for failed or 4xx/5xx calls: a UI can render fine while logging errors or silently failing.
 
 Report shape: STATUS line + findings + nothing else.
 
@@ -174,17 +174,26 @@ Include screenshots inline when the visual rendering is the point of the bug. No
 
 If the sub-agent finds issues, fix them before marking as done. On re-verification after fixes, re-check only the criteria that failed, not the full pass. Skip this step for backend-only changes or when there's no running app to test against.
 
+**Final screenshots (after `STATUS: pass`, never per task).** A screenshot means the build is done, the live test is done, and the edge cases are covered. Only once QA passes, take one screenshot per acceptance criterion and per handled edge case, each showing the state its proof describes. Save them under `docs/qa/<feature-name>/` in the PR branch, named `ac1.png`, `ac2.png`, `edge-1.png`, and commit them in one `qa: screenshots` commit. If anything gets fixed after this point, rerun the failed checks and retake every screenshot, so the PR never carries a stale image. Skip for backend-only changes.
+
 **Mark the spec as built.** Set `status: built` and add `built: <YYYY-MM-DD>` in the frontmatter. `status:` stays one word; what changed along the way lives in `### Deviations`, never in the status field. This keeps `specs/` scannable: you can tell at a glance what's pending vs done.
 
 ## Ship
 
-**PR body.** Carry a slice map (one line per slice: name, commit range, where the risk sits), a link to the spec, and `## Out of scope`:
+**PR body.** Carry a slice map (one line per slice: name, commit range, where the risk sits), a link to the spec, `## Acceptance`, and `## Out of scope`. `## Acceptance` is the same checklist as the build result: one line per criterion and per handled edge case, each with its proof. For UI changes each line embeds its final screenshot as an image. Relative paths don't render in a PR body, so use the raw URL on the branch: `![AC2](https://github.com/<owner>/<repo>/blob/<branch>/docs/qa/<feature-name>/ac2.png?raw=true)`. This section is the reviewer's only proof the feature works; a UI PR without it is not done.
 
 ```
 ## Slices
 1. invite schema + send API · a1b2c3d..e4f5a6b · risk: token generation (range-reviewed mid-build)
 2. accept flow · f7a8b9c..0d1e2f3 · risk: none beyond UI states
 3. resend + expiry · 4a5b6c7..8d9e0f1 · risk: idempotency on resend
+
+## Acceptance
+- [x] AC1 invite email sent. Proof: `npm test -- invite.spec.ts` 4 passed
+- [x] AC2 sender sees confirmation. Proof: browser
+  ![AC2](https://github.com/o/r/blob/feat/invites/docs/qa/invites/ac2.png?raw=true)
+- [x] Edge 1 duplicate invite rejected. Proof: browser
+  ![Edge 1](https://github.com/o/r/blob/feat/invites/docs/qa/invites/edge-1.png?raw=true)
 
 ## Out of scope
 - ...

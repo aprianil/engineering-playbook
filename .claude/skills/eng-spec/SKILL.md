@@ -208,6 +208,8 @@ Happy path and sad path (errors, empty states, slow connections). For user-facin
 ### Edge cases & risks
 Prioritized. For each: what could go wrong, how to handle it, what's explicitly not worth handling yet and why. For user-facing errors name what the user sees, what the system does (retry, skip, abort), and how they recover.
 
+**Every handled edge case names its proof**, same rule as acceptance criteria: `Proof: [test name, command + expected result, or browser step]`. An edge case the spec chooses not to handle says `Not handled: [why]` instead. One or the other, never neither. The QA pass at build time tests these before anything ad hoc, and the final screenshots in the PR cover them.
+
 ### Proposed approach
 - Existing code: relevant files and patterns (real paths)
 - File structure: exact files to create or modify
@@ -286,7 +288,7 @@ You are a fresh pair of eyes. You did not write this spec and have no attachment
      FooResult = Zod schema { status: 'ok', data: ResultData } | { status: 'error', code: ErrorCode, message: string }
    ```
    "TypeScript interface," "validation later," "typed inputs" on a Zod-everywhere project, or a contract deferred to build all fail. Skip for pure infra consumed inside the same library.
-4. **Edge cases that matter.** What hurts users or corrupts data if missed? External dependency failures (API down, partial migration, malformed LLM JSON, duplicate webhook delivery)? Concurrency? Where would a builder need to ask a follow-up? Security: unvalidated input, new routes without auth, leaking secrets?
+4. **Edge cases that matter.** What hurts users or corrupts data if missed? External dependency failures (API down, partial migration, malformed LLM JSON, duplicate webhook delivery)? Concurrency? Where would a builder need to ask a follow-up? Security: unvalidated input, new routes without auth, leaking secrets? Then check the list itself: every edge case carries a `Proof:` or a `Not handled: [why]`. One with neither is a gap; flag it like a criterion without proof.
 5. **First-of-kind patterns.** Grep for whether this spec is first to introduce one, and check its known failure mode. Examples (the project's CLAUDE.md may list its own): new agent skill (layering boundary, frontmatter, role/tools/output contract); new agent tool (`rationale: z.string()` dropped, description skipped, naming drift); a migration with a new pattern (`RETURNS TABLE`, RLS on a new table, partial unique index, NOT NULL backfill); cron (overlap idempotency, failure alerting); webhook handler (signature verified *before* body read); new MCP tool surface (inline spec-fetch, context-gap-shaped inputs, per-org rate limits). Flag first-of-kind even when handled well.
 6. **Performance architecture.** For user-perceived latency or non-trivial data flow, `### Performance architecture` must name every item from Phase 0. Missing or hand-waved is verdict-affecting. Flag API-behavior claims that read as memory rather than verified docs.
 7. **Outcome ↔ acceptance.** The Outcome needs a measurable verification path in the criteria ("first paint <2s" needs an LCP measurement). Vague criteria on a measurable outcome are verdict-affecting.
