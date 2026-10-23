@@ -54,6 +54,8 @@ When comparing approaches that need research (APIs, libraries, architectural pat
 
 **For Type 1 decisions** (see Labels), get an independent second opinion before locking: the same question to two independent contexts in parallel (e.g. a fresh deep-reasoning agent and the coder agent), neither seeing the other's answer, then synthesize. Skip for Type 2; a second opinion on reversible choices is ceremony.
 
+**Sibling modes (every feature).** A feature is the whole experience a person meets, not the path being worked on. Before shaping the flow, list every mode they can reach it from: each input kind (still and take, text and voice), each entry point (menu, shortcut, deep link), each platform or browser the product supports. Every mode is in, or is cut with a measured reason (no users on it, a different surface owns it, a cost that beats its value). A cut is a Phase 0 question to the user with the reason attached, never a line that appears later in the spec. Users don't know which internal path they are on; a feature that works on a still and not on a take reads as broken, not as scoped.
+
 **Temporal shape (user-facing surfaces).** Resolve the four perception milestones as a design-tree node:
 - **Promise paint** (T=0): what the user sees the moment they trigger this.
 - **First-evidence paint**: the first piece of real content, and at what T.
@@ -227,7 +229,7 @@ Prioritized. For each: what could go wrong, how to handle it, what's explicitly 
 The implementation assumptions confirmed at the end of Phase 0, one numbered line each. The build re-reads these, with the Type 1 key decisions, after slice 1.
 
 ### Out of scope
-What this feature explicitly does NOT include.
+What this feature explicitly does NOT include. A sibling mode goes here only after the user agreed to the cut in Phase 0, with the reason beside it. A mode that was never raised is a gap, not a scope decision.
 
 ### Deviations
 *Empty at spec time.* The builder appends one bullet per deviation: what changed, and the evidence that forced it.
@@ -293,6 +295,7 @@ You are a fresh pair of eyes. You did not write this spec and have no attachment
 6. **Performance architecture.** For user-perceived latency or non-trivial data flow, `### Performance architecture` must name every item from Phase 0. Missing or hand-waved is verdict-affecting. Flag API-behavior claims that read as memory rather than verified docs.
 7. **Outcome ↔ acceptance.** The Outcome needs a measurable verification path in the criteria ("first paint <2s" needs an LCP measurement). Vague criteria on a measurable outcome are verdict-affecting.
 8. **Slice order and split.** Slice 1 should surface the riskiest assumption; if not, name the slice that should go first. Flag any forced-split item bundled instead of split into its own spec. Don't push to split for size alone.
+9. **Sibling modes.** List the modes a person can reach this feature from (input kinds, entry points, platforms). Each one is covered by the flow and criteria, or sits in Out of scope with a reason. A mode that appears nowhere is verdict-affecting: the builder ships one path and the user finds the other.
 
 **Principle pass (faster, raise only specific concerns):** simplicity (#1, cut concepts and dependencies, not lines), YAGNI (#2), designed-upfront abstractions (#3), quality (#4: assumptions treated as verified facts; scope cuts are fine, quality cuts compound), over-planned Type 2 decisions (#5), compounding (#6), verification (#8), ownership (#9), project shape (the "good" and "bad" columns of the project's CLAUDE.md).
 
