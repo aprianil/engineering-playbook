@@ -176,6 +176,8 @@ If the sub-agent finds issues, fix them before marking as done. On re-verificati
 
 **Final screenshots (after `STATUS: pass`, never per task or per slice).** A screenshot means the build is done, the live test is done, and the edge cases are covered. Only once QA passes, walk the spec's User flow once and capture the core experience: the happy path start to end (usually three to five frames) plus each user-facing sad state the spec names (error, empty, loading if it matters). Not one per criterion: backend facts and edge cases with no screen keep a test or command as their proof. Save the frames under `docs/qa/<feature-name>/` in the PR branch, named by moment (`01-empty.png`, `02-invite-sent.png`, `03-duplicate-error.png`), and commit them in one `qa: screenshots` commit. If anything gets fixed after this point, rerun the failed checks and retake the walk, so the PR never carries a stale image. Skip for backend-only changes.
 
+Proof is the after state. The before is already on record in the bug report, the failing criterion, or the spec's sad path, so never build a pre-fix copy or replay the failure to stage one; that doubles the drive and gives the typer a second place to land. Pair an after shot with a before only when the change is visual and the comparison is the point (spacing, a redesign), and only with a before shot that already exists.
+
 **Mark the spec as built.** Set `status: built` and add `built: <YYYY-MM-DD>` in the frontmatter. `status:` stays one word; what changed along the way lives in `### Deviations`, never in the status field. This keeps `specs/` scannable: you can tell at a glance what's pending vs done.
 
 ## Ship
