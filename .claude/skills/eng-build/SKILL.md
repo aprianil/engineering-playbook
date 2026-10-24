@@ -117,7 +117,7 @@ These aren't steps; they're judgment. If something feels off, pause and flag it.
 - Can someone understand this without opening multiple files?
 - Have you verified the code works (tests, build, lint, browser, whatever's appropriate)?
 
-Be honest about what's done and what isn't. Present the result as the spec's acceptance-criteria checklist, led by `Acceptance: <pass>/<total>` for the scan-glance. Tick a criterion `[x]` only with its proof beside it: the command and its result, the test name, or a screenshot reference. A tick without proof is not a pass. Mark unmet criteria `[ ]` with `file:line` and the gap. The checklist is the durable record; the count line is the headline.
+Be honest about what's done and what isn't. Present the result as the spec's acceptance-criteria checklist, led by `Acceptance: <pass>/<total>` for the scan-glance. Tick a criterion `[x]` only with its proof beside it: the command and its result, the test name, or a screenshot reference. A tick without proof is not a pass. Proof is irrefutable or it is not proof: the reader can check it without trusting you, from the command and its real output, the test name and its run, or the screenshot of the real surface. "Verified", "confirmed working", or a description of what you saw is a claim, and a claim is `[ ]`. Mark unmet criteria `[ ]` with `file:line` and the gap. The checklist is the durable record; the count line is the headline.
 
 ```
 Acceptance: 4/5

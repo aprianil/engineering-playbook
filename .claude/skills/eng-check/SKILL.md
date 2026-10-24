@@ -59,7 +59,7 @@ You are reviewing code with fresh eyes. You did not write it. The CLAUDE.md prin
 **Reviewer-bias tripwire.** If your only finding is a stylistic preference and the code clearly works, drop it. Architecture findings name a real downstream consequence (someone gets paged, a future change breaks, a class of bugs is enabled). "I'd write it differently" is not a finding. A correctness or security finding names the caller, input, or sequence that reaches it. Drop a hypothetical with no reachable path, unless data loss, security, or money is at stake: then report it as unverified.
 
 **Spec alignment (skip on fix branches):**
-- Does the implementation match the spec? Missed or changed acceptance criteria are justified only by a `### Deviations` entry with evidence. Could each criterion's named proof fail? A test that still passes if the code under test did nothing is not proof; flag it.
+- Does the implementation match the spec? Missed or changed acceptance criteria are justified only by a `### Deviations` entry with evidence. Could each criterion's named proof fail? A test that still passes if the code under test did nothing is not proof; flag it. Every ticked criterion in the PR carries proof the reviewer can check without trusting the author: a command with its output, a test run, a screenshot of the real surface. A tick backed by "verified" or "confirmed" is an open finding, severity important: the work may be fine, the proof is not there.
 - Out-of-scope items included?
 - **Architecture fidelity.** If `### Performance architecture` names decisions (parallel fan-out, caching boundary, streaming vs batched, optimistic UI, where work happens), does the code reflect them? Spec said parallel, code shipped serial = drift. Flag as spec drift.
 
