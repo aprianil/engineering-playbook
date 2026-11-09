@@ -52,7 +52,7 @@ The goal is **shared understanding**, not a saved file. The design concept (Broo
 
 When comparing approaches that need research (APIs, libraries, architectural patterns), research each on its own terms, then compare and recommend. The trade-off evaluation goes to one deep-reasoning agent briefed with every option.
 
-**For Type 1 decisions** (see Labels), get an independent second opinion before locking: the same question to two independent contexts in parallel (e.g. a fresh deep-reasoning agent and the coder agent), neither seeing the other's answer, then synthesize. Skip for Type 2; a second opinion on reversible choices is ceremony.
+**For Type 1 decisions** (see Labels), get an independent second opinion before locking: the same question to two independent contexts in parallel (e.g. two fresh deep-reasoning agents per the orchestration policy; a Codex consult only when the project declares Codex), neither seeing the other's answer, then synthesize. Skip for Type 2; a second opinion on reversible choices is ceremony.
 
 **Sibling modes (every feature).** A feature is the whole experience a person meets, not the path being worked on. Before shaping the flow, list every mode they can reach it from: each input kind (still and take, text and voice), each entry point (menu, shortcut, deep link), each platform or browser the product supports. Every mode is in, or is cut with a measured reason (no users on it, a different surface owns it, a cost that beats its value). A cut is a Phase 0 question to the user with the reason attached, never a line that appears later in the spec. Users don't know which internal path they are on; a feature that works on a still and not on a take reads as broken, not as scoped.
 
@@ -142,7 +142,7 @@ For a **new** user-facing surface (screen, flow, component category, content sur
 
 Each framing is the final shipped experience, not a fragment: every screen the build will produce is reachable by navigation, at shipping fidelity (type, spacing, color, motion, hover states). If the user has to ask "can you also build X?" to evaluate it, it was incomplete.
 
-1. The coder agent builds 2-3 framings against real fixtures in the project's dev/exploration area, composed from the project's component library. The orchestrator directs and judges; it never writes markup. Distill the project's design-quality skills into each build prompt, or run a polish pass with them, before showing.
+1. Build 2-3 framings against real fixtures in the project's dev/exploration area, composed from the project's component library. Who writes the markup follows the orchestration policy in CLAUDE.md. Distill the project's design-quality skills into each build prompt, or run a polish pass with them, before showing.
 2. The user clicks through each framing and forms their own opinion.
 3. Apply cross-framing tweaks they surfaced (a hover state from B that beats A's), then lock.
 4. Write the result into `### UX exploration`: chosen framing, rejected alternatives, why, path to the prototype.
@@ -199,6 +199,9 @@ Happy path and sad path (errors, empty states, slow connections). For user-facin
 
 ### UX exploration
 *New UI only.* Chosen framing, rejected alternatives, why, path to the prototype.
+
+### Design source
+*Any UI with a decided design (a prototype, a canvas, Figma or Pencil frames, boards), for web, mobile or desktop alike.* A table: each screen the build produces, next to the exact board or prototype screen it must match (link plus board name or number). Screens the design doesn't draw are listed as "not drawn: ask before styling". Boards that show features out of scope are listed as "drawn, not built". The acceptance criteria then carry one design AC: "Every screen in Design source matches its board side by side at the board's size. Proof: board | build screenshot pairs on the PR." The build starts from this table, never from the prose.
 
 ### Acceptance criteria
 - [ ] [concrete, verifiable criterion]. Proof: [test name, command + expected result, or browser step]

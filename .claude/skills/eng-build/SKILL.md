@@ -45,14 +45,15 @@ Trust the spec. Second-guessing it re-opens planning sessions. If something seem
 
 **Your goal:** acceptance criteria = definition of done; CLAUDE.md = constraints. Figure out the best way to get there.
 
+**Decided design = the source code for the UI.** If the spec has a `### Design source` (or links any design anywhere: a prototype, a canvas, Figma or Pencil frames, a clickable app prototype), before the first UI slice: pull the design's source files and capture each board as an image at its own size (desktop width, phone width, the app's device frame). Keep those images beside you. Build each screen by lifting the design's own code when it has some (markup, CSS, components, styles), or its exact measurements, colours, type and assets when it doesn't, into the project's real modules. Never redraw a screen from the spec's words. Any visible difference from a board (layout, where a screen lives, navigation, type, spacing, icons, colours, copy) is never a Type 2 deviation: stop and ask the designer. A screen the design doesn't draw gets styled from the same pieces and shown before it ships.
+
 Before writing code, flag anything in the spec that looks outdated or unclear. If the spec is clean, proceed without summarizing. The user wrote and locked it; they don't need it read back.
 
 ## Delegation
 
 Follow the orchestration policy in CLAUDE.md (user-level or project). Default when none is stated:
-- **The orchestrator stays lead:** integration, judgment calls, and reading every diff. Delegation moves token burn, not accountability.
-- **One long-lived coder agent does the implementation**, kept alive across slices with `SendMessage` so it keeps its context instead of re-reading the repo each slice. No fan-out: every extra agent re-reads the context, which costs more than it saves.
-- **Small mechanical edits** (a rename, a one-file tweak) the orchestrator does itself. A round trip costs more than the edit.
+- **The session implements every slice itself.** No coder sub-agent: a round trip re-reads the repo and is slower than doing the work in the context that already holds it.
+- **Sub-agents only for fresh eyes:** range and final `/eng-check` reviews, the QA pass that tries to break the feature, a deep-reasoning consult when the debug loop stalls, and wide read-only searches.
 - **Codex** (and `/codex:rescue`) only when the project's CLAUDE.md / AGENTS.md declares Codex.
 
 Pin agent models deliberately per the policy; unpinned sub-agents inherit the main model.
@@ -70,6 +71,7 @@ Then, for each slice:
    - Tests pass
    - Application builds without errors
    - The slice's user flow works end-to-end
+   - **Design match (UI slices with a design source):** a board | build screenshot pair per screen, captured the way the project runs (browser at the board's width for web, simulator or device at the board's frame for a mobile app, the app window for desktop), same data where possible, read side by side. Fix every visible gap before the commit. These pairs go on the PR and the issue.
 
    For UI or user-facing slices, "works" means it works *in a real browser*, not "the build compiled" or "the tests are green." Drive the feature with the project's browser tools (e.g. Playwright MCP: `mcp__playwright__browser_navigate`, `_click`, `_fill_form`, `_snapshot`, `_console_messages`, `_network_requests`) and click through as a user would. Types and tests prove code correctness; browsers prove feature correctness, and they surface a whole class of bugs the compiler can't see (hydration mismatches, runtime console errors, failed network calls, broken nav, stale cache). Make sure the dev server is running first (check `package.json` scripts, commonly `npm run dev`); after server-side changes (API routes, middleware, server components, env vars, config), re-navigate to force a fresh fetch before re-verifying, otherwise stale RSC/middleware responses will make a correct change look broken.
 3. **Commit.** One commit per slice (or a short run of commits that ends green), with a message that names the slice. The slice's last commit must build and pass tests on its own, so the PR can be bisected and reverted slice by slice. Use the project's commit convention if CLAUDE.md / AGENTS.md defines one.
@@ -161,6 +163,10 @@ Here is what was built:
 
 Edge cases to watch for:
 [paste edge cases from spec]
+
+The decided design for each screen (when the spec has one):
+[board screenshot paths, one per screen]
+Compare every screen you reach to its board. Any visible difference (layout, placement, type, spacing, icons, colors, copy) is a **break**, not taste.
 
 Your job is to verify the feature works and try to break it. Order: happy path, then every edge case listed above (each one has a proof in the spec, run that proof), then your own ad hoc probes: empty inputs, rapid clicks, unexpected values, browser back button, refresh mid-flow. Check the console messages for runtime errors and the network requests for failed or 4xx/5xx calls: a UI can render fine while logging errors or silently failing.
 
