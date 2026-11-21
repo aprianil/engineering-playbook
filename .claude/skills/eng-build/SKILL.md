@@ -21,6 +21,8 @@ Build a feature from an approved spec file. This is an execution session; the pl
    - `status: specced`: start a new build (the slice loop's step 0 marks it `building`).
    - `status: building`: resume. Read `## Current state` and `### Deviations` first, then continue at the slice `## Current state` names as next.
    - `status: built`: halt: "spec is already built (built: <date>). Nothing to build; start a new spec for new work."
+   - `status: replaced`: halt: "spec was replaced by `<replaced_by>`; build from that one."
+   - `status: parked`: halt: "spec is parked; its body says why. Unpark it with `/eng-spec <spec-path>` first."
    - Anything else (`drafting`, a missing value on a spec that has frontmatter): halt: "spec is `<status>`, not ready to build. Run `/eng-spec <spec-path>` to finish it."
    - `status:` must be exactly one word. If anything follows the word (a date, progress, notes), halt: "status must be one word; move the rest to `## Current state` or `### Deviations`."
 2. **Verdict:**
@@ -184,7 +186,9 @@ If the sub-agent finds issues, fix them before marking as done. On re-verificati
 
 Proof is the after state. The before is already on record in the bug report, the failing criterion, or the spec's sad path, so never build a pre-fix copy or replay the failure to stage one; that doubles the drive and gives the typer a second place to land. Pair an after shot with a before only when the change is visual and the comparison is the point (spacing, a redesign), and only with a before shot that already exists.
 
-**Mark the spec as built.** Set `status: built` and add `built: <YYYY-MM-DD>` in the frontmatter. `status:` stays one word; what changed along the way lives in `### Deviations`, never in the status field. This keeps `specs/` scannable: you can tell at a glance what's pending vs done.
+**Mark the spec as built.** Set `status: built` and add `built: <YYYY-MM-DD>` in the frontmatter. `status:` stays one word; what changed along the way lives in `### Deviations`, never in the status field. This keeps `specs/` scannable: you can tell at a glance what's pending vs done. Criteria still waiting on a live check don't hold it on `building`: list them as open under `## Current state` and mark it built anyway. If the build retired an older spec, set that one to `status: replaced` with `replaced_by:`.
+
+**Docs that describe what changed, in the same PR.** The spec is not the only doc a build moves. Before pushing, list what the diff removed, renamed or changed the mechanism of (types, files, flags, CLI verbs, wire or file contracts, chords), grep the project's standing docs for each (CLAUDE.md, the architecture index and decision records, `docs/solutions/`, READMEs that list scripts or probes), and fix every hit in this PR: amend the decision record when its mechanism changed, mark a solution doc historical when the code it fixed is gone. A new Type 1 contract (a socket grammar, a file format, a wire message) gets named in its decision record. Docs say why and what was measured; where a doc copies a list or value the code owns, replace it with a pointer to the code instead of updating the copy.
 
 ## Ship
 

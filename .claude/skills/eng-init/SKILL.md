@@ -43,6 +43,7 @@ Most of the work happens before and after writing code, not during. Plan thoroug
 9. Own what you ship. If you can't explain why the code is structured this way, you don't understand it enough to maintain it.
 10. Context before action. Load and understand the relevant context before starting any work: specs, code, architecture, constraints. Not everything, just what's relevant. Five minutes of context loading prevents hours of rework from wrong assumptions.
 11. Decompose into vertical slices, ship whole. One spec, one build session, one PR by default. Inside the build, each vertical slice (schema + API + UI for one flow) is one commit that builds and passes tests on its own, so the PR can be reviewed, bisected, and reverted slice by slice. Split into a separate spec and PR only for work with its own gate (see PR guidelines). Splitting a feature into more PRs adds review rounds, integration merges, and re-priming without reducing total review.
+12. Docs hold what the code can't. The why, what was rejected, what was measured, and the intent behind a spec live in docs; what the code does lives in the code. A doc that copies a list, a count, a constant or a line number from the code is a second copy that drifts and misleads the next agent, so point at the code by name instead. Each fact lives in one place, status included.
 
 ## Do
 - Validate all input at the API boundary with Zod schemas

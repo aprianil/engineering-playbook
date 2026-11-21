@@ -108,7 +108,7 @@ Cover up to three concerns. Codebase fit and external tech are mechanical (the o
 
 | Concern | What to find out | What you need |
 | --- | --- | --- |
-| **Codebase fit** | Patterns to follow, files touched or created, code that already solves part of this, prior art in `docs/solutions/` | File paths with line numbers, the pattern to follow, relevant prior solutions |
+| **Codebase fit** | Patterns to follow, files touched or created, code that already solves part of this, prior art in `docs/solutions/` | File paths with the type or function names (line numbers in the report only, never copied into the spec), the pattern to follow, relevant prior solutions |
 | **Edge cases & constraints** | Inputs or states that break it, external dependency failures, irreversible decisions | Prioritized risks: blocks build vs. handle later |
 | **External tech** *(only when external dependencies are involved)* | Current stable version, API changes, deprecations, docs vs. training data | Verified versions and signatures, doc links, gaps between assumed and actual |
 
@@ -164,9 +164,10 @@ YAML frontmatter (the machine-readable contract `/eng-build` reads), then the ma
 ```yaml
 ---
 title: "<human-readable>"
-status: drafting           # exactly one word: drafting | specced | building | built
+status: drafting           # exactly one word: drafting | specced | building | built | parked | replaced
 built: <YYYY-MM-DD>        # omit until /eng-build sets it
-summary: <2-4 sentence what + why>
+replaced_by: <spec path>   # only with status: replaced
+summary: <2-4 sentence what + why; no counts or values the code holds>
 depends_on: [<specs that must be built and merged first>]
 references: [<paths the spec leans on>]
 ---
@@ -175,6 +176,12 @@ references: [<paths the spec leans on>]
 `/eng-build` reads `status:`: `specced` starts a build, `building` resumes one, `built` halts, anything else halts. It reads `depends_on:` and refuses to start until every listed spec shows `status: built` on the base branch.
 
 **`status:` is exactly one word from that list and nothing else.** No dates, slice progress, measurements, or notes after it, not even in parentheses. A status line with anything after the word fails the build's check. History goes in `### Deviations`, progress goes in `## Current state`.
+
+**`built` means merged.** Criteria still waiting on a live check are listed as open under `## Current state`, and the status still says `built`: a merged spec never sits on `building`. **`parked`** is a spec decided not to build for now, with the reason in its body. **`replaced`** is for a spec another spec superseded or that never shipped; `replaced_by:` names the successor, so a reader lands on the live one.
+
+**Status lives in one place: the spec's own frontmatter.** A project index of specs (e.g. `specs/README.md`) carries one line of purpose per spec, never its status: a second copy of status is the first thing to drift.
+
+**Point at code by name, never by line number or value.** Cite `path/File.swift` plus the type, function or constant (`AgentView.extraRows`), not `File.swift:3953` and not the constant's current value. Line numbers and copied values are right while researching and rot once saved. A measured number (latency, timing) is a fact the code does not hold, so it stays, with how it was measured.
 
 ```
 ## Feature: [name]
@@ -262,7 +269,7 @@ One coder builds the slices in order. Parallelism happens only across separate s
 
 Break a task down further when its acceptance needs more than 3 bullets, it touches 2+ independent subsystems, its title has "and" in it, or its slice can't end in one green commit. For small features, one slice with 2-3 tasks is fine.
 
-Save body + task list to `specs/<feature-name>.md` (kebab-case) with `status: drafting`. From here the file is the durable artifact; iterate with `Edit`, not by re-drafting in chat.
+Save body + task list to `specs/<feature-name>.md` (kebab-case) with `status: drafting`. From here the file is the durable artifact; iterate with `Edit`, not by re-drafting in chat. If the project keeps a specs index, add the spec's one line of purpose there now (no status).
 
 ## Stress test (Principle #7): mandatory before lock
 
