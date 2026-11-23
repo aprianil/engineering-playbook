@@ -7,7 +7,7 @@ allowed-tools: Read, Write, Glob, Grep, Bash, Agent
 
 Review code against the project's engineering principles. A fresh sub-agent does the review: the builder shouldn't review their own work (Principle #7).
 
-**Parse args first.** An argument containing `..` is a commit range: range mode. A numeric argument is a PR number: PR-gate mode. No args: local-diff mode.
+**Parse args first.** An argument containing `..` is a commit range: range mode. A numeric argument is a PR number: PR-gate mode. No args: local-diff mode. `deep` alongside any of these turns on two-reviewer mode (step 7).
 
 **Who owns correctness.** Check AGENTS.md / CLAUDE.md for a declared automated PR reviewer (e.g. Codex) that owns correctness, security, type safety, and performance, and follow any lens split the project documents.
 - **Bot declared:** local mode stays architecture-only. Double coverage burns reviewer cycles and breeds noise.
@@ -33,7 +33,19 @@ Review code against the project's engineering principles. A fresh sub-agent does
    - The slice map with commit ranges, when step 5 found one
    - The gotchas and checklist items from step 6
    - Whether a bot owns correctness, and the review instructions below (with the checklist when no bot owns it, or in range mode)
-8. Use the sub-agent's findings as your report. **Local mode only:** end with `eng-check: <verdict> @ <short-sha>`, the HEAD that was reviewed. Once no blockers or importants are open, that line goes in the PR body (`gh pr edit` if the PR exists; otherwise the author adds it when opening). The no-bot PR gate reads it to review only the commits after that SHA.
+
+   **Two-reviewer mode.** It costs a second full review, so it never runs by default. Two triggers only: the user passes `deep`, or the diff is safety-critical (anything that can type into, close, or restart what the user is running, or whatever the project's CLAUDE.md marks safety-critical). Safety-critical code already gets a second independent review under the global rules; this mode *is* that review, run in parallel instead of after, not an extra one on top. Spawn two fresh reviewers in one message, each with the same inline package, each on a model from a different family (e.g. one on the session's model, one with a `model` override from another family). Neither sees the other's output. Models differ in blind spots, so a finding both raise independently is the strongest signal; a lone finding is still read, just weighted lower. Their two lists feed step 8, plus an agreement map: where they agreed, where they diverged, and what that says.
+8. **Lead judgment.** Don't forward the reviewer's list as is. Reviewers saw a slice and a paragraph of intent; you hold the constraints, what was already tried, and what a later slice covers. Sort every finding into one bucket:
+   - **Act on:** real correctness, security, or maintainability problems given the actual goal. These block. More than 5 here usually means the filtering is too loose.
+   - **Consider:** legitimate, but unclear it beats the cost now. Name the tradeoff.
+   - **Noted:** valid, not actionable at this stage.
+   - **Dismissed:** wrong, a style preference, or missing context. One-line reason each.
+
+   Filter on: hypothetical vs. reachable (trace the call site before keeping "what if this is null"), "I'd have done it differently" with no concrete problem, premature-abstraction suggestions for code that changes one way, and patterns the reviewer flagged that match the rest of the codebase. Keep anything where you think "...yeah, actually", and anything raised by both reviewers.
+
+   **When this session wrote the code,** judgment is limited so the builder doesn't overrule its own reviewer: dismiss only with a cited fact the reviewer couldn't see (a named constraint, a spec line, a later slice's commit), and never move a correctness or security finding out of Act on without tracing the path yourself and showing the trace. The Dismissed list always ships in the report. It is the trust mechanism: the user reads what got rejected and can overrule it.
+
+   The report is the verdict line, the four buckets (each finding keeps its blocker / important / nit label and slice tag), the agreement map in two-reviewer mode, then the reviewer's closing line on what the code does well. **Local mode only:** end with `eng-check: <verdict> @ <short-sha>`, the HEAD that was reviewed. Once no blockers or importants are open, that line goes in the PR body (`gh pr edit` if the PR exists; otherwise the author adds it when opening). The no-bot PR gate reads it to review only the commits after that SHA.
 
 **After the report**, when the build session is still open: fix blockers and importants inline if the fix is single-file, needs no new test scaffold, and has no design decision pending. Otherwise surface it to the user in one line and ask. Don't quietly file a follow-up or spec it.
 
@@ -54,7 +66,19 @@ You are reviewing code with fresh eyes. You did not write it. The CLAUDE.md prin
 - **Quality (#4).** Shortcuts documented with a plan to revisit? **A TODO without a ticket is a wish.** Flag every unowned TODO.
 - **Ownership (#9).** Anything opaque, "works but I don't know why"?
 
-**Quick pass:** YAGNI (#2), forced abstractions (#3), irreversible decisions handled with care and reversible ones not over-planned (#5), compounding (#6), verification (#8). Check the project shape rules from CLAUDE.md, leading with the most-violated: thin routes, side effects after the response, structured errors handled at the boundary.
+**Root cause vs. symptom.** Is the change fixing the real problem or papering over it? Read the callers, callees, and types the change sits in before judging. Flag: a guard clause hiding a broken invariant, a retry hiding a broken contract, a cast silencing a modeling error, a fix in module A that belongs in module B's contract, and a "don't do X" comment or convention where a type, lint, or runtime check would make X impossible. Ask of the whole change: if this requirement had been known from the start, would the code look like this, or is it bolted on?
+
+**Legacy dual paths.** A new API added while the old one stays alive. With no external consumers, callers migrate and the old path is deleted in the same PR. Compatibility layers left "for now" become permanent.
+
+**Code-quality lens.** Look for a code-judo move: a reframing that uses the existing architecture so whole branches, modes, helpers, or layers disappear. A judo finding names what disappears; a refactor that only moves complexity around isn't one. Then check the mechanical smells, each a presumptive **important** unless the diff justifies it:
+- A file pushed past the project's size limit (from CLAUDE.md, else from under 1k lines to over 1k). Ask whether it should be split first.
+- Spaghetti growth: a new special-case conditional, one-off boolean, or nullable mode inserted into an existing flow it doesn't belong to. That's a design problem, not a nit; the logic wants its own helper, module, or state model.
+- A bespoke helper where the codebase already has a canonical one (grep for one before flagging), or logic placed in a layer that doesn't own the concept.
+- Thin wrappers and pass-through abstractions that add indirection without clarity.
+
+Prefer a few high-conviction structural findings over a list of cosmetic ones. Don't penalize simple code for lacking abstraction: three duplicated lines beat a premature one.
+
+**Quick pass:** YAGNI (#2), forced abstractions (#3), irreversible decisions handled with care and reversible ones not over-planned (#5), compounding (#6), verification (#8): does the code check the real thing, or a proxy (file mtime, cached state, a derived value, a delegate's self-report instead of its actual output)? Check the project shape rules from CLAUDE.md, leading with the most-violated: thin routes, side effects after the response, structured errors handled at the boundary.
 
 **Reviewer-bias tripwire.** If your only finding is a stylistic preference and the code clearly works, drop it. Architecture findings name a real downstream consequence (someone gets paged, a future change breaks, a class of bugs is enabled). "I'd write it differently" is not a finding. A correctness or security finding names the caller, input, or sequence that reaches it. Drop a hypothetical with no reachable path, unless data loss, security, or money is at stake: then report it as unverified.
 
@@ -65,7 +89,8 @@ You are reviewing code with fresh eyes. You did not write it. The CLAUDE.md prin
 - **Architecture fidelity.** If `### Performance architecture` names decisions (parallel fan-out, caching boundary, streaming vs batched, optimistic UI, where work happens), does the code reflect them? Spec said parallel, code shipped serial = drift. Flag as spec drift.
 
 **Correctness, security, type safety, performance (no bot, or range mode).** In range mode, also state the one fact the slice is safe because of, and whether you read it in code, traced it, or ran it. Skip only in local mode on a project with a bot:
-- **Correctness.** Wrong conditionals; unhandled null, empty, or unexpected input; error paths that swallow failures or leave partial state; async misuse (unawaited promises, races, double submits); an acceptance criterion the code doesn't meet.
+- **Correctness.** Wrong conditionals; unhandled null, empty, or unexpected input; error paths that swallow failures or leave partial state; async misuse (unawaited promises, races, double submits); an acceptance criterion the code doesn't meet. When you find one, show the call chain that reaches it, not just "this could be null".
+- **Reruns and concurrency.** What happens if this operation runs twice, or a previous run crashed halfway? "Depends on what state was left behind" means a reconciliation step is missing. When several actors can touch the same mutable state (files, rows, branches, caches), is access serialized by structure (a lock, sequential phases, one owner) or by a convention that won't hold?
 - **Security.** Input validated at the boundary; every new route or action has authentication *and* authorization (ownership or tenant checks, not just "logged in"); no secrets in code or logs; no injection (SQL, shell, HTML, prompt) through interpolated untrusted data; webhook signatures verified before the body is trusted.
 - **Type safety.** No `as any`, unchecked casts, or non-null assertions papering over a real type; external data (API responses, DB rows, LLM output) parsed through a schema before use.
 - **Performance.** N+1 queries; serial awaits that could be parallel; unbounded queries or loops over user-controlled sizes; request-path work that belongs after the response; new query shapes with no index.
@@ -97,7 +122,7 @@ The converging merge call. A review bot finds something on every commit forever;
 Written for Codex (`chatgpt-codex-connector[bot]`). For another bot, swap in its login and signal channels.
 
 1. Fetch PR state:
-   - `gh pr view <n> --json number,title,state,isDraft,mergeable,additions,deletions,changedFiles,headRefName,baseRefName,reviewDecision,statusCheckRollup,url,body,commits`
+   - `gh pr view <n> --json number,title,state,isDraft,mergeable,additions,deletions,changedFiles,headRefName,headRefOid,baseRefName,reviewDecision,statusCheckRollup,url,body,commits` (`headRefOid` is the reviewed head; the `ship` merge command pins it)
    - `gh api repos/<owner>/<repo>/pulls/<n>/comments --paginate` (inline findings)
    - `gh pr view <n> --json reviews` (round summaries)
    - `gh pr view <n> --json comments` (scope-out declarations, `@codex review` pings)
@@ -164,6 +189,8 @@ Merge: <merge command>
 ```
 
 `<merge command>` is the project's merge convention from CLAUDE.md / AGENTS.md. Default: `gh pr merge <n> --rebase`, so per-slice commits survive on main (squash loses per-slice revert).
+
+**Pin the reviewed head.** Whatever the convention, the merge command carries `--match-head-commit <headRefOid>`, the full SHA fetched in step 1 (with or without a bot). A push that lands after the verdict then makes the merge fail instead of shipping unreviewed code. If the merge fails on that guard, re-run `/eng-check <n>`; never drop the flag to get past it. Another forge: use its equivalent expected-head condition.
 
 **`waiting`:**
 
